@@ -4,16 +4,28 @@ author: "[Eadie Technologies, Inc.](https://www.eadietech.com/)"
 date: "2025-02-06"
 output: 
   html_document:
-    theme: readable
+    theme: spacelab
     highlight: kate
     toc: true
     toc_depth: 2
     toc_float: 
       collapsed: true
+    includes:
+        after_body: footer.html
 ---
 
 ## Setup
-```{r, setup, collapse=TRUE}
+
+### Versioning
+
+Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
+
+* 2025-Feb-06: Created git & RStudio project
+
+### Acknowledgements
+Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
+
+```{r setup, collapse=TRUE}
 
 # load packages
 library(tidyverse)
@@ -35,15 +47,6 @@ knitr::opts_chunk$set(
 load(here("dBdat.Rda"))
 
 ```
-
-### Versioning
-
-Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
-
-* 2025-Feb-06: Created git & RStudio project
-
-### Acknowledgements
-Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
 
 # Study summary
 We compared 24-2 Full Threshold visual field (VF) test results between Retinalogik and Humphrey Field Analyzer (HFA) in patients with early glaucoma and moderate to advanced glaucoma.
