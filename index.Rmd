@@ -4,8 +4,8 @@ author: "[Eadie Technologies, Inc.](https://www.eadietech.com/)"
 date: "2025-02-06"
 output: 
   html_document:
-    theme: spacelab
-    highlight: kate
+    theme: yeti
+    code_folding: hide
     toc: true
     toc_depth: 2
     toc_float: 
