@@ -54,11 +54,15 @@ We compared 24-2 Full Threshold visual field (VF) test results between Retinalog
 # Methods (briefly)
 ## Subjects
 
-Eligible participants were identified among patients who are patients of Dr. Brennan Eadie at the Eadie Eye Centre. If deemed eligible for the study, subjects were recruited consecutively.
+Eligible participants were identified among patients of Dr. Brennan Eadie at the Eadie Eye Centre. If deemed eligible for the study, subjects were recruited consecutively.
 
-Each participant underwent 5 study visits, whereupon they performed a VF test on both eyes, on both devices, with the order of devices randomized during the baseline 1st study visit.
+Each participant underwent 5 study visits, whereupon they performed a VF test on both eyes and on both devices, with the order of devices randomized during the baseline 1st study visit.
 
-The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1024439). All participants gave their written informed consent before enrollment in the study.
+The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
 ## Analysis
-All OS data were transposed to OD format before analyses. A total of `r dBdat %>% group_by(id, age, eye, device) %>% distinct(duration) %>% nrow()` datasets were collected from `r length(unique(dBdat$id))` participants with mean age of `r mean(dBdat$age)`.
+All OS data were transposed to OD format before analyses. A total of `r dBdat %>% group_by(id, age, eye, device) %>% distinct(duration) %>% nrow()` VF datasets were collected from `r length(unique(dBdat$id))` participants aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`).
+
+# Results
+
+# Discussion
