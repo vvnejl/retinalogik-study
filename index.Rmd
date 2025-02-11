@@ -21,6 +21,7 @@ output:
 Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
 
 * 2025-Feb-06: Created git & RStudio project
+* 2025-Feb-11: Added individual plots
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -68,6 +69,13 @@ All OS data will be transposed to OD format before analyses. A total of `r dBdat
 ```{r individualplots, warning=FALSE}
 library(ggplot2)
 library(slickR)
+
+# make sure coordinates are numeric, then flip OS to OD for plotting purposes
+dBdat %<>%
+  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+  mutate(x = case_when(
+    eye == "L" & device == "hfa" ~ x*-1,
+    TRUE ~ as.numeric(x)))
 
 dBdat %>%
   mutate(dB = as.numeric(dB)) %>%
