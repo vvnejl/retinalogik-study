@@ -61,8 +61,73 @@ Each participant underwent 5 study visits, whereupon they performed a VF test on
 The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
 ## Analysis
-All OS data were transposed to OD format before analyses. A total of `r dBdat %>% group_by(id, age, eye, device) %>% distinct(duration) %>% nrow()` VF datasets were collected from `r length(unique(dBdat$id))` participants aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`).
+All OS data will be transposed to OD format before analyses. A total of `r dBdat %>% group_by(id, age, eye, device) %>% distinct(duration) %>% nrow()` VF datasets were collected from `r length(unique(dBdat$id))` participants aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`).
 
 # Results
+## Plots
+```{r individualplots, warning=FALSE}
+library(ggplot2)
+library(slickR)
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "hfa") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  hfa_individual_graphs
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "retinalogik") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  rt_individual_graphs
+
+# carousels
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+# carousels
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+hfa_plots %synch% rt_plots
+```
 
 # Discussion
