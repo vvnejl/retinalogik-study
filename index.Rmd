@@ -56,7 +56,7 @@ We compared 24-2 Full Threshold visual field (VF) test results between Retinalog
 
 Eligible participants were identified among patients of Dr. Brennan Eadie at the Eadie Eye Centre. If deemed eligible for the study, subjects were recruited consecutively.
 
-Each participant underwent 5 study visits, whereupon they performed a VF test on both eyes and on both devices, with the order of devices randomized during the baseline 1st study visit.
+Each participant underwent five study visits. At each visit, they performed a VF test on both eyes using two devices. The order of device tested was randomized at the first (baseline) study visit.
 
 The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
@@ -123,11 +123,10 @@ dBdat %>%
 hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
-# carousels
 rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
-hfa_plots %synch% rt_plots
+rt_plots %synch% hfa_plots 
 ```
 
 # Discussion
