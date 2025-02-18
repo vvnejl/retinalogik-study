@@ -22,6 +22,8 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 
 * 2025-Feb-06: Created git & RStudio project
 * 2025-Feb-11: Added individual plots
+* 2025-Feb-18: Added cleaned up data and placeholder for global sensitivity indices
+
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -147,10 +149,39 @@ rt_plots %synch% hfa_plots
 Instrument output mean deviation and pattern standard deviation measurements were strongly correlated between devices. The intraclass correlation co-efficient was similar to the Pearson r for mean deviation (0.87 vs. 0.86) but was lower than the Pearson r for pattern standard deviation (0.94 vs. 0.82).
 
 ```{r mdpsdplots, warning=FALSE}
-library(ICC)
+library(psych)
 
+hfa <- dBdat %>%
+  # filter(id == "RL01" ) %>%
+  filter(device=="hfa") %>%
+  distinct(id, visit, md)
 
+retinalogik <- dBdat %>%
+  filter(id != "RL04") %>%
+  filter(device=="retinalogik") %>%
+  distinct(id, visit, md)
+
+tmp <- dBdat %>%
+  # filter(id == "RL01" ) %>%
+  # filter(device=="hfa") %>%
+  distinct(id, visit, device, eye, md) %>%
+  arrange(id, visit, eye)
+
+md <- tibble(hfa=hfa$md, rl=retinalogik$md)
+
+ICC(md,missing=TRUE,alpha=.05,lmer=TRUE,check.keys=FALSE)
 
 ```
 
 # Discussion
+
+# Data
+For those interested in the cleaned up data.
+```{r data}
+
+dBdat %>% 
+  select(id, age, device, eye, x, y, dB) %>% 
+  datatable(options = list(
+  order = list(1, 'asc')
+))
+```
