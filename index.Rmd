@@ -62,10 +62,16 @@ Each participant underwent five study visits. At each visit, they performed a VF
 The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
 ## Analysis
-All OS data will be transposed to OD format before analyses. A total of `r dBdat %>% group_by(id, age, eye, device) %>% distinct(duration) %>% nrow()` VF datasets were collected from `r length(unique(dBdat$id))` participants aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`).
+```{r demographics, echo=FALSE}
+gender <- dBdat %>%
+  distinct(id, gender) %>%
+  count(gender)
+
+```
+All OS data will be transposed to OD format before analyses. Data from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
 
 # Results
-## Plots
+## Individual plots
 ```{r individualplots, warning=FALSE}
 library(ggplot2)
 library(slickR)
@@ -135,6 +141,16 @@ rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 
   settings(slidesToShow = 2, slidesToScroll = 2)
 
 rt_plots %synch% hfa_plots 
+```
+
+## Global sensitivity indices
+Instrument output mean deviation and pattern standard deviation measurements were strongly correlated between devices. The intraclass correlation co-efficient was similar to the Pearson r for mean deviation (0.87 vs. 0.86) but was lower than the Pearson r for pattern standard deviation (0.94 vs. 0.82).
+
+```{r mdpsdplots, warning=FALSE}
+library(ICC)
+
+
+
 ```
 
 # Discussion
