@@ -70,8 +70,12 @@ gender <- dBdat %>%
   distinct(id, gender) %>%
   count(gender)
 
+eyes <- dBdat %>%
+  distinct(id, visit, eye) %>%
+  count(eye)
+
 ```
-All OS data will be transposed to OD format before analyses. Data from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
+All OS data will be transposed to OD format before analyses. `r sum(eyes$n)` eyes from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
 
 # Results
 ## Individual plots
@@ -113,7 +117,7 @@ dBdat %>%
 
 dBdat %>%
   mutate(dB = as.numeric(dB)) %>%
-  filter(device == "retinalogik") %>%
+  filter(device == "retinalogik" & id != "RL04") %>%
   group_by(id, visit, eye) %>%
   arrange(id, visit, eye) %>%
   # Use the group_by %>% nest pattern to group data by id
@@ -147,7 +151,7 @@ rt_plots %synch% hfa_plots
 ```
 
 ## Global sensitivity indices
-Instrument output mean deviation and pattern standard deviation measurements were strongly correlated between devices. The intraclass correlation co-efficient was similar to the Pearson r for mean deviation (0.87 vs. 0.86) but was lower than the Pearson r for pattern standard deviation (0.94 vs. 0.82).
+Bland–Altman analysis for mean deviation (top) and pattern standard deviation (bottom) comparing HFA and Retinalogik. The red solid line indicates the mean bias, the black dashed lines indicate the 95% limits of agreement, the blue solid line indicates the regression line and the black solid line indicates y = 0. For both panels, a more positive value indicates that the HFA returned a higher result, while a negative value indicates that the Retinalogik returned a higher result.
 
 ```{r mdpsd, warning=FALSE}
 library(BlandAltmanLeh)
@@ -158,12 +162,24 @@ mdpsd <- dBdat %>%
               values_from = c(md, psd))
 
 p <- bland.altman.plot(mdpsd$md_hfa, mdpsd$md_retinalogik, graph.sys = "ggplot2")
+meanbias <- mean(mdpsd$md_hfa, na.rm=T) - mean(mdpsd$md_retinalogik)
 
-p1 <- print(p + geom_smooth(method = "lm", se = FALSE) + xlab("Mean deviation (MD)") + ylab("Difference in mean deviation (dB)") + ggtitle("Bland-Altman plots (HFA-Retinalogik)"))
+p1 <- print(p + geom_smooth(method = "lm", se = FALSE) +
+              geom_hline(yintercept = 0, color = "black") +
+              geom_hline(yintercept = meanbias, color = "red", linetype = "solid", size = 2) +
+              annotate("text", x = -17, y = -2, label=paste("Mean bias =", round(meanbias, 2), "dB")) +
+              xlab("Mean deviation (MD)") +
+              ylab("Difference in mean deviation (dB)") +
+              ggtitle("Bland-Altman plots (HFA-Retinalogik)"))
 
 p <- bland.altman.plot(mdpsd$psd_hfa, mdpsd$psd_retinalogik, graph.sys = "ggplot2")
+meanbias <- mean(mdpsd$psd_hfa, na.rm=T) - mean(mdpsd$psd_retinalogik)
 
-p2 <- print(p + geom_smooth(method = "lm", se = FALSE) + xlab("Pattern standard deviation (PSD)") + ylab("Difference in pattern standard deviation (dB)"))
+p2 <- print(p + geom_smooth(method = "lm", se = FALSE) +
+              geom_hline(yintercept = 0, color = "black") +
+              geom_hline(yintercept = meanbias, color = "red", linetype = "solid", size=2) +
+              annotate("text", x = 11, y = 1, label=paste("Mean bias =", round(meanbias, 2), "dB")) +
+              xlab("Pattern standard deviation (PSD)") + ylab("Difference in pattern standard deviation (dB)"))
 
 # grid.arrange(p1, p2, ncol=2, top = "Bland-Altman plots")
 
