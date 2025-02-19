@@ -23,7 +23,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Feb-06: Created git & RStudio project
 * 2025-Feb-11: Added individual plots
 * 2025-Feb-18: Added cleaned up data and placeholder for global sensitivity indices
-* 2025-Feb-19: Added Bland-Altman plots for MD & PSD. Also separated individual plots into tabs
+* 2025-Feb-19: Added Bland-Altman plots for MD & PSD and scatterplots for pointwise sensitivity data. Also separated individual plots into tabs.
 
 
 ### Acknowledgements
@@ -76,7 +76,7 @@ eyes <- dBdat %>%
   count(eye)
 
 ```
-All OS data will be transposed to OD format before analyses. `r sum(eyes$n)` eyes from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
+All OS data will be transposed to OD format before analyses. `r sum(eyes$n)` eyes from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)+1` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
 
 # Results
 ## Individual plots {.tabset}
@@ -146,10 +146,10 @@ dBdat %>%
   rt_individual_graphs
 
 # carousels
-hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0, slideId = "slick1") +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
-rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0, slideId = "slick2") +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
 rt_plots %synch% hfa_plots 
@@ -209,10 +209,10 @@ dBdat %>%
   rt_individual_graphs
 
 # carousels
-hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0, slideId = "slick3") +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
-rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0, slideId = "slick4") +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
 rt_plots %synch% hfa_plots 
@@ -728,78 +728,6 @@ rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 
 rt_plots %synch% hfa_plots 
 ```
 
-## {-}
-```{r individualplots, warning=FALSE}
-# library(ggplot2)
-# library(slickR)
-
-# make sure coordinates are numeric, then flip OS to OD for plotting purposes
-# dBdat %<>%
-#   mutate(x = as.numeric(x), y = as.numeric(y)) %>%
-#   mutate(x = case_when(
-#     eye == "L" & device == "hfa" ~ x*-1,
-#     TRUE ~ as.numeric(x)))
-# 
-# dBdat %>%
-#   mutate(dB = as.numeric(dB)) %>%
-#   filter(device == "hfa") %>%
-#   group_by(id, visit, eye) %>%
-#   arrange(id, visit, eye) %>%
-#   # Use the group_by %>% nest pattern to group data by id
-#   nest() %>% 
-#   # Use map2 so the id can be used as the title
-#   mutate(graphs = map2(data, id,
-#                        ~ggplot(data = .x, aes(x, y, dB)) +
-#                          geom_raster(aes(x = x, y = y, fill = dB)) +
-#                          geom_text(aes(label = dB, x = x, y = y), size = 8) +
-#                          coord_fixed(ratio = 1) +
-#                          scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
-#                                               na.value="darkred") +
-#                          theme_bw() +
-#                          ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
-#                        )
-#          ) %>% 
-#   # pull is the pipe-able equivalent of .[['graphs']]
-#   pull(graphs) %>% 
-#   # Return the svg of graphs
-#   map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
-#   hfa_individual_graphs
-# 
-# dBdat %>%
-#   mutate(dB = as.numeric(dB)) %>%
-#   filter(device == "retinalogik" & id != "RL04") %>%
-#   group_by(id, visit, eye) %>%
-#   arrange(id, visit, eye) %>%
-#   # Use the group_by %>% nest pattern to group data by id
-#   nest() %>% 
-#   # Use map2 so the id can be used as the title
-#   mutate(graphs = map2(data, id,
-#                        ~ggplot(data = .x, aes(x, y, dB)) +
-#                          geom_raster(aes(x = x, y = y, fill = dB)) +
-#                          geom_text(aes(label = dB, x = x, y = y), size = 8) +
-#                          coord_fixed(ratio = 1) +
-#                          scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
-#                                               na.value="darkred") +
-#                          theme_bw() +
-#                          ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
-#                        )
-#          ) %>% 
-#   # pull is the pipe-able equivalent of .[['graphs']]
-#   pull(graphs) %>% 
-#   # Return the svg of graphs
-#   map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
-#   rt_individual_graphs
-# 
-# # carousels
-# hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
-#   settings(slidesToShow = 2, slidesToScroll = 2)
-# 
-# rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
-#   settings(slidesToShow = 2, slidesToScroll = 2)
-# 
-# rt_plots %synch% hfa_plots 
-```
-
 ## Global sensitivity indices
 Bland–Altman analysis for mean deviation (top) and pattern standard deviation (bottom) comparing HFA and Retinalogik. The red solid line indicates the mean bias, the black dashed lines indicate the 95% limits of agreement, the blue solid line indicates the regression line and the black solid line indicates y = 0. For both panels, a more positive value indicates that the HFA returned a higher result, while a negative value indicates that the Retinalogik returned a higher result.
 
@@ -846,33 +774,31 @@ dBdat %>%
 ))
 ```
 
-```{r mdpsdplots, warning=FALSE}
-# library(psych)
-# 
-# hfa <- dBdat %>%
-#   # filter(id == "RL01" ) %>%
-#   filter(device=="hfa") %>%
-#   distinct(id, visit, md)
-# 
-# retinalogik <- dBdat %>%
-#   filter(id != "RL04") %>%
-#   filter(device=="retinalogik") %>%
-#   distinct(id, visit, md)
-# 
-# tmp <- dBdat %>%
-#   # filter(id == "RL01" ) %>%
-#   # filter(device=="hfa") %>%
-#   distinct(id, visit, device, eye, md) %>%
-#   arrange(id, visit, eye)
-# 
-# md <- tibble(hfa=hfa$md, rl=retinalogik$md)
-# 
-# ICC(md,missing=TRUE,alpha=.05,lmer=TRUE,check.keys=FALSE)
-
-```
-
 ## Scatterplots
 
+```{r scatterplots, warning=FALSE}
+widedat <- dBdat %>%
+  select(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(., names_from = device, values_from = dB) %>%
+  mutate(retinalogik = ifelse(retinalogik == "<0", "-1", retinalogik)) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
+  na.omit()
+
+scatterplot <- widedat %>%
+  ggplot(., aes(x=hfa, y=retinalogik)) + 
+  geom_point(aes(color=id), position = "jitter") +
+  geom_smooth(method = "loess") +
+  scale_x_continuous(breaks = seq(0, 44, by=2), limits=c(-1,40)) +
+  scale_y_continuous(breaks = seq(0, 44, by=2), limits=c(-1,40)) +
+  geom_abline(intercept = 0, slope = 1, color = "gray50") +
+  labs(title="Pointwise sensitivity for all visits and both eyes if available") +
+  xlab("HFA (dB)") +
+  ylab("Retinalogik (dB)") +
+  theme_bw()
+
+ggplotly(scatterplot)
+
+```
 
 # Discussion
 
