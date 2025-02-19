@@ -38,6 +38,7 @@ library(plotly)
 library(viridis)
 library(svglite)
 library(htmltools)
+library(gridExtra)
 
 sessionInfo()
 
@@ -148,35 +149,66 @@ rt_plots %synch% hfa_plots
 ## Global sensitivity indices
 Instrument output mean deviation and pattern standard deviation measurements were strongly correlated between devices. The intraclass correlation co-efficient was similar to the Pearson r for mean deviation (0.87 vs. 0.86) but was lower than the Pearson r for pattern standard deviation (0.94 vs. 0.82).
 
+```{r mdpsd, warning=FALSE}
+library(BlandAltmanLeh)
+
+mdpsd <- dBdat %>% 
+  distinct(id, age, visit, device, eye, md, psd) %>%
+  pivot_wider(names_from = device,
+              values_from = c(md, psd))
+
+p <- bland.altman.plot(mdpsd$md_hfa, mdpsd$md_retinalogik, graph.sys = "ggplot2")
+
+p1 <- print(p + geom_smooth(method = "lm", se = FALSE) + xlab("Mean deviation (MD)") + ylab("Difference in mean deviation (dB)") + ggtitle("Bland-Altman plots (HFA-Retinalogik)"))
+
+p <- bland.altman.plot(mdpsd$psd_hfa, mdpsd$psd_retinalogik, graph.sys = "ggplot2")
+
+p2 <- print(p + geom_smooth(method = "lm", se = FALSE) + xlab("Pattern standard deviation (PSD)") + ylab("Difference in pattern standard deviation (dB)"))
+
+# grid.arrange(p1, p2, ncol=2, top = "Bland-Altman plots")
+
+dBdat %>% 
+  distinct(id, age, visit, device, eye, md, psd) %>% 
+  datatable(extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = 
+      list('copy', 'print', list(
+        extend = 'collection',
+        buttons = c('csv', 'excel', 'pdf'),
+        text = 'Download'
+      ))
+))
+```
+
 ```{r mdpsdplots, warning=FALSE}
-library(psych)
-
-hfa <- dBdat %>%
-  # filter(id == "RL01" ) %>%
-  filter(device=="hfa") %>%
-  distinct(id, visit, md)
-
-retinalogik <- dBdat %>%
-  filter(id != "RL04") %>%
-  filter(device=="retinalogik") %>%
-  distinct(id, visit, md)
-
-tmp <- dBdat %>%
-  # filter(id == "RL01" ) %>%
-  # filter(device=="hfa") %>%
-  distinct(id, visit, device, eye, md) %>%
-  arrange(id, visit, eye)
-
-md <- tibble(hfa=hfa$md, rl=retinalogik$md)
-
-ICC(md,missing=TRUE,alpha=.05,lmer=TRUE,check.keys=FALSE)
+# library(psych)
+# 
+# hfa <- dBdat %>%
+#   # filter(id == "RL01" ) %>%
+#   filter(device=="hfa") %>%
+#   distinct(id, visit, md)
+# 
+# retinalogik <- dBdat %>%
+#   filter(id != "RL04") %>%
+#   filter(device=="retinalogik") %>%
+#   distinct(id, visit, md)
+# 
+# tmp <- dBdat %>%
+#   # filter(id == "RL01" ) %>%
+#   # filter(device=="hfa") %>%
+#   distinct(id, visit, device, eye, md) %>%
+#   arrange(id, visit, eye)
+# 
+# md <- tibble(hfa=hfa$md, rl=retinalogik$md)
+# 
+# ICC(md,missing=TRUE,alpha=.05,lmer=TRUE,check.keys=FALSE)
 
 ```
 
 # Discussion
 
 # Data
-For those interested in the cleaned up data.
+For those interested in the cleaned up pointwise data.
 ```{r data}
 
 dBdat %>% 
