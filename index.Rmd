@@ -7,7 +7,7 @@ output:
     theme: yeti
     code_folding: hide
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     toc_float: 
       collapsed: true
     includes:
@@ -24,7 +24,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Feb-11: Added individual plots
 * 2025-Feb-18: Added cleaned up data and placeholder for global sensitivity indices
 * 2025-Feb-19: Added Bland-Altman plots for MD & PSD and scatterplots for pointwise sensitivity data. Also separated individual plots into tabs.
-
+* 2025-Feb-20: Tabs were messing up slickR javascript. Removed for now.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -76,11 +76,12 @@ eyes <- dBdat %>%
   count(eye)
 
 ```
+
 All OS data will be transposed to OD format before analyses. `r sum(eyes$n)` eyes from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)+1` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
 
 # Results
-## Individual plots {.tabset}
-Click on each tab to view each patient's data. Swipe/scroll from right to left for subsequent visits. Currently not plotting RL05 data where patient withdrew from the study. Also not plotting where only HFA/Retinalogik data is available (e.g. RL04). 
+## Individual plots
+Swipe/scroll from right to left or click on the arrows for subsequent visits. Currently not plotting RL05 data where patient withdrew from the study. Also not plotting where only HFA/Retinalogik data is available (e.g. RL04). 
 
 ### RL01
 
@@ -153,6 +154,7 @@ rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 
   settings(slidesToShow = 2, slidesToScroll = 2)
 
 rt_plots %synch% hfa_plots 
+
 ```
 
 ### RL02
@@ -215,7 +217,7 @@ hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding 
 rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0, slideId = "slick4") +
   settings(slidesToShow = 2, slidesToScroll = 2)
 
-rt_plots %synch% hfa_plots 
+rt_plots %synch% hfa_plots
 ```
 
 ### RL03
@@ -279,6 +281,7 @@ rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 
   settings(slidesToShow = 2, slidesToScroll = 2)
 
 rt_plots %synch% hfa_plots 
+
 ```
 
 ### RL06
@@ -774,13 +777,13 @@ dBdat %>%
 ))
 ```
 
-## Scatterplots
+## Scatterplots {-}
 
 ```{r scatterplots, warning=FALSE}
 widedat <- dBdat %>%
   select(id, device, visit, eye, x, y, dB) %>%
   pivot_wider(., names_from = device, values_from = dB) %>%
-  mutate(retinalogik = ifelse(retinalogik == "<0", "-1", retinalogik)) %>%
+  # mutate(retinalogik = ifelse(retinalogik == "<0", "-1", retinalogik)) %>%
   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
   na.omit()
 
