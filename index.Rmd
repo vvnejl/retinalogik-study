@@ -25,6 +25,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Feb-18: Added cleaned up data and placeholder for global sensitivity indices
 * 2025-Feb-19: Added Bland-Altman plots for MD & PSD and scatterplots for pointwise sensitivity data. Also separated individual plots into tabs.
 * 2025-Feb-20: Tabs were messing up slickR javascript. Removed for now.
+* 2025-Feb-24: Added section for test duration.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -62,6 +63,21 @@ We compared 24-2 Full Threshold visual field (VF) test results between Retinalog
 Eligible participants were identified among patients of Dr. Brennan Eadie at the Eadie Eye Centre. If deemed eligible for the study, subjects were recruited consecutively.
 
 Each participant underwent five study visits. At each visit, they performed a VF test on both eyes using two devices. The order of device tested was randomized at the first (baseline) study visit.
+
+Exclusion criteria were:
+
+* age <18years
+* diagnosis of secondary glaucoma
+* diagnosis of non-glaucomatous optic neuropathy
+* significant media opacity
+* previous intraocular surgery
+* pregnancy
+* seizure disorder
+* cardiac pacemaker or other implantable device
+* severe vertigo or balance disturbance
+* inability to demonstrate competence to make an informed decision regarding study participation
+
+As a product of recruiting largely from the clinical service, nearly all patients had previously performed standard au- tomated perimetry.
 
 The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
@@ -777,7 +793,37 @@ dBdat %>%
 ))
 ```
 
-## Scatterplots {-}
+## Reliability indices
+Reliability indices such as fixation losses (FL), false-positives (FP), and false-negatives (FN) were  extracted for analysis.
+
+```{r reliability, warning=FALSE}
+
+```
+
+## Test duration comparison
+
+```{r duration, warning=FALSE}
+duration <- dBdat %>%
+  # distinct(id, visit, device, eye, duration) %>%
+  group_by(device) %>%
+  mutate(mean = mean(as.duration(duration)), sd = sd(as.duration(duration))) %>%
+  distinct(device, mean, sd)
+
+rtduration <- dBdat %>%
+  filter(device=="retinalogik") %>%
+  distinct(id, visit, eye, duration)
+
+hfaduration <- dBdat %>%
+  filter(device=="hfa") %>%
+  distinct(id, visit, eye, duration)
+
+# t.test(as.numeric(rtduration$duration), as.numeric(hfaduration$duration), paired=T)
+
+```
+
+Test duration were extracted for analysis. The mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (`r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (`r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (insert p-value from paired t-test when all arguments have same length).
+
+## Scatterplots
 
 ```{r scatterplots, warning=FALSE}
 widedat <- dBdat %>%
