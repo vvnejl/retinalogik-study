@@ -20,12 +20,13 @@ output:
 
 Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
 
-* 2025-Feb-06: Created git & RStudio project
-* 2025-Feb-11: Added individual plots
-* 2025-Feb-18: Added cleaned up data and placeholder for global sensitivity indices
+* 2025-Feb-06: Created git & RStudio project.
+* 2025-Feb-11: Added individual plots.
+* 2025-Feb-18: Added cleaned up data and placeholder for global sensitivity indices.
 * 2025-Feb-19: Added Bland-Altman plots for MD & PSD and scatterplots for pointwise sensitivity data. Also separated individual plots into tabs.
 * 2025-Feb-20: Tabs were messing up slickR javascript. Removed for now.
 * 2025-Feb-24: Added section for test duration.
+* 2025-Feb-27: Added section for reliability indices.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -55,7 +56,7 @@ load(here("dBdat.Rda"))
 ```
 
 # Study summary
-We compared 24-2 Full Threshold visual field (VF) test results between Retinalogik and Humphrey Field Analyzer (HFA) in patients with early glaucoma and moderate to advanced glaucoma.
+We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma.
 
 # Methods (briefly)
 ## Subjects
@@ -794,17 +795,47 @@ dBdat %>%
 ```
 
 ## Reliability indices
-Reliability indices such as fixation losses (FL), false-positives (FP), and false-negatives (FN) were  extracted for analysis.
+Reliability indices such as fixation losses (FL), false-positives (FP), and false-negatives (FN) were extracted for analysis.
 
 ```{r reliability, warning=FALSE}
+library(rempsyc)
+library(report)
 
+reliabilityDat <- dBdat %>%
+  group_by(device) %>%
+  distinct(id, visit, eye, fpPerc, fnPerc, flPerc)
+
+# descriptive stats
+descriptive.data <- reliabilityDat %>%
+  group_by(device) %>%
+  summarize(across(fpPerc:flPerc,
+    list(m = mean, sd = sd),
+    .names = "{.col}.{.fn}"
+  ))
+
+reliabilityDat %>%
+   group_by(device) %>% 
+   summarize(across(fpPerc:flPerc,
+                    list(~ str_c(round(mean(.), 2), " (", round(sd(.), 2), ")")))) %>%
+  rename("Device" = device, "FP (SD)" = fpPerc_1, "FN (SD)" = fnPerc_1, "FL (SD)" = flPerc_1) %>%
+  nice_table(note = c("Shown are the mean percentages and standard deviation (SD) for each device."))
+
+# fpTest <- wilcox.test(fpPerc ~ device, data = reliabilityDat)
+# fpTest <- t.test(fpPerc ~ device, data = reliabilityDat)
+# 
+# fnTest <- wilcox.test(fnPerc ~ device, data = reliabilityDat)
+# flTest <- wilcox.test(flPerc ~ device, data = reliabilityDat) 
+# 
+# stats.table <- report(fpTest)
+# nice_table(fpTest, report = "t.test")
+# t.test(flPerc ~ device, data = reliabilityDat, na.action = na.omit) 
+  
 ```
 
 ## Test duration comparison
 
 ```{r duration, warning=FALSE}
 duration <- dBdat %>%
-  # distinct(id, visit, device, eye, duration) %>%
   group_by(device) %>%
   mutate(mean = mean(as.duration(duration)), sd = sd(as.duration(duration))) %>%
   distinct(device, mean, sd)
