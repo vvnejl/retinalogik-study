@@ -27,6 +27,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Feb-20: Tabs were messing up slickR javascript. Removed for now.
 * 2025-Feb-24: Added section for test duration.
 * 2025-Feb-27: Added section for reliability indices.
+* 2025-Mar-01: Added boxplots for FP, FN, and FL.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -97,6 +98,93 @@ eyes <- dBdat %>%
 All OS data will be transposed to OD format before analyses. `r sum(eyes$n)` eyes from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)+1` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
 
 # Results
+
+## Reliability indices {.tabset}
+Reliability indices such as fixation losses (FL), false-positives (FP), and false-negatives (FN) were extracted for analysis.
+
+```{r reliability, warning=FALSE}
+library(rempsyc)
+library(report)
+
+reliabilityDat <- dBdat %>%
+  group_by(device) %>%
+  distinct(id, visit, eye, fpPerc, fnPerc, flPerc)
+
+# descriptive stats
+descriptive.data <- reliabilityDat %>%
+  group_by(device) %>%
+  summarize(across(fpPerc:flPerc,
+    list(m = mean, sd = sd),
+    .names = "{.col}.{.fn}"
+  ))
+
+reliabilityDat %>%
+   group_by(device) %>% 
+   summarize(across(fpPerc:flPerc,
+                    list(~ str_c(round(mean(.), 2), " (", round(sd(.), 2), ")")))) %>%
+  rename("Device" = device, "FP (SD)" = fpPerc_1, "FN (SD)" = fnPerc_1, "FL (SD)" = flPerc_1) %>%
+  nice_table(note = c("Shown are the mean percentages and standard deviation (SD) for each device."))
+
+# fpTest <- wilcox.test(fpPerc ~ device, data = reliabilityDat)
+# fpTest <- t.test(fpPerc ~ device, data = reliabilityDat)
+# 
+# fnTest <- wilcox.test(fnPerc ~ device, data = reliabilityDat)
+# flTest <- wilcox.test(flPerc ~ device, data = reliabilityDat) 
+# 
+# stats.table <- report(fpTest)
+# nice_table(fpTest, report = "t.test")
+# t.test(flPerc ~ device, data = reliabilityDat, na.action = na.omit) 
+  
+```
+
+### False Positives
+```{r fp, warning=FALSE}
+library(hrbrthemes)
+library(viridis)
+
+fpPlot <- reliabilityDat %>%
+  ggplot( aes(x=device, y=fpPerc, fill=device, label=paste(id, visit, eye))) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  xlab("Device") +
+  ylab("False Positives (%)") +
+  theme_bw() +
+  theme(legend.position="none")
+
+ggplotly(fpPlot)
+```
+
+### False Negatives
+```{r fn, warning=FALSE}
+fnPlot <- reliabilityDat %>%
+  ggplot( aes(x=device, y=fnPerc, fill=device, label=paste(id, visit, eye))) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  xlab("Device") +
+  ylab("False Negatives (%)") +
+  theme_bw() +
+  theme(legend.position="none")
+
+ggplotly(fnPlot)
+```
+
+### Fixation Losses
+```{r fl, warning=FALSE}
+flPlot <- reliabilityDat %>%
+  ggplot( aes(x=device, y=flPerc, fill=device, label=paste(id, visit, eye))) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  xlab("Device") +
+  ylab("Fixation Losses (%)") +
+  theme_bw() +
+  theme(legend.position="none")
+
+ggplotly(flPlot)
+```
+
 ## Individual plots
 Swipe/scroll from right to left or click on the arrows for subsequent visits. Currently not plotting RL05 data where patient withdrew from the study. Also not plotting where only HFA/Retinalogik data is available (e.g. RL04). 
 
@@ -759,6 +847,28 @@ mdpsd <- dBdat %>%
   pivot_wider(names_from = device,
               values_from = c(md, psd))
 
+#####
+# FOR SCREENING USE
+# Average MDs
+#####
+# tmp <- dBdat %>%
+#   group_by(id) %>%
+#   filter(visit >= 3) %>%  # Keep only ids with more than 3 visits
+#   ungroup()
+# 
+# dBdat %>%
+#   filter(id == "RL07" & device == "hfa") %>%  # Keep only ids with more than 3 visits
+#   distinct(id, visit, eye, md)
+
+# dBdat %>%
+#   filter(device == "hfa") %>%
+#   group_by(id, eye) %>%
+#   summarise(mean_md = round(mean(md, na.rm = TRUE), 2), visits = max(visit)) %>%
+#   pivot_wider(names_from = eye, values_from = mean_md) %>%
+#   clipr::write_clip()
+
+#####
+
 p <- bland.altman.plot(mdpsd$md_hfa, mdpsd$md_retinalogik, graph.sys = "ggplot2")
 meanbias <- mean(mdpsd$md_hfa, na.rm=T) - mean(mdpsd$md_retinalogik)
 
@@ -792,44 +902,6 @@ dBdat %>%
         text = 'Download'
       ))
 ))
-```
-
-## Reliability indices
-Reliability indices such as fixation losses (FL), false-positives (FP), and false-negatives (FN) were extracted for analysis.
-
-```{r reliability, warning=FALSE}
-library(rempsyc)
-library(report)
-
-reliabilityDat <- dBdat %>%
-  group_by(device) %>%
-  distinct(id, visit, eye, fpPerc, fnPerc, flPerc)
-
-# descriptive stats
-descriptive.data <- reliabilityDat %>%
-  group_by(device) %>%
-  summarize(across(fpPerc:flPerc,
-    list(m = mean, sd = sd),
-    .names = "{.col}.{.fn}"
-  ))
-
-reliabilityDat %>%
-   group_by(device) %>% 
-   summarize(across(fpPerc:flPerc,
-                    list(~ str_c(round(mean(.), 2), " (", round(sd(.), 2), ")")))) %>%
-  rename("Device" = device, "FP (SD)" = fpPerc_1, "FN (SD)" = fnPerc_1, "FL (SD)" = flPerc_1) %>%
-  nice_table(note = c("Shown are the mean percentages and standard deviation (SD) for each device."))
-
-# fpTest <- wilcox.test(fpPerc ~ device, data = reliabilityDat)
-# fpTest <- t.test(fpPerc ~ device, data = reliabilityDat)
-# 
-# fnTest <- wilcox.test(fnPerc ~ device, data = reliabilityDat)
-# flTest <- wilcox.test(flPerc ~ device, data = reliabilityDat) 
-# 
-# stats.table <- report(fpTest)
-# nice_table(fpTest, report = "t.test")
-# t.test(flPerc ~ device, data = reliabilityDat, na.action = na.omit) 
-  
 ```
 
 ## Test duration comparison
