@@ -1305,6 +1305,78 @@ p2 <- print(p + geom_smooth(method = "lm", se = FALSE) +
 # ))
 ```
 
+```{r onlyreliable, message = FALSE, warning=FALSE, results='asis'}
+cat('## Bland-Altman Plots {.tabset}\n\n')
+
+dBdat_split <- dBdat %>%
+  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+  mutate(x = case_when(
+    device == "retinalogik" & eye == "L" ~ x * -1,
+    TRUE ~ as.numeric(x)
+  )) %>%
+  group_split(id)
+
+# Process each data frame and generate Bland-Altman plots
+for (i in seq_along(dBdat_split)) {
+  current_id <- unique(dBdat_split[[i]]$id)
+
+  # Function to check a specific visit
+  check_visit <- function(df, visit_number) {
+    df %>%
+      filter(visit == visit_number) %>%
+      group_by(eye) %>%
+      mutate(all_below_30 = all(flPerc < 30 & fpPerc < 30 & fnPerc < 30)) %>%
+      filter(all_below_30) %>%
+      ungroup()
+  }
+
+  # Get all unique visit numbers in descending order
+  unique_visits <- dBdat_split[[i]] %>%
+    pull(visit) %>%
+    unique() %>%
+    sort(decreasing = TRUE)
+
+  processed_data_single_id <- tibble::tibble() # Initialize as empty
+  qualifying_visit <- NA
+
+  # Iterate through visits from latest to earliest
+  for (visit_number in unique_visits) {
+    temp_processed_data <- dBdat_split[[i]] %>%
+      check_visit(visit_number)
+    if (nrow(temp_processed_data) > 0) {
+      processed_data_single_id <- temp_processed_data
+      qualifying_visit <- visit_number
+      break # Stop checking once a qualifying visit is found
+    }
+  }
+
+  cat(paste0('\n\n### ', current_id, '\n\n')) # Tab title with more newlines
+
+  if ("hfa" %in% unique(dBdat$device) && "retinalogik" %in% unique(dBdat$device)) {
+    df_wide <- processed_data_single_id %>%
+      distinct(id, visit, device, eye, x, y, dB) %>%
+      pivot_wider(names_from = device, values_from = dB)
+
+    if (nrow(df_wide) > 0 && all(c("hfa", "retinalogik") %in% names(df_wide))) {
+      p <- bland.altman.plot(df_wide$hfa, df_wide$retinalogik,
+                             graph.sys = "ggplot2")
+      
+      print(p + geom_smooth(method = "lm", se = FALSE) +
+              geom_hline(yintercept = 0, color = "black") +
+              xlab("dB") +
+              ylab("Difference in dB (HFA-Retinalogik)") +
+              ggtitle(paste("ID:", current_id, "- Visit:", qualifying_visit)))
+      
+    } else {
+      cat("Note: Could not create Bland-Altman plot. Ensure both 'hfa' and 'retinalogik' data are available for a qualifying visit.\n\n")
+    }
+  } else {
+    cat("Note: Either 'hfa' or 'retinalogik' is missing in the dataset, cannot create Bland-Altman plot.\n\n")
+  }
+  cat('\n')
+}
+```
+
 ## Test duration comparison
 
 ```{r duration, warning=FALSE}
