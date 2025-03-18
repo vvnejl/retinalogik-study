@@ -29,6 +29,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Feb-27: Added section for reliability indices.
 * 2025-Mar-01: Added boxplots for FP, FN, and FL.
 * 2025-Mar-14: Added newly collected data.
+* 2025-Mar-18: Added Bland-Altman plots for the most recent data sets where reliability indices <30% and test-retest variability
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -1377,6 +1378,42 @@ for (i in seq_along(dBdat_split)) {
 }
 ```
 
+## Test-retest variability {.tabset}
+Calculate the SD across all MDs, and divide that by the absolute MD:
+
+### Early
+```{r testretest_early, warning=FALSE}
+dBdat %>%
+  filter(md < 0 & md > -6) %>%
+  distinct(id, device, visit, eye, md) %>%
+  group_by(device) %>%
+  summarize(mean = mean(md), sd = sd(md)) %>%
+  mutate(variability = sd/mean) %>%
+  nice_table()
+```
+
+### Moderate
+```{r testretest_moderate, warning=FALSE}
+dBdat %>%
+  filter(md < -6 & md > -12) %>%
+  distinct(id, device, visit, eye, md) %>%
+  group_by(device) %>%
+  summarize(mean = mean(md), sd = sd(md)) %>%
+  mutate(variability = sd/mean) %>%
+  nice_table()
+```
+
+### Advanced
+```{r testretest_advanced, warning=FALSE}
+dBdat %>%
+  filter(md < -12) %>%
+  distinct(id, device, visit, eye, md) %>%
+  group_by(device) %>%
+  summarize(mean = mean(md), sd = sd(md)) %>%
+  mutate(variability = sd/mean) %>%
+  nice_table()
+```
+
 ## Test duration comparison
 
 ```{r duration, warning=FALSE}
@@ -1397,7 +1434,7 @@ hfaduration <- dBdat %>%
 
 ```
 
-Test duration were extracted for analysis. The mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (`r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (`r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (insert p-value from paired t-test when all arguments have same length).
+Test duration were extracted for analysis. The mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (`r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (`r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (insert p-value from paired t-test when all arguments have same length)
 
 ## Scatterplots
 
