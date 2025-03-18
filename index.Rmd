@@ -55,6 +55,8 @@ knitr::opts_chunk$set(
 # load processed data
 load(here("dBdat.Rda"))
 
+dBdat <- dBdat %>% filter(id != "RL18")
+
 ```
 
 # Study summary
@@ -137,7 +139,7 @@ flTest <- wilcox.test(flPerc ~ device, data = reliabilityDat)
 ```
 
 ### False Positives
-Mann–Whitney U test showed no difference in false positives between both devices (p = `r round(fpTest$p.value, 2)`)
+Mann–Whitney U test showed that false positives were significantly lower for Retinalogik compared to HFA (p = `r if (fpTest$p.value < 0.01) ".01" else round(fpTest$p.value, 2)`)
 
 ```{r fp, warning=FALSE}
 library(hrbrthemes)
@@ -1226,80 +1228,25 @@ rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 
 rt_plots %synch% hfa_plots 
 ```
 
-### RL18
-
-```{r rl18, warning=FALSE}
-# make sure coordinates are numeric, then flip OS to OD for plotting purposes
-dBdat %>%
-  mutate(dB = as.numeric(dB)) %>%
-  filter(device == "hfa" & id == "RL18") %>%
-  group_by(id, visit, eye) %>%
-  arrange(id, visit, eye) %>%
-  # Use the group_by %>% nest pattern to group data by id
-  nest() %>% 
-  # Use map2 so the id can be used as the title
-  mutate(graphs = map2(data, id,
-                       ~ggplot(data = .x, aes(x, y, dB)) +
-                         geom_raster(aes(x = x, y = y, fill = dB)) +
-                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
-                         coord_fixed(ratio = 1) +
-                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
-                                              na.value="darkred") +
-                         theme_bw() +
-                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
-                       )
-         ) %>% 
-  # pull is the pipe-able equivalent of .[['graphs']]
-  pull(graphs) %>% 
-  # Return the svg of graphs
-  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
-  hfa_individual_graphs
-
-dBdat %>%
-  mutate(dB = as.numeric(dB)) %>%
-  filter(device == "retinalogik" & id == "RL18") %>%
-  group_by(id, visit, eye) %>%
-  arrange(id, visit, eye) %>%
-  # Use the group_by %>% nest pattern to group data by id
-  nest() %>% 
-  # Use map2 so the id can be used as the title
-  mutate(graphs = map2(data, id,
-                       ~ggplot(data = .x, aes(x, y, dB)) +
-                         geom_raster(aes(x = x, y = y, fill = dB)) +
-                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
-                         coord_fixed(ratio = 1) +
-                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
-                                              na.value="darkred") +
-                         theme_bw() +
-                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
-                       )
-         ) %>% 
-  # pull is the pipe-able equivalent of .[['graphs']]
-  pull(graphs) %>% 
-  # Return the svg of graphs
-  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
-  rt_individual_graphs
-
-# carousels
-hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
-  settings(slidesToShow = 2, slidesToScroll = 2)
-
-rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
-  settings(slidesToShow = 2, slidesToScroll = 2)
-
-rt_plots %synch% hfa_plots 
-```
-
 ## Global sensitivity indices
 Bland–Altman analysis for mean deviation (top) and pattern standard deviation (bottom) comparing HFA and Retinalogik. The red solid line indicates the mean bias, the black dashed lines indicate the 95% limits of agreement, the blue solid line indicates the regression line and the black solid line indicates y = 0. For both panels, a more positive value indicates that the HFA returned a higher result, while a negative value indicates that the Retinalogik returned a higher result.
 
 ```{r mdpsd, warning=FALSE}
 library(BlandAltmanLeh)
 
-mdpsd <- dBdat %>% 
-  distinct(id, age, visit, device, eye, md, psd) %>%
+mdpsd <- dBdat %>%
+  distinct(id, visit, device, eye, md, psd) %>%
   pivot_wider(names_from = device,
               values_from = c(md, psd))
+
+# mdpsd <- dBdat %>%
+#   filter(id=="RL12") %>%
+#   select(id, visit, device, eye, md, psd) %>%
+#   distinct() %>%
+#   pivot_wider(id_cols = c(id, visit, eye), # optional vector of columns you do not want affected
+#   names_from = device,
+#   values_from = c(md, psd) 
+# )
 
 #####
 # FOR SCREENING USE
@@ -1345,17 +1292,17 @@ p2 <- print(p + geom_smooth(method = "lm", se = FALSE) +
 
 # grid.arrange(p1, p2, ncol=2, top = "Bland-Altman plots")
 
-dBdat %>% 
-  distinct(id, age, visit, device, eye, md, psd) %>% 
-  datatable(extensions = 'Buttons', options = list(
-    dom = 'Bfrtip',
-    buttons = 
-      list('copy', 'print', list(
-        extend = 'collection',
-        buttons = c('csv', 'excel', 'pdf'),
-        text = 'Download'
-      ))
-))
+# dBdat %>% 
+#   distinct(id, age, visit, device, eye, md, psd) %>% 
+#   datatable(extensions = 'Buttons', options = list(
+#     dom = 'Bfrtip',
+#     buttons = 
+#       list('copy', 'print', list(
+#         extend = 'collection',
+#         buttons = c('csv', 'excel', 'pdf'),
+#         text = 'Download'
+#       ))
+# ))
 ```
 
 ## Test duration comparison
