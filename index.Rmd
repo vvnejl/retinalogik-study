@@ -72,7 +72,7 @@ Each participant underwent five study visits. At each visit, they performed a VF
 
 Exclusion criteria were:
 
-* age <18years
+* age <18 years
 * diagnosis of secondary glaucoma
 * diagnosis of non-glaucomatous optic neuropathy
 * significant media opacity
@@ -91,13 +91,37 @@ gender <- dBdat %>%
   distinct(id, gender) %>%
   count(gender)
 
-eyes <- dBdat %>%
+vft <- dBdat %>%
   distinct(id, visit, eye) %>%
   count(eye)
 
+# eyes <- dBdat %>%
+#   distinct(id, eye) %>%
+#   count(eye)
+# 
+# healthy <- dBdat %>%
+#   subset(md >0) %>%
+#   distinct(id, eye) %>%
+#   count(eye)
+# 
+# early <- dBdat %>%
+#   subset(md <0 & md > -6) %>%
+#   distinct(id, eye) %>%
+#   count(eye)
+# 
+# moderate <- dBdat %>%
+#   subset(md < -6 & md > -12) %>%
+#   distinct(id, eye) %>%
+#   count(eye)
+# 
+# advanced <- dBdat %>%
+#   subset(md < -12) %>%
+#   distinct(id, eye) %>%
+#   count(eye)
+
 ```
 
-All OS data will be transposed to OD format before analyses. `r sum(eyes$n)` eyes from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
+All OS data will be transposed to OD format before analyses. `r sum(vft$n)` VF tests from `r length(unique(dBdat$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat$age)` to `r max(dBdat$age)` (*M* = `r round(mean(dBdat$age), 2)`, *SD* = `r round(sd(dBdat$age), 2)`) were included in the analysis.
 
 # Results
 
@@ -1306,9 +1330,10 @@ p2 <- print(p + geom_smooth(method = "lm", se = FALSE) +
 # ))
 ```
 
-```{r onlyreliable, message = FALSE, warning=FALSE, results='asis'}
-cat('## Bland-Altman Plots {.tabset}\n\n')
+## Individual Bland-Altman plots {.tabset}
+Shown in each tab below are the Bland-Altman plots for each patient's latest reliable VF where FL, FP, and FN were <30%. The worse eye according to their MD is plotted.
 
+```{r onlyreliable, message = FALSE, warning=FALSE, results='asis'}
 dBdat_split <- dBdat %>%
   mutate(x = as.numeric(x), y = as.numeric(y)) %>%
   mutate(x = case_when(
@@ -1354,9 +1379,25 @@ for (i in seq_along(dBdat_split)) {
   cat(paste0('\n\n### ', current_id, '\n\n')) # Tab title with more newlines
 
   if ("hfa" %in% unique(dBdat$device) && "retinalogik" %in% unique(dBdat$device)) {
+    min_md_eye <- processed_data_single_id %>%
+      group_by(eye) %>%
+      summarise(min_md = min(md)) %>%
+      filter(min_md == min(min_md)) %>%
+      pull(eye) # Extract the eye value(s)
+    
+    md <- processed_data_single_id %>%
+      filter(eye %in% min_md_eye) %>%
+      distinct(device, md)
+    
     df_wide <- processed_data_single_id %>%
+      filter(eye %in% min_md_eye) %>%
       distinct(id, visit, device, eye, x, y, dB) %>%
       pivot_wider(names_from = device, values_from = dB)
+    
+    # tmp2 <- dBdat %>%
+    #   filter(id=="RL01", visit==3, eye=="L") %>%
+    #   distinct(id, device, eye, visit, x, y, dB) %>%
+    #   pivot_wider(names_from = device, values_from = dB)
 
     if (nrow(df_wide) > 0 && all(c("hfa", "retinalogik") %in% names(df_wide))) {
       p <- bland.altman.plot(df_wide$hfa, df_wide$retinalogik,
@@ -1364,9 +1405,14 @@ for (i in seq_along(dBdat_split)) {
       
       print(p + geom_smooth(method = "lm", se = FALSE) +
               geom_hline(yintercept = 0, color = "black") +
+              geom_point(position = "jitter") +
               xlab("dB") +
               ylab("Difference in dB (HFA-Retinalogik)") +
-              ggtitle(paste("ID:", current_id, "- Visit:", qualifying_visit)))
+              ggtitle(paste("ID:", current_id, 
+                            "| Visit:", qualifying_visit, 
+                            "| Eye:", min_md_eye),
+                      subtitle = paste("HFA MD:", round(md$md[md$device == "hfa"], 2), 
+                            "\nRetinalogik MD:", round(md$md[md$device == "retinalogik"], 2))))
       
     } else {
       cat("Note: Could not create Bland-Altman plot. Ensure both 'hfa' and 'retinalogik' data are available for a qualifying visit.\n\n")
@@ -1434,7 +1480,7 @@ hfaduration <- dBdat %>%
 
 ```
 
-Test duration were extracted for analysis. The mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (`r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (`r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (insert p-value from paired t-test when all arguments have same length)
+Test duration were extracted for analysis. The mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (SD = `r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (SD = `r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (insert p-value from paired t-test when all arguments have same length)
 
 ## Scatterplots
 
