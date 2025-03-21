@@ -50,7 +50,7 @@ sessionInfo()
 
 # default chunk options
 knitr::opts_chunk$set(
-  comment = '>', cache = TRUE, collapse = TRUE, cache = FALSE, dev= c("png")
+  comment = '>', collapse = TRUE, cache = FALSE, dev= c("png")
   )
 
 # load processed data
@@ -1262,10 +1262,9 @@ library(BlandAltmanLeh)
 dBdat_flipped <- dBdat %>%
   mutate(x = as.numeric(x), y = as.numeric(y)) %>%
   mutate(x = case_when(
-    device == "retinalogik" & eye == "L" ~ x * -1,
+    eye == "L" ~ x * -1,
     TRUE ~ as.numeric(x)
   ))
-
 
 #####
 # FOR SCREENING USE
@@ -1335,7 +1334,7 @@ if ("hfa" %in% unique(all_processed_data$device) && "retinalogik" %in% unique(al
     filter(min_md == min(min_md, na.rm=TRUE)) %>%
     distinct(id, eye, visit) # Extract the eye value(s)
   
-  df_wide_all <- dBdat %>%
+  df_wide_all <- dBdat_flipped %>%
     distinct(id, device, visit, eye, md) %>%
     right_join(min_md_eye_all) %>%
     pivot_wider(names_from = device, values_from = md)
@@ -1361,8 +1360,58 @@ if ("hfa" %in% unique(all_processed_data$device) && "retinalogik" %in% unique(al
 } else {
   cat("Note: Either 'hfa' or 'retinalogik' is missing in the dataset, cannot create Bland-Altman plot.\n\n")
 }
+```
 
-# ggplotly(p1, tooltip="id")
+## Mean sensitivity and variability
+
+```{r variability, warning=FALSE}
+library(patchwork)
+
+meanvariability <- dBdat_flipped %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  right_join(min_md_eye_all) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  mutate(diff = hfa-retinalogik) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik), sdRT = sd(retinalogik),
+            meanHFA = mean(hfa), sdHFA = sd(hfa),
+            meanDiff = mean(diff), sdDiff = sd(diff))
+
+print(meanvariability)
+
+hfaplot <- meanvariability %>% 
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")"), x = x, y = y)) +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA")
+
+rtplot <- meanvariability %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")"), x = x, y = y)) +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik")
+
+diffplot <- meanvariability %>%
+  ggplot(aes(x, y, meanDiff)) +
+  geom_raster(aes(x = x, y = y, fill = meanDiff)) +
+  geom_text(aes(label = paste0(round(meanDiff, 2), "\n(", round(sdDiff, 2), ")"), x = x, y = y)) +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = rainbow(11), limits = c(-5, 5),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA-Retinalogik")
+
+print(hfaplot)
+print(rtplot)
+print(diffplot)
 
 # p <- bland.altman.plot(mdpsd$md_hfa, mdpsd$md_retinalogik, graph.sys = "ggplot2")
 # meanbias <- mean(mdpsd$md_hfa, na.rm=T) - mean(mdpsd$md_retinalogik)
@@ -1463,25 +1512,23 @@ if ("hfa" %in% unique(all_processed_data$device) && "retinalogik" %in% unique(al
 <!--       distinct(id, visit, device, eye, x, y, dB) %>% -->
 <!--       pivot_wider(names_from = device, values_from = dB) -->
 
-<!--     # tmp2 <- dBdat %>% -->
-<!--     #   filter(id=="RL01", visit==3, eye=="L") %>% -->
-<!--     #   distinct(id, device, eye, visit, x, y, dB) %>% -->
-<!--     #   pivot_wider(names_from = device, values_from = dB) -->
-
 <!--     if (nrow(df_wide) > 0 && all(c("hfa", "retinalogik") %in% names(df_wide))) { -->
-<!--       p <- bland.altman.plot(df_wide$hfa, df_wide$retinalogik, -->
-<!--                              graph.sys = "ggplot2") -->
+<!--       df_wide$difference <- df_wide$hfa - df_wide$retinalogik -->
+<!--       df_wide$average <- (df_wide$hfa + df_wide$retinalogik) / 2 -->
 
-<!--       print(p + geom_smooth(method = "lm", se = FALSE) + -->
-<!--               geom_hline(yintercept = 0, color = "black") + -->
-<!--               geom_point(position = "jitter") + -->
-<!--               xlab("dB") + -->
-<!--               ylab("Difference in dB (HFA-Retinalogik)") + -->
-<!--               ggtitle(paste("ID:", current_id,  -->
-<!--                             "| Visit:", qualifying_visit,  -->
-<!--                             "| Eye:", min_md_eye), -->
-<!--                       subtitle = paste("HFA MD:", round(md$md[md$device == "hfa"], 2),  -->
-<!--                             "\nRetinalogik MD:", round(md$md[md$device == "retinalogik"], 2)))) -->
+<!--       p <- ggplot(df_wide, aes(x = average, y = difference)) + -->
+<!--         geom_point(position = "jitter") + -->
+<!--         geom_smooth(method = "lm", se = FALSE) + -->
+<!--         geom_hline(yintercept = 0, color = "black") + -->
+<!--         xlab("dB") + -->
+<!--         ylab("Difference in dB (HFA - Retinalogik)") + -->
+<!--         ggtitle(paste("ID:", current_id, -->
+<!--                         "| Visit:", qualifying_visit, -->
+<!--                         "| Eye:", min_md_eye), -->
+<!--                 subtitle = paste("HFA MD:", round(md$md[md$device == "hfa"], 2), -->
+<!--                                  "\nRetinalogik MD:", round(md$md[md$device == "retinalogik"], 2))) -->
+
+<!--       ggplotly(p, tooltip=c("id", "x", "y")) -->
 
 <!--     } else { -->
 <!--       cat("Note: Could not create Bland-Altman plot. Ensure both 'hfa' and 'retinalogik' data are available for a qualifying visit.\n\n") -->
