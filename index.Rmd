@@ -1363,6 +1363,7 @@ if ("hfa" %in% unique(all_processed_data$device) && "retinalogik" %in% unique(al
 ```
 
 ## Mean sensitivity and variability
+Mean threshold sensitivities (SDs in parentheses) are shown for the latest reliable VF tests, where FL, FP, and FNs were below 30%. Only data from the eye with the worse MD were included. The grid plots below display results from both HFA and Retinalogik devices, followed by the mean differences in threshold sensitivities between the two devices and the SDs of those differences (in parentheses).
 
 ```{r variability, warning=FALSE}
 library(patchwork)
