@@ -1449,97 +1449,104 @@ print(diffplot)
 # ))
 ```
 
-<!-- ## Individual Bland-Altman plots {.tabset} -->
-<!-- Shown in each tab below are the Bland-Altman plots for each patient's latest reliable VF where FL, FP, and FN were <30%. The worse eye according to their MD is plotted. -->
+## Individual Bland-Altman plots {.tabset}
+Shown in each tab below are the Bland-Altman plots for each patient's latest reliable VF where FL, FP, and FN were <30%. The worse eye according to their MD is plotted.
 
-<!-- ```{r onlyreliable, message = FALSE, warning=FALSE, results='asis'} -->
-<!-- dBdat_split <- dBdat %>% -->
-<!--   mutate(x = as.numeric(x), y = as.numeric(y)) %>% -->
-<!--   mutate(x = case_when( -->
-<!--     device == "retinalogik" & eye == "L" ~ x * -1, -->
-<!--     TRUE ~ as.numeric(x) -->
-<!--   )) %>% -->
-<!--   group_split(id) -->
+```{r onlyreliable, message = FALSE, warning=FALSE, results='asis'}
+library(ggrepel)
 
-<!-- # Process each data frame and generate Bland-Altman plots -->
-<!-- for (i in seq_along(dBdat_split)) { -->
-<!--   current_id <- unique(dBdat_split[[i]]$id) -->
+dBdat_split <- dBdat_flipped %>%
+  filter(!(x == 15 & y == -3)) %>%
+  group_split(id)
 
-<!--   # Function to check a specific visit -->
-<!--   check_visit <- function(df, visit_number) { -->
-<!--     df %>% -->
-<!--       filter(visit == visit_number) %>% -->
-<!--       group_by(eye) %>% -->
-<!--       mutate(all_below_30 = all(flPerc < 30 & fpPerc < 30 & fnPerc < 30)) %>% -->
-<!--       filter(all_below_30) %>% -->
-<!--       ungroup() -->
-<!--   } -->
+# Process each data frame and generate Bland-Altman plots
+for (i in seq_along(dBdat_split)) {
+  current_id <- unique(dBdat_split[[i]]$id)
 
-<!--   # Get all unique visit numbers in descending order -->
-<!--   unique_visits <- dBdat_split[[i]] %>% -->
-<!--     pull(visit) %>% -->
-<!--     unique() %>% -->
-<!--     sort(decreasing = TRUE) -->
+  # Function to check a specific visit
+  check_visit <- function(df, visit_number) {
+    df %>%
+      filter(visit == visit_number) %>%
+      group_by(eye) %>%
+      mutate(all_below_30 = all(flPerc < 30 & fpPerc < 30 & fnPerc < 30)) %>%
+      filter(all_below_30) %>%
+      ungroup()
+  }
 
-<!--   processed_data_single_id <- tibble::tibble() # Initialize as empty -->
-<!--   qualifying_visit <- NA -->
+  # Get all unique visit numbers in descending order
+  unique_visits <- dBdat_split[[i]] %>%
+    pull(visit) %>%
+    unique() %>%
+    sort(decreasing = TRUE)
 
-<!--   # Iterate through visits from latest to earliest -->
-<!--   for (visit_number in unique_visits) { -->
-<!--     temp_processed_data <- dBdat_split[[i]] %>% -->
-<!--       check_visit(visit_number) -->
-<!--     if (nrow(temp_processed_data) > 0) { -->
-<!--       processed_data_single_id <- temp_processed_data -->
-<!--       qualifying_visit <- visit_number -->
-<!--       break # Stop checking once a qualifying visit is found -->
-<!--     } -->
-<!--   } -->
+  processed_data_single_id <- tibble::tibble() # Initialize as empty
+  qualifying_visit <- NA
 
-<!--   cat(paste0('\n\n### ', current_id, '\n\n')) # Tab title with more newlines -->
+  # Iterate through visits from latest to earliest
+  for (visit_number in unique_visits) {
+    temp_processed_data <- dBdat_split[[i]] %>%
+      check_visit(visit_number)
+    if (nrow(temp_processed_data) > 0) {
+      processed_data_single_id <- temp_processed_data
+      qualifying_visit <- visit_number
+      break # Stop checking once a qualifying visit is found
+    }
+  }
 
-<!--   if ("hfa" %in% unique(dBdat$device) && "retinalogik" %in% unique(dBdat$device)) { -->
-<!--     min_md_eye <- processed_data_single_id %>% -->
-<!--       group_by(eye) %>% -->
-<!--       summarise(min_md = min(md)) %>% -->
-<!--       filter(min_md == min(min_md)) %>% -->
-<!--       pull(eye) # Extract the eye value(s) -->
+  cat(paste0('\n\n### ', current_id, '\n\n')) # Tab title with more newlines
 
-<!--     md <- processed_data_single_id %>% -->
-<!--       filter(eye %in% min_md_eye) %>% -->
-<!--       distinct(device, md) -->
+  if ("hfa" %in% unique(dBdat$device) && "retinalogik" %in% unique(dBdat$device)) {
+    min_md_eye <- processed_data_single_id %>%
+      group_by(eye) %>%
+      summarise(min_md = min(md)) %>%
+      filter(min_md == min(min_md)) %>%
+      pull(eye) # Extract the eye value(s)
 
-<!--     df_wide <- processed_data_single_id %>% -->
-<!--       filter(eye %in% min_md_eye) %>% -->
-<!--       distinct(id, visit, device, eye, x, y, dB) %>% -->
-<!--       pivot_wider(names_from = device, values_from = dB) -->
+    md <- processed_data_single_id %>%
+      filter(eye %in% min_md_eye) %>%
+      distinct(device, md)
 
-<!--     if (nrow(df_wide) > 0 && all(c("hfa", "retinalogik") %in% names(df_wide))) { -->
-<!--       df_wide$difference <- df_wide$hfa - df_wide$retinalogik -->
-<!--       df_wide$average <- (df_wide$hfa + df_wide$retinalogik) / 2 -->
+    df_wide <- processed_data_single_id %>%
+      filter(eye %in% min_md_eye) %>%
+      distinct(id, visit, device, eye, x, y, dB) %>%
+      pivot_wider(names_from = device, values_from = dB) %>%
+      mutate(location = paste0("(", x, ", ", y, ")"))
 
-<!--       p <- ggplot(df_wide, aes(x = average, y = difference)) + -->
-<!--         geom_point(position = "jitter") + -->
-<!--         geom_smooth(method = "lm", se = FALSE) + -->
-<!--         geom_hline(yintercept = 0, color = "black") + -->
-<!--         xlab("dB") + -->
-<!--         ylab("Difference in dB (HFA - Retinalogik)") + -->
-<!--         ggtitle(paste("ID:", current_id, -->
-<!--                         "| Visit:", qualifying_visit, -->
-<!--                         "| Eye:", min_md_eye), -->
-<!--                 subtitle = paste("HFA MD:", round(md$md[md$device == "hfa"], 2), -->
-<!--                                  "\nRetinalogik MD:", round(md$md[md$device == "retinalogik"], 2))) -->
+    if (nrow(df_wide) > 0 && all(c("hfa", "retinalogik") %in% names(df_wide))) {
+      df_wide$difference <- df_wide$hfa - df_wide$retinalogik
+      df_wide$average <- (df_wide$hfa + df_wide$retinalogik) / 2
 
-<!--       ggplotly(p, tooltip=c("id", "x", "y")) -->
+      p <- ggplot(df_wide, aes(x = average, y = difference, label = location)) +
+        geom_point(position = "jitter") +
+        geom_smooth(method = "lm", se = FALSE) +
+        geom_hline(yintercept = 0, color = "black") +
+        # geom_text(aes(label = ifelse(difference > 5 | difference < -5, as.character(location),'')),
+        #           hjust = 0, vjust = 0) +
+        geom_label_repel(aes(label = ifelse(difference > 5 | difference < -5, as.character(location),'')),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+        xlab("dB") +
+        ylab("Difference in dB (HFA - Retinalogik)") +
+        ggtitle(paste("ID:", current_id,
+                        "| Visit:", qualifying_visit,
+                        "| Eye:", min_md_eye),
+                subtitle = paste("HFA MD:", round(md$md[md$device == "hfa"], 2),
+                                 "\nRetinalogik MD:", round(md$md[md$device == "retinalogik"], 2)))
+      
+      print(p)
 
-<!--     } else { -->
-<!--       cat("Note: Could not create Bland-Altman plot. Ensure both 'hfa' and 'retinalogik' data are available for a qualifying visit.\n\n") -->
-<!--     } -->
-<!--   } else { -->
-<!--     cat("Note: Either 'hfa' or 'retinalogik' is missing in the dataset, cannot create Bland-Altman plot.\n\n") -->
-<!--   } -->
-<!--   cat('\n') -->
-<!-- } -->
-<!-- ``` -->
+      #ggplotly(p, tooltip=c("id", "x", "y"))
+
+    } else {
+      cat("Note: Could not create Bland-Altman plot. Ensure both 'hfa' and 'retinalogik' data are available for a qualifying visit.\n\n")
+    }
+  } else {
+    cat("Note: Either 'hfa' or 'retinalogik' is missing in the dataset, cannot create Bland-Altman plot.\n\n")
+  }
+  cat('\n')
+}
+```
 
 ## Test-retest variability {.tabset}
 Calculate the SD across all MDs, and divide that by the absolute MD:
