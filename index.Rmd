@@ -30,6 +30,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Mar-01: Added boxplots for FP, FN, and FL.
 * 2025-Mar-14: Added newly collected data.
 * 2025-Mar-18: Added Bland-Altman plots for the most recent data sets where reliability indices <30% and test-retest variability
+* 2025-Mar-25: Added Wilcoxon rank test results for pointwise differences.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -1254,7 +1255,7 @@ rt_plots %synch% hfa_plots
 ```
 
 ## Global sensitivity indices
-Bland–Altman analysis for mean deviation comparing HFA and Retinalogik. The red solid line indicates the mean bias, the black dashed lines indicate the 95% limits of agreement, the blue solid line indicates the regression line and the black solid line indicates y = 0.
+Bland–Altman analysis for mean deviation comparing the latest reliable VF tests for the HFA and Retinalogik, where FL, FP, and FNs were below 30%. Only data from the eye with the worse MD were included. The red solid line indicates the mean bias, the black dashed lines indicate the 95% limits of agreement, the blue solid line indicates the regression line and the black solid line indicates y = 0.
 
 ```{r md, warning=FALSE}
 library(BlandAltmanLeh)
@@ -1365,10 +1366,25 @@ if ("hfa" %in% unique(all_processed_data$device) && "retinalogik" %in% unique(al
 ## Mean sensitivity and variability
 Mean threshold sensitivities (SDs in parentheses) are shown for the latest reliable VF tests, where FL, FP, and FNs were below 30%. Only data from the eye with the worse MD were included. The grid plots below display results from both HFA and Retinalogik devices, followed by the mean differences in threshold sensitivities between the two devices and the SDs of those differences (in parentheses).
 
-```{r variability, warning=FALSE}
+```{r variability, echo=FALSE, warning=FALSE, message=FALSE}
 library(patchwork)
 
+bs <- data.frame(x = c(15, 15),
+                 y = c(-3, 3),
+                 meanRT = NA, sdRT = NA,
+                 meanHFA = NA, meanRT = NA,
+                 meanDiff = NA, sdDiff = NA)
+
+bs2 <- data.frame(x = c(15, 15),
+                 y = c(-3, 3),
+                 results = NA,
+                 hfa = NA,
+                 retinalogik = NA,
+                 greater = NA)
+
 meanvariability <- dBdat_flipped %>%
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
   distinct(id, device, visit, eye, x, y, dB) %>%
   right_join(min_md_eye_all) %>%
   pivot_wider(names_from = device, values_from = dB) %>%
@@ -1378,41 +1394,84 @@ meanvariability <- dBdat_flipped %>%
             meanHFA = mean(hfa), sdHFA = sd(hfa),
             meanDiff = mean(diff), sdDiff = sd(diff))
 
-print(meanvariability)
+wilcoxdf <- dBdat_flipped %>%
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  right_join(min_md_eye_all) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  # mutate(diff = hfa-retinalogik) %>%
+  group_by(x, y) %>%
+  summarize(results = wilcox.test(Pair(hfa, retinalogik) ~1)$p.value,
+            hfa = mean(hfa), retinalogik = mean(retinalogik),
+            hfagreater = case_when(hfa > retinalogik ~ "greater",
+                                hfa < retinalogik ~ "lesser"))
 
-hfaplot <- meanvariability %>% 
+hfaplot <- meanvariability %>%
+  rbind(bs) %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
-  geom_text(aes(label = paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")"), x = x, y = y)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                  x = x, y = y), size = 2) +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("HFA")
+  ggtitle("HFA") +
+  theme(legend.position="none", plot.margin = unit(c(5.5, 5.5, 1, 5.5), "pt")) # Reduced bottom margin
 
 rtplot <- meanvariability %>%
+  rbind(bs) %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
-  geom_text(aes(label = paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")"), x = x, y = y)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                  x = x, y = y), size = 2) +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Retinalogik")
+  ggtitle("Retinalogik") +
+  theme(legend.position="none", plot.margin = unit(c(5.5, 5.5, 1, 5.5), "pt")) # Reduced bottom margin
 
 diffplot <- meanvariability %>%
+  rbind(bs) %>%
   ggplot(aes(x, y, meanDiff)) +
   geom_raster(aes(x = x, y = y, fill = meanDiff)) +
-  geom_text(aes(label = paste0(round(meanDiff, 2), "\n(", round(sdDiff, 2), ")"), x = x, y = y)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                  x = x, y = y), size = 2) +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = rainbow(11), limits = c(-5, 5),
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("HFA-Retinalogik")
+  ggtitle("HFA-Retinalogik") +
+  theme(legend.position="none", plot.margin = unit(c(1, 5.5, 5.5, 5.5), "pt")) # Reduced top margin
+  
+pvalueplot <- wilcoxdf %>%
+  rbind(bs2) %>%
+  ggplot(aes(x, y, results)) +
+  geom_raster(aes(x = x, y = y, fill = hfagreater)) +
+  geom_text(aes(label = ifelse(results < 0.05, "<.01", round(results, 2)),
+                x = x, y = y), size = 2) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = c("thistle", "darksalmon"), na.value="darkred",
+                    name = "HFA > Retinalogik?") +
+  theme_bw() +
+  ggtitle("HFA-Retinalogik") +
+  theme(plot.margin = unit(c(1, 5.5, 5.5, 5.5), "pt")) # Reduced top margin
 
-print(hfaplot)
-print(rtplot)
-print(diffplot)
+# (hfaplot | rtplot)
+# (diffplot | pvalueplot)
+hfaplot <- hfaplot + theme(plot.margin = unit(c(5.5, 1, 1, 1), "pt")) # Reduced left and right
+rtplot <- rtplot + theme(plot.margin = unit(c(5.5, 1, 1, 1), "pt"))
+diffplot <- diffplot + theme(plot.margin = unit(c(1, 1, 5.5, 1), "pt"))
+pvalueplot <- pvalueplot + theme(plot.margin = unit(c(1, 1, 5.5, 1), "pt"))
+
+final_plot <- (hfaplot + rtplot) / (diffplot + pvalueplot) +
+  plot_layout(heights = c(1, 1), widths = c(1, 1)) # Ensure equal heights
+
+print(final_plot)
+
+# wrap_plots(hfaplot, rtplot, diffplot, pvalueplot)
 
 # p <- bland.altman.plot(mdpsd$md_hfa, mdpsd$md_retinalogik, graph.sys = "ggplot2")
 # meanbias <- mean(mdpsd$md_hfa, na.rm=T) - mean(mdpsd$md_retinalogik)
@@ -1449,6 +1508,8 @@ print(diffplot)
 # ))
 ```
 
+The salmon areas represents higher Retinalogik thresholds compared to HFA whereas the pink area represents greater HFA thresholds compared to Retinalogik.
+
 ## Individual Bland-Altman plots {.tabset}
 Shown in each tab below are the Bland-Altman plots for each patient's latest reliable VF where FL, FP, and FN were <30%. The worse eye according to their MD is plotted.
 
@@ -1457,6 +1518,7 @@ library(ggrepel)
 
 dBdat_split <- dBdat_flipped %>%
   filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
   group_split(id)
 
 # Process each data frame and generate Bland-Altman plots
