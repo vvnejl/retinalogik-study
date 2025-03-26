@@ -29,8 +29,9 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Feb-27: Added section for reliability indices.
 * 2025-Mar-01: Added boxplots for FP, FN, and FL.
 * 2025-Mar-14: Added newly collected data.
-* 2025-Mar-18: Added Bland-Altman plots for the most recent data sets where reliability indices <30% and test-retest variability
+* 2025-Mar-18: Added Bland-Altman plots for the most recent data sets where reliability indices <30% and test-retest variability.
 * 2025-Mar-25: Added Wilcoxon rank test results for pointwise differences.
+* 2025-Mar-26: Added scatter and Bland-Altman plot for all locations.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -1502,7 +1503,54 @@ print(final_plot)
 # ))
 ```
 
-In the bottom right panel, salmon areas represents higher Retinalogik thresholds compared to HFA whereas the lavender area represents greater HFA thresholds compared to Retinalogik.
+In the bottom right panel, Wilcoxon signed-rank tests were used for between-group comparisons. Salmon coloured areas represents higher Retinalogik thresholds compared to HFA whereas the lavender area represents greater HFA thresholds compared to Retinalogik.
+
+## Scatter and Bland-Altman plots
+Scatterplot and Bland–Altman plots of VF sensitivity at each test point between the HFA and Retinalogik. Pearson product-moment correlation coefficient (r) and p values are shown in the scatterplot.
+
+```{r scatterblandaltman, warning=FALSE}
+
+df <- dBdat_flipped %>%
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  right_join(min_md_eye_all) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) 
+
+pearson <- cor.test(df$hfa, df$retinalogik, method = "pearson")
+
+scatterplot0 <- df %>%
+  ggplot(., aes(x=hfa, y=retinalogik)) + 
+  geom_point(aes(color=id), position = "jitter") +
+  geom_smooth(method = "loess") +
+  annotate("text", x = 5, y = 34,
+           label = paste0("r = ", round(pearson$estimate, 2), "\np ",
+                   ifelse(pearson$p.value < 0.05, "< .01", round(pearson$p.value, 2)))) +
+  scale_x_continuous(breaks = seq(0, 44, by=2), limits=c(-1,40)) +
+  scale_y_continuous(breaks = seq(0, 44, by=2), limits=c(-1,40)) +
+  geom_abline(intercept = 0, slope = 1, color = "gray50") +
+  labs(title="Pointwise sensitivity for all locations") +
+  xlab("HFA (dB)") +
+  ylab("Retinalogik (dB)") +
+  theme_bw()
+
+ggplotly(scatterplot0)
+
+blandplot <- bland.altman.plot(df$hfa, df$retinalogik, graph.sys = "ggplot2", geom_count=T)
+bias <- mean(df$hfa) - mean(df$retinalogik)
+
+print(blandplot +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", size = 2) +
+        xlab("dB") +
+        ylab("Difference in dB (HFA-Retinalogik)") +
+        labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
+        ggtitle("Bland-Altman plot for all locations"))
+
+```
 
 ## Individual Bland-Altman plots {.tabset}
 Shown in each tab below are the Bland-Altman plots for each patient's latest reliable VF where FL, FP, and FN were <30%. The worse eye according to their MD is plotted.
@@ -1664,7 +1712,7 @@ Test duration were extracted for analysis. The mean test duration time was `r ro
 
 ## Scatterplots
 
-```{r scatterplots, warning=FALSE}
+```{r scatterplot2, warning=FALSE}
 widedat <- dBdat %>%
   select(id, device, visit, eye, x, y, dB) %>%
   pivot_wider(., names_from = device, values_from = dB) %>%
