@@ -1502,7 +1502,7 @@ print(final_plot)
 # ))
 ```
 
-The salmon areas represents higher Retinalogik thresholds compared to HFA whereas the pink area represents greater HFA thresholds compared to Retinalogik.
+In the bottom right panel, salmon areas represents higher Retinalogik thresholds compared to HFA whereas the lavender area represents greater HFA thresholds compared to Retinalogik.
 
 ## Individual Bland-Altman plots {.tabset}
 Shown in each tab below are the Bland-Altman plots for each patient's latest reliable VF where FL, FP, and FN were <30%. The worse eye according to their MD is plotted.
