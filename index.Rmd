@@ -1366,7 +1366,7 @@ if ("hfa" %in% unique(all_processed_data$device) && "retinalogik" %in% unique(al
 ## Mean sensitivity and variability
 Mean threshold sensitivities (SDs in parentheses) are shown for the latest reliable VF tests, where FL, FP, and FNs were below 30%. Only data from the eye with the worse MD were included. The grid plots below display results from both HFA and Retinalogik devices, followed by the mean differences in threshold sensitivities between the two devices and the SDs of those differences (in parentheses).
 
-```{r variability, echo=FALSE, warning=FALSE, message=FALSE}
+```{r variability, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=10}
 library(patchwork)
 
 bs <- data.frame(x = c(15, 15),
@@ -1411,8 +1411,8 @@ hfaplot <- meanvariability %>%
   rbind(bs) %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
-  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                  x = x, y = y), size = 2) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                  x = x, y = y), size = 3) +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
                        na.value="darkred") +
@@ -1425,7 +1425,7 @@ rtplot <- meanvariability %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
   geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                  x = x, y = y), size = 2) +
+                  x = x, y = y), size = 3) +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
                        na.value="darkred") +
@@ -1437,8 +1437,8 @@ diffplot <- meanvariability %>%
   rbind(bs) %>%
   ggplot(aes(x, y, meanDiff)) +
   geom_raster(aes(x = x, y = y, fill = meanDiff)) +
-  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                  x = x, y = y), size = 2) +
+  geom_text(aes(label = ifelse(is.na(meanDiff), "", paste0(round(meanDiff, 2), "\n(", round(sdDiff, 2), ")")),
+                  x = x, y = y), size = 3) +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = rainbow(11), limits = c(-5, 5),
                        na.value="darkred") +
@@ -1451,29 +1451,23 @@ pvalueplot <- wilcoxdf %>%
   ggplot(aes(x, y, results)) +
   geom_raster(aes(x = x, y = y, fill = hfagreater)) +
   geom_text(aes(label = ifelse(results < 0.05, "<.01", round(results, 2)),
-                x = x, y = y), size = 2) +
+                x = x, y = y), size = 4) +
   coord_fixed(ratio = 1) +
   scale_fill_manual(values = c("thistle", "darksalmon"), na.value="darkred",
                     name = "HFA > Retinalogik?") +
   theme_bw() +
-  ggtitle("HFA-Retinalogik") +
-  theme(plot.margin = unit(c(1, 5.5, 5.5, 5.5), "pt")) # Reduced top margin
-
-# (hfaplot | rtplot)
-# (diffplot | pvalueplot)
-hfaplot <- hfaplot + theme(plot.margin = unit(c(5.5, 1, 1, 1), "pt")) # Reduced left and right
-rtplot <- rtplot + theme(plot.margin = unit(c(5.5, 1, 1, 1), "pt"))
-diffplot <- diffplot + theme(plot.margin = unit(c(1, 1, 5.5, 1), "pt"))
-pvalueplot <- pvalueplot + theme(plot.margin = unit(c(1, 1, 5.5, 1), "pt"))
+  ggtitle("HFA-Retinalogik p-values") +
+  theme(legend.position="none", plot.margin = unit(c(1, 5.5, 5.5, 5.5), "pt")) # Reduced top margin
 
 final_plot <- (hfaplot + rtplot) / (diffplot + pvalueplot) +
   plot_layout(heights = c(1, 1), widths = c(1, 1)) # Ensure equal heights
 
 print(final_plot)
 
-# wrap_plots(hfaplot, rtplot, diffplot, pvalueplot)
-
-# p <- bland.altman.plot(mdpsd$md_hfa, mdpsd$md_retinalogik, graph.sys = "ggplot2")
+# Bland-Altman
+# p <- meanvariability %>%
+#   rbind(bs) %>%
+#   bland.altman.plot(.$meanHFA, .$meanRT, graph.sys = "ggplot2")
 # meanbias <- mean(mdpsd$md_hfa, na.rm=T) - mean(mdpsd$md_retinalogik)
 # 
 # p1 <- print(p + geom_smooth(method = "lm", se = FALSE) +
@@ -1483,7 +1477,7 @@ print(final_plot)
 #               xlab("Mean deviation (MD)") +
 #               ylab("Difference in mean deviation (dB)") +
 #               ggtitle("Bland-Altman plots (HFA-Retinalogik)"))
-# 
+
 # p <- bland.altman.plot(mdpsd$psd_hfa, mdpsd$psd_retinalogik, graph.sys = "ggplot2")
 # meanbias <- mean(mdpsd$psd_hfa, na.rm=T) - mean(mdpsd$psd_retinalogik)
 # 
