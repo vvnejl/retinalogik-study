@@ -32,6 +32,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Mar-18: Added Bland-Altman plots for the most recent data sets where reliability indices <30% and test-retest variability.
 * 2025-Mar-25: Added Wilcoxon rank test results for pointwise differences.
 * 2025-Mar-26: Added scatter and Bland-Altman plot for all locations.
+* 2025-Apr-10: Added a hexbin plot.
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -1549,6 +1550,38 @@ print(blandplot +
         ylab("Difference in dB (HFA-Retinalogik)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot for all locations"))
+
+```
+```{r hexbin, warning=FALSE}
+library(hexbin)
+library(RColorBrewer)
+
+early <- dBdat %>%
+  filter(md < 0 & md > -6) %>%
+  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+  mutate(x = case_when(
+    eye == "L" ~ x * -1,
+    TRUE ~ as.numeric(x)
+  )) %>%
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  #right_join(min_md_eye_all) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) 
+
+# bin <- hexbin(df$hfa, df$retinalogik, xbins=40)
+# my_colors=colorRampPalette(rev(brewer.pal(11,'Spectral')))
+# plot(bin, main="" , colramp=my_colors , legend=F ) 
+
+ggplot(df, aes(x = df$hfa, y = df$retinalogik)) +
+  geom_hex(bins = 20) +
+  scale_fill_viridis_c() +
+  labs(title="Hexbin plot of threshold sensitivities for all locations",
+       subtitle="Size of bin = 20") +
+  xlab("HFA (dB)") +
+  ylab("Retinalogik (dB)") +
+  theme_bw()
 
 ```
 
