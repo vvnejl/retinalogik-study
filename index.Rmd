@@ -33,6 +33,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Mar-25: Added Wilcoxon rank test results for pointwise differences.
 * 2025-Mar-26: Added scatter and Bland-Altman plot for all locations.
 * 2025-Apr-10: Added a hexbin plot.
+* 2025-May-02: Added new data after extensive data extraction script changes to account for changing layouts. 
 
 ### Acknowledgements
 Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
@@ -1224,6 +1225,326 @@ dBdat %>%
 dBdat %>%
   mutate(dB = as.numeric(dB)) %>%
   filter(device == "retinalogik" & id == "RL17") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  rt_individual_graphs
+
+# carousels
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots %synch% hfa_plots 
+```
+
+### RL18
+
+```{r rl18, warning=FALSE}
+# make sure coordinates are numeric, then flip OS to OD for plotting purposes
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "hfa" & id == "RL18") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  hfa_individual_graphs
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "retinalogik" & id == "RL18") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  rt_individual_graphs
+
+# carousels
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots %synch% hfa_plots 
+```
+
+### RL19
+
+```{r rl19, warning=FALSE}
+# make sure coordinates are numeric, then flip OS to OD for plotting purposes
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "hfa" & id == "RL19") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  hfa_individual_graphs
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "retinalogik" & id == "RL19") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  rt_individual_graphs
+
+# carousels
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots %synch% hfa_plots 
+```
+
+### RL20
+
+```{r rl20, warning=FALSE}
+# make sure coordinates are numeric, then flip OS to OD for plotting purposes
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "hfa" & id == "RL20") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  hfa_individual_graphs
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "retinalogik" & id == "RL20") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  rt_individual_graphs
+
+# carousels
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots %synch% hfa_plots 
+```
+
+### RL21
+
+```{r rl21, warning=FALSE}
+# make sure coordinates are numeric, then flip OS to OD for plotting purposes
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "hfa" & id == "RL21") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  hfa_individual_graphs
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "retinalogik" & id == "RL21") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("Retinalogik ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  rt_individual_graphs
+
+# carousels
+hfa_plots <- slickR(hfa_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots <- slickR(rt_individual_graphs, height = 350, width = "95%", padding = 0) +
+  settings(slidesToShow = 2, slidesToScroll = 2)
+
+rt_plots %synch% hfa_plots 
+```
+
+### RL22
+
+```{r rl22, warning=FALSE}
+# make sure coordinates are numeric, then flip OS to OD for plotting purposes
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "hfa" & id == "RL22") %>%
+  group_by(id, visit, eye) %>%
+  arrange(id, visit, eye) %>%
+  # Use the group_by %>% nest pattern to group data by id
+  nest() %>% 
+  # Use map2 so the id can be used as the title
+  mutate(graphs = map2(data, id,
+                       ~ggplot(data = .x, aes(x, y, dB)) +
+                         geom_raster(aes(x = x, y = y, fill = dB)) +
+                         geom_text(aes(label = dB, x = x, y = y), size = 8) +
+                         coord_fixed(ratio = 1) +
+                         scale_fill_gradientn(colours = viridis(47), limits = c(-1, 46),
+                                              na.value="darkred") +
+                         theme_bw() +
+                         ggtitle(paste0("HFA ", id, " Visit ", visit, " Eye: ", eye))
+                       )
+         ) %>% 
+  # pull is the pipe-able equivalent of .[['graphs']]
+  pull(graphs) %>% 
+  # Return the svg of graphs
+  map(function(gr) svglite::xmlSVG(show(gr), standalone = TRUE)) -> 
+  hfa_individual_graphs
+
+dBdat %>%
+  mutate(dB = as.numeric(dB)) %>%
+  filter(device == "retinalogik" & id == "RL22") %>%
   group_by(id, visit, eye) %>%
   arrange(id, visit, eye) %>%
   # Use the group_by %>% nest pattern to group data by id
