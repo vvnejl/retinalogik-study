@@ -2058,11 +2058,11 @@ hfaduration <- dBdat %>%
   filter(device=="hfa") %>%
   distinct(id, visit, eye, duration)
 
-# t.test(as.numeric(rtduration$duration), as.numeric(hfaduration$duration), paired=T)
+t.test(as.numeric(rtduration$duration), as.numeric(hfaduration$duration), paired=T)
 
 ```
 
-Test duration were extracted for analysis. The mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (SD = `r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (SD = `r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (insert p-value from paired t-test when all arguments have same length)
+Mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (SD = `r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (SD = `r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (p < .01).
 
 ## Scatterplots
 
