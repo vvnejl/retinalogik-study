@@ -36,7 +36,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-May-02: Added new data after extensive data extraction script changes to account for changing layouts. 
 
 ### Acknowledgements
-Data collected by Research Assistant Reann Post and Research Coordinator Lynn Murphy.
+Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
 
 ```{r setup, collapse=TRUE}
 
@@ -1903,6 +1903,13 @@ ggplot(df, aes(x = df$hfa, y = df$retinalogik)) +
   xlab("HFA (dB)") +
   ylab("Retinalogik (dB)") +
   theme_bw()
+
+```
+
+## Deming regression
+Deming regression (red line) applied to all sensitivity data combined, with <15 dB set to 15 dB. The area of each data point (blue circles) is proportional to the number of occurrences.
+
+```{r deming, message=FALSE, warning=FALSE}
 
 ```
 
