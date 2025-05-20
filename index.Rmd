@@ -60,7 +60,7 @@ knitr::opts_chunk$set(
 # load processed data
 load(here("dBdat.Rda"))
 
-dBdat <- dBdat %>% filter(id != "RL18")
+#dBdat <- dBdat %>% filter(id != "RL18")
 
 ```
 
