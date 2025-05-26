@@ -33,7 +33,8 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Mar-25: Added Wilcoxon rank test results for pointwise differences.
 * 2025-Mar-26: Added scatter and Bland-Altman plot for all locations.
 * 2025-Apr-10: Added a hexbin plot.
-* 2025-May-02: Added new data after extensive data extraction script changes to account for changing layouts. 
+* 2025-May-02: Added new data after extensive data extraction script changes to account for changing layouts.
+* 2025-May-26: Added plot showing Deming regression line.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -59,8 +60,6 @@ knitr::opts_chunk$set(
 
 # load processed data
 load(here("dBdat.Rda"))
-
-#dBdat <- dBdat %>% filter(id != "RL18")
 
 ```
 
@@ -1873,7 +1872,7 @@ print(blandplot +
         ggtitle("Bland-Altman plot for all locations"))
 
 ```
-```{r hexbin, warning=FALSE}
+```{r hexbin, fig.width=6, fig.height=6, warning=FALSE}
 library(hexbin)
 library(RColorBrewer)
 
@@ -1899,7 +1898,7 @@ ggplot(df, aes(x = df$hfa, y = df$retinalogik)) +
   geom_hex(bins = 20) +
   scale_fill_viridis_c() +
   labs(title="Hexbin plot of threshold sensitivities for all locations",
-       subtitle="Size of bin = 20") +
+       subtitle="Early glaucoma (Size of bin = 20)") +
   xlab("HFA (dB)") +
   ylab("Retinalogik (dB)") +
   theme_bw()
@@ -1907,9 +1906,55 @@ ggplot(df, aes(x = df$hfa, y = df$retinalogik)) +
 ```
 
 ## Deming regression
-Deming regression (red line) applied to all sensitivity data combined, with <15 dB set to 15 dB. The area of each data point (blue circles) is proportional to the number of occurrences.
+Deming regression (red line) applied to all sensitivity data combined. The area of each data point (blue circles) is proportional to the number of occurrences.
 
 ```{r deming, message=FALSE, warning=FALSE}
+library(MethComp)
+
+demingwide <- dBdat %>%
+  select(id, eye, visit, x, y, device, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  drop_na() 
+
+error_var_df <- demingwide %>%
+  group_by(id, eye, x, y) %>%
+  summarise(
+    n = n(),
+    var_H = ifelse(n > 1, var(hfa, na.rm = TRUE), NA),
+    var_R = ifelse(n > 1, var(retinalogik, na.rm = TRUE), NA),
+    .groups = "drop"
+  ) %>%
+  filter(n > 1)
+
+# Mean within-location variances
+sigma2_H <- mean(error_var_df$var_H, na.rm = TRUE)
+sigma2_R <- mean(error_var_df$var_R, na.rm = TRUE)
+
+# Error ratio for Deming regression
+lambda <- sigma2_R / sigma2_H
+
+# Run Deming regression with assumed lambda = 1
+deming_result <- Deming(demingwide$hfa, demingwide$retinalogik, vr=lambda)
+
+summary(deming_result)
+intercept <- deming_result[1]
+slope <- deming_result[2]
+
+p <- demingwide %>%
+  ggplot(., aes(x=hfa, y=retinalogik)) + 
+  #geom_point(aes(color=id), position = "jitter") +
+  scale_x_continuous(breaks = seq(0, 50, by=5), limits=c(-2,50)) +
+  scale_y_continuous(breaks = seq(0, 50, by=5), limits=c(-2,50)) +
+  geom_abline(intercept = 0, slope = 1, color = "gray50", linetype="dashed") +
+  geom_abline(intercept = intercept, slope = slope, color = "red", linetype = "solid", size = 1) +  # Deming line
+  geom_count(color = "blue") +
+  annotate("text", x = 20, y = 40, label = paste("Slope =", round(slope, 2)), color = "red") +
+  labs(title = "Include all dBs",
+       x = "HFA",
+       y = "Retinalogik") +
+  theme_bw()
+
+ggplotly(p, width = 600, height= 600)
 
 ```
 
