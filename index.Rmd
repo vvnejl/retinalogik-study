@@ -1826,8 +1826,8 @@ print(final_plot)
 
 In the bottom right panel, Wilcoxon signed-rank tests were used for between-group comparisons. Salmon coloured areas represents higher Retinalogik thresholds compared to HFA whereas the lavender area represents greater HFA thresholds compared to Retinalogik.
 
-## Scatter and Bland-Altman plots
-Scatterplot and Bland–Altman plots of VF sensitivity at each test point between the HFA and Retinalogik. Pearson product-moment correlation coefficient (r) and p values are shown in the scatterplot.
+## Scatter, Bland-Altman, & Hexbin plots
+Scatterplot and Bland–Altman plots of VF sensitivity at each test point between the HFA and Retinalogik. Plotted only the latest reliable VF tests, where FL, FP, and FNs were below 30%. Only data from the eye with the worse MD were included. Pearson product-moment correlation coefficient (r) and p values are shown in the scatterplot.
 
 ```{r scatterblandaltman, warning=FALSE}
 
@@ -1869,26 +1869,26 @@ print(blandplot +
         xlab("dB") +
         ylab("Difference in dB (HFA-Retinalogik)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
-        ggtitle("Bland-Altman plot for all locations"))
+        ggtitle("Bland-Altman plot for all locations (Lowest MD only)"))
 
 ```
-```{r hexbin, fig.width=6, fig.height=6, warning=FALSE}
+```{r hexbin, fig.width=6.5, fig.height=6, warning=FALSE}
 library(hexbin)
 library(RColorBrewer)
 
-early <- dBdat %>%
-  filter(md < 0 & md > -6) %>%
-  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
-  mutate(x = case_when(
-    eye == "L" ~ x * -1,
-    TRUE ~ as.numeric(x)
-  )) %>%
-  filter(!(x == 15 & y == -3)) %>%
-  filter(!(x == 15 & y == +3)) %>%
-  distinct(id, device, visit, eye, x, y, dB) %>%
-  #right_join(min_md_eye_all) %>%
-  pivot_wider(names_from = device, values_from = dB) %>%
-  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) 
+# early <- dBdat %>%
+#   filter(md < 0 & md > -6) %>%
+#   mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+#   mutate(x = case_when(
+#     eye == "L" ~ x * -1,
+#     TRUE ~ as.numeric(x)
+#   )) %>%
+#   filter(!(x == 15 & y == -3)) %>%
+#   filter(!(x == 15 & y == +3)) %>%
+#   distinct(id, device, visit, eye, x, y, dB) %>%
+#   #right_join(min_md_eye_all) %>%
+#   pivot_wider(names_from = device, values_from = dB) %>%
+#   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) 
 
 # bin <- hexbin(df$hfa, df$retinalogik, xbins=40)
 # my_colors=colorRampPalette(rev(brewer.pal(11,'Spectral')))
@@ -1898,7 +1898,7 @@ ggplot(df, aes(x = df$hfa, y = df$retinalogik)) +
   geom_hex(bins = 20) +
   scale_fill_viridis_c() +
   labs(title="Hexbin plot of threshold sensitivities for all locations",
-       subtitle="Early glaucoma (Size of bin = 20)") +
+       subtitle="Lowest MD only (Size of bin = 20)") +
   xlab("HFA (dB)") +
   ylab("Retinalogik (dB)") +
   theme_bw()
@@ -1906,15 +1906,17 @@ ggplot(df, aes(x = df$hfa, y = df$retinalogik)) +
 ```
 
 ## Deming regression
-Deming regression (red line) applied to all sensitivity data combined. The area of each data point (blue circles) is proportional to the number of occurrences.
+Deming regression (red line) applied to all sensitivity data combined. The area of each data point (blue circles) is proportional to the number of occurrences. Blindspots were removed from analysis.
 
 ```{r deming, message=FALSE, warning=FALSE}
 library(MethComp)
 
-demingwide <- dBdat %>%
+demingwide <- dBdat_flipped %>%
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
   select(id, eye, visit, x, y, device, dB) %>%
   pivot_wider(names_from = device, values_from = dB) %>%
-  drop_na() 
+  drop_na()
 
 error_var_df <- demingwide %>%
   group_by(id, eye, x, y) %>%
@@ -1933,7 +1935,7 @@ sigma2_R <- mean(error_var_df$var_R, na.rm = TRUE)
 # Error ratio for Deming regression
 lambda <- sigma2_R / sigma2_H
 
-# Run Deming regression with assumed lambda = 1
+# Run Deming regression
 deming_result <- Deming(demingwide$hfa, demingwide$retinalogik, vr=lambda)
 
 summary(deming_result)
