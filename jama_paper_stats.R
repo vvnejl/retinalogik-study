@@ -1,4 +1,4 @@
-# Stats for JAMA paper
+# Stats for JAMA Ophthalmology paper
 # setup
 library(here)
 library(tidyverse)
@@ -8,6 +8,7 @@ library(hexbin)
 library(RColorBrewer)
 library(BlandAltmanLeh)
 library(patchwork)
+library(viridis)
 
 rm(list = ls()) 
 load(here("dBdat.Rda"))
@@ -272,7 +273,7 @@ print(blandplot +
         geom_smooth(method = "lm", se = FALSE) +
         # geom_point(position = "jitter") +
         geom_hline(yintercept = 0, color = "black") +
-        geom_hline(yintercept = bias, color = "red", linetype = "solid", size = 1) +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
         xlab("dB") +
         ylab("Difference in dB (Retinalogik-HFA)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
@@ -294,18 +295,93 @@ df %>%
 load(here("retinalogik_hfadatawpsd.Rda"))
 
 # remove locations directly above and below blindspots
-dat <- alldat %>%
+psdpvalues_hfa <- alldat %>%
   filter(!(x==15 & y==9) & !(x==15 & y==-9))
 
 # remove reliability indices <30%
-dat <- dat %>%
-  filter((fl/flTest)*100 < 30 & fnPerc < 30 & fpPerc < 30)
+psdpvalues_hfa <- psdpvalues_hfa %>%
+  filter((fl/flTest) < 0.3 & fnPerc < 0.3 & fpPerc < 0.3)
 
-dat %>%
-  filter(datetime=="2023-03-06 10:42:54")
+psdpvalues_hfa %>%
+  filter(id=="RL24" & eye=="R")
+
+my_data <- psdpvalues_hfa %>%
+  filter(datetime==ymd_hms("2025-05-06 14:57:55"))
   
-
-my_sf <- st_as_sf(my_data, coords = c("x", "y"), crs = NA)
+#library(sf)
+library(spdep)
+my_sf <- my_data %>%
+  select(datetime, eye, id, x, y, dB, psd_p) %>%
+  st_as_sf(coords = c("x", "y"), crs = NA)
 
 # You can view the data
 plot(my_sf)
+
+# Convert to sf object
+# It's good practice to provide a CRS if your coordinates represent real-world locations.
+# For simple relative coordinates, NA is fine.
+points_sf <- st_as_sf(my_sf, wkt = "geometry", crs = NA)
+
+# --- CORRECTED PART ---
+# Create a spatial weights matrix based on distance for point data
+# d1 = 0: minimum distance (points must be distinct)
+# d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+#         given your coordinate spacing of 6 units)
+neighbors <- dnearneigh(points_sf, d1 = 0, d2 = 9)
+
+# Convert the neighbor list to a spatial weights list (binary style is common)
+weights_list <- nb2listw(neighbors, style = "B")
+
+# Filter for points where psd_p <= 5
+# Using is.finite() to handle NA values in psd_p, as NA <= 5 would also be NA, not FALSE.
+filtered_points <- points_sf %>%
+  filter(is.finite(psd_p) & psd_p <= 5)
+
+
+if(nrow(filtered_points) > 0) {
+  # Create a spatial weights matrix for the filtered points (re-evaluate neighbors)
+  # This ensures we only consider contiguity among the *filtered* points.
+  filtered_neighbors <- dnearneigh(filtered_points, d1 = 0, d2 = 9)
+  
+  # Check if there are any connections among the filtered points
+  if (length(unlist(filtered_neighbors)) > 0) { # Check if any neighbors exist
+    # Find connected components (contiguous groups)
+    components <- n.comp.nb(filtered_neighbors)
+    
+    # Assign component IDs back to the filtered data
+    filtered_points$component_id <- components$comp.id
+    
+    # Group by component and count points
+    contiguous_groups <- filtered_points %>%
+      group_by(component_id) %>%
+      summarize(n_points = n()) %>%
+      arrange(desc(n_points))
+    
+    # Print the results
+    print("Contiguous groups where psd_p <= 5:")
+    print(contiguous_groups)
+    
+    # Find the largest contiguous group
+    largest_group_id <- contiguous_groups$component_id[1]
+    
+    largest_group <- filtered_points %>%
+      filter(component_id == largest_group_id)
+    
+    print("Largest Contiguous Group:")
+    print(largest_group)
+    
+    if (nrow(largest_group) >= 3) {
+      print("Largest contiguous group has at least 3 points.")
+      # Optionally, extract and print the coordinates of the largest group
+      print("Coordinates of the largest contiguous group:")
+      print(st_coordinates(largest_group))
+    } else {
+      print("No contiguous group with at least 3 points found that has at least 3 points.")
+    }
+  } else {
+    print("No contiguous points found after filtering for psd_p <= 5.")
+  }
+  
+} else {
+  print("No points found where psd_p <= 5.")
+}

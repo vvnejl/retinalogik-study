@@ -1,0 +1,62 @@
+---
+title: "Retinalogik vs HFA study scotoma analysis"
+author: "[Eadie Technologies, Inc.](https://www.eadietech.com/)"
+date: "2025-06-04"
+output: 
+  html_document:
+    theme: yeti
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    toc_float: 
+      collapsed: true
+    includes:
+        after_body: footer.html
+---
+
+## Setup
+
+### Versioning
+
+Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
+
+* 2025-Jun-04: Created git & RStudio project.
+
+### Acknowledgements
+Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
+
+```{r setup, collapse=TRUE}
+
+# load packages
+library(tidyverse)
+library(here)
+library(DT)
+library(plotly)
+library(viridis)
+library(svglite)
+library(htmltools)
+library(gridExtra)
+
+sessionInfo()
+
+# default chunk options
+knitr::opts_chunk$set(
+  comment = '>', collapse = TRUE, cache = FALSE, dev= c("png")
+  )
+
+# load processed data
+load(here("dBdat.Rda"))
+
+load(here("retinalogik_hfadatawpsd.Rda"))
+
+```
+
+# Study summary
+We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract).
+
+# Methods (very briefly)
+We define a scotoma as the presence of at least 3 vertically, horizontally, or diagonally contiguous test points within the same hemifield on the pattern deviation probability plot at p <5%, with at least 1 point at p <1%, excluding points directly above or below the blind spot. Eyes with consistent glaucomatous VF loss on at least 2 consecutive examinations with reliability indices better than 30% were included. 
+
+## Analysis
+```{r scotoma, echo=FALSE}
+```
