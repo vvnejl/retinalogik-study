@@ -57,6 +57,8 @@ We compared 24-2 visual field (VF) test results between Retinalogik and the Hump
 # Methods (very briefly)
 We define a scotoma as the presence of at least 3 vertically, horizontally, or diagonally contiguous test points within the same hemifield on the pattern deviation probability plot at p <5%, with at least 1 point at p <1%, excluding points directly above or below the blind spot. Eyes with consistent glaucomatous VF loss on at least 2 consecutive examinations with reliability indices better than 30% were included. 
 
-## Analysis
+## Analysis {.tabset}
+### RL24
 ```{r scotoma, echo=FALSE}
+
 ```
