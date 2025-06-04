@@ -291,5 +291,21 @@ df %>%
   theme_bw()
 
 # Fig 3. Scotoma Analysis Plots…
+load(here("retinalogik_hfadatawpsd.Rda"))
 
+# remove locations directly above and below blindspots
+dat <- alldat %>%
+  filter(!(x==15 & y==9) & !(x==15 & y==-9))
 
+# remove reliability indices <30%
+dat <- dat %>%
+  filter((fl/flTest)*100 < 30 & fnPerc < 30 & fpPerc < 30)
+
+dat %>%
+  filter(datetime=="2023-03-06 10:42:54")
+  
+
+my_sf <- st_as_sf(my_data, coords = c("x", "y"), crs = NA)
+
+# You can view the data
+plot(my_sf)

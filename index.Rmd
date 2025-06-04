@@ -167,7 +167,7 @@ flTest <- wilcox.test(flPerc ~ device, data = reliabilityDat)
 ```
 
 ### False Positives
-Mann–Whitney U test showed that false positives were significantly lower for Retinalogik compared to HFA (p = `r if (fpTest$p.value < 0.01) ".01" else round(fpTest$p.value, 2)`)
+Mann–Whitney U test showed that false positives were comparable between Retinalogik and HFA (p = `r if (fpTest$p.value < 0.01) ".01" else round(fpTest$p.value, 2)`)
 
 ```{r fp, warning=FALSE}
 library(hrbrthemes)
