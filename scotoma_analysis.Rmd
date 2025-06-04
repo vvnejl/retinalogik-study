@@ -20,7 +20,7 @@ output:
 
 Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
 
-* 2025-Jun-04: Created git & RStudio project.
+* 2025-Jun-04: Created separate .Rmd file as index.Rmd was getting very cluttered.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
