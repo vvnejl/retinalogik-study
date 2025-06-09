@@ -55,7 +55,7 @@ rtplot_healthy <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
   geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -67,7 +67,7 @@ hfaplot_healthy <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
   geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -101,7 +101,7 @@ rtplot_overallGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
   geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -113,7 +113,7 @@ hfaplot_overallGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
   geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -306,7 +306,30 @@ psdpvalues_hfa %>%
   filter(id=="RL24" & eye=="R")
 
 my_data <- psdpvalues_hfa %>%
-  filter(datetime==ymd_hms("2025-05-06 14:57:55"))
+  filter(datetime==ymd_hms("2025-05-06 14:57:55") & eye=="R")
+
+customcolors <- brewer.pal(4, "YlOrRd")
+
+p <- my_data %>%
+  ggplot(aes(x, y, psd_p)) +
+  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
+  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p),
+                x = x, y = y), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value="gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "PSD p-values") +
+  theme(legend.position="none")
+
+dBplot <- my_data %>%
+  ggplot(aes(x, y, psd_p, dB)) +
+  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
+  geom_text(aes(label = dB, x = x, y = y), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value="gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position="none")
   
 #library(sf)
 library(spdep)
@@ -315,14 +338,13 @@ my_sf <- my_data %>%
   st_as_sf(coords = c("x", "y"), crs = NA)
 
 # You can view the data
-plot(my_sf)
+#plot(my_sf)
 
 # Convert to sf object
 # It's good practice to provide a CRS if your coordinates represent real-world locations.
 # For simple relative coordinates, NA is fine.
 points_sf <- st_as_sf(my_sf, wkt = "geometry", crs = NA)
 
-# --- CORRECTED PART ---
 # Create a spatial weights matrix based on distance for point data
 # d1 = 0: minimum distance (points must be distinct)
 # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
@@ -336,7 +358,6 @@ weights_list <- nb2listw(neighbors, style = "B")
 # Using is.finite() to handle NA values in psd_p, as NA <= 5 would also be NA, not FALSE.
 filtered_points <- points_sf %>%
   filter(is.finite(psd_p) & psd_p <= 5)
-
 
 if(nrow(filtered_points) > 0) {
   # Create a spatial weights matrix for the filtered points (re-evaluate neighbors)
@@ -385,3 +406,65 @@ if(nrow(filtered_points) > 0) {
 } else {
   print("No points found where psd_p <= 5.")
 }
+
+# --- Visualization ---
+
+# Plot all original points
+# plot_all_points <- ggplot() +
+#   geom_sf(data = points_sf, color = "grey", size = 1, alpha = 0.5) +
+#   labs(title = "All Original Points (Grey) and Filtered Contiguous Groups (Colored)",
+#        x = "X-coordinate", y = "Y-coordinate") +
+#   theme_minimal()
+
+plot_all_points <- ggplot() +
+  geom_sf(data = points_sf, color = "grey", size = 1, alpha = 0.5) +
+  labs(title = "Contiguous Groups (Coloured)",
+       x = "x", y = "y") +
+  theme_bw()
+
+# Add the filtered and grouped points on top, colored by their component_id
+# Use a specific color palette if you have many groups
+plot_scotoma <- plot_all_points +
+  geom_sf(data = filtered_points, aes(color = as.factor(component_id)), size = 3) +
+  scale_color_viridis_d(option = "viridis", name = "Contiguous Group ID") # Viridis is a good perceptually uniform palette
+
+# Highlight the largest contiguous group
+# (Optional: you can make these points larger or a different shape)
+plot_scotoma <- plot_scotoma +
+  geom_sf(data = largest_group, color = "red", size = 5) # Red triangles for the largest group
+
+# Print the plot
+#print(plot_all_points)
+
+rttmp <- dBdat %>%
+  filter(id=="RL24", visit==1, eye=="R", device=="retinalogik") %>%
+  select(id, eye, x, y, dB)
+
+hfatmp <- largest_group %>%
+  mutate(x = st_coordinates(.)[, "X"],
+         y = st_coordinates(.)[, "Y"]) %>%
+  st_drop_geometry() 
+
+mergeddat <- left_join(rttmp, hfatmp, by=c("id","eye","x","y"))
+
+rtplot <- mergeddat %>%
+  ggplot(aes(x, y, psd_p, dB.x)) +
+  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
+  geom_text(aes(label = dB.x, x = x, y = y), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value="gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position="none")
+
+mergeddat %>%
+  ggplot(aes(x, y, psd_p)) +
+  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
+  geom_text(aes(label = psd_p, x = x, y = y), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value="gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position="none")
+
+(p + plot_scotoma) / (dBplot + rtplot)
