@@ -40,6 +40,7 @@ library(sf)
 library(spdep)
 library(RColorBrewer)
 library(patchwork)
+library(spatstat.geom)
 
 sessionInfo()
 
@@ -64,7 +65,7 @@ We define a scotoma as the presence of at least 3 vertically, horizontally, or d
 ## Analysis {.tabset}
 ### RL35 {.tabset}
 #### Visit 1
-```{r scotoma, warning=FALSE, fig.width=7.5, fig.height=7.5}
+```{r scotoma1, warning=FALSE, fig.width=7.5, fig.height=7.5}
 # remove locations directly above and below blindspots
 psdpvalues_hfa <- alldat %>%
   filter(!(x==15 & y==9) & !(x==15 & y==-9))
@@ -76,182 +77,217 @@ psdpvalues_hfa <- psdpvalues_hfa %>%
 tmp <- psdpvalues_hfa %>%
   filter(id=="RL35" & eye=="R")
 
-my_data <- psdpvalues_hfa %>%
-  filter(datetime==ymd_hms("2025-05-20 09:48:31") & eye=="R")
-
 customcolors <- brewer.pal(4, "YlOrRd")
 customcolors <- rev(customcolors)
 
-p <- my_data %>%
-  ggplot(aes(x, y, psd_p)) +
-  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
-  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p),
-                x = x, y = y), size = 3) +
-  coord_fixed(ratio = 1) +
-  scale_fill_manual(values = customcolors, na.value="gray") +
-  theme_bw() +
-  ggtitle("HFA", subtitle = "PSD p-values") +
-  theme(legend.position="none")
-
-dBplot <- my_data %>%
-  ggplot(aes(x, y, psd_p, dB)) +
-  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
-  geom_text(aes(label = dB, x = x, y = y), size = 3) +
-  coord_fixed(ratio = 1) +
-  scale_fill_manual(values = customcolors, na.value="gray") +
-  theme_bw() +
-  ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
-  theme(legend.position="none")
-  
-my_sf <- my_data %>%
-  select(datetime, eye, id, x, y, dB, psd_p) %>%
-  st_as_sf(coords = c("x", "y"), crs = NA)
-
-# You can view the data
-#plot(my_sf)
-
-# Convert to sf object
-# It's good practice to provide a CRS if your coordinates represent real-world locations.
-# For simple relative coordinates, NA is fine.
-points_sf <- st_as_sf(my_sf, wkt = "geometry", crs = NA)
-
-# Create a spatial weights matrix based on distance for point data
-# d1 = 0: minimum distance (points must be distinct)
-# d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
-#         given your coordinate spacing of 6 units)
-neighbors <- dnearneigh(points_sf, d1 = 0, d2 = 9)
-
-# Convert the neighbor list to a spatial weights list (binary style is common)
-weights_list <- nb2listw(neighbors, style = "B")
-
-# Filter for points where psd_p <= 5
-# Using is.finite() to handle NA values in psd_p, as NA <= 5 would also be NA, not FALSE.
-filtered_points <- points_sf %>%
-  filter(is.finite(psd_p) & psd_p <= 5)
-
-if(nrow(filtered_points) > 0) {
-  # Create a spatial weights matrix for the filtered points (re-evaluate neighbors)
-  # This ensures we only consider contiguity among the *filtered* points.
-  filtered_neighbors <- dnearneigh(filtered_points, d1 = 0, d2 = 9)
-  
-  # Check if there are any connections among the filtered points
-  if (length(unlist(filtered_neighbors)) > 0) { # Check if any neighbors exist
-    # Find connected components (contiguous groups)
-    components <- n.comp.nb(filtered_neighbors)
-    
-    # Assign component IDs back to the filtered data
-    filtered_points$component_id <- components$comp.id
-    
-    # Group by component and count points
-    contiguous_groups <- filtered_points %>%
-      group_by(component_id) %>%
-      summarize(n_points = n()) %>%
-      arrange(desc(n_points))
-    
-    # Print the results
-    #print("Contiguous groups where psd_p <= 5:")
-    #print(contiguous_groups)
-    
-    # Find the largest contiguous group
-    largest_group_id <- contiguous_groups$component_id[1]
-    
-    largest_group <- filtered_points %>%
-      filter(component_id == largest_group_id)
-    
-    #print("Largest Contiguous Group:")
-    #print(largest_group)
-    
-    if (nrow(largest_group) >= 3) {
-      #print("Largest contiguous group has at least 3 points.")
-      # Optionally, extract and print the coordinates of the largest group
-      #print("Coordinates of the largest contiguous group:")
-      #print(st_coordinates(largest_group))
-    } else {
-      #print("No contiguous group with at least 3 points found that has at least 3 points.")
-    }
-  } else {
-    #print("No contiguous points found after filtering for psd_p <= 5.")
-  }
-  
-} else {
-  #print("No points found where psd_p <= 5.")
-}
-
-# --- Visualization ---
-
-# Plot all original points
-# plot_all_points <- ggplot() +
-#   geom_sf(data = points_sf, color = "grey", size = 1, alpha = 0.5) +
-#   labs(title = "All Original Points (Grey) and Filtered Contiguous Groups (Colored)",
-#        x = "X-coordinate", y = "Y-coordinate") +
-#   theme_minimal()
-
-plot_all_points <- ggplot() +
-  geom_sf(data = points_sf, color = "grey", size = 1, alpha = 0.5) +
-  labs(title = "Contiguous Groups",
-       x = "x", y = "y") +
-  theme_bw()
-
-# Add the filtered and grouped points on top, colored by their component_id
-# Use a specific color palette if you have many groups
-plot_scotoma <- plot_all_points +
-  geom_sf(data = filtered_points, aes(color = as.factor(component_id)), size = 3) +
-  scale_color_viridis_d(option = "viridis", name = "Contiguous Group ID") # Viridis is a good perceptually uniform palette
-
-# Highlight the largest contiguous group
-# (Optional: you can make these points larger or a different shape)
-plot_scotoma <- plot_scotoma +
-  geom_sf(data = largest_group, color = "black", size = 5) +
-  theme(legend.position="none")
-
-# Print the plot
-#print(plot_all_points)
+my_data <- psdpvalues_hfa %>%
+  filter(datetime==ymd_hms("2025-05-20 09:48:31 ") & eye=="R")
 
 rttmp <- dBdat %>%
   filter(id=="RL35", visit==1, eye=="R", device=="retinalogik") %>%
   select(id, eye, x, y, dB)
 
-hfatmp <- largest_group %>%
-  mutate(x = st_coordinates(.)[, "X"],
-         y = st_coordinates(.)[, "Y"]) %>%
-  st_drop_geometry() 
+# 1. Data Preparation and Binary Grid Creation
+my_data_processed <- my_data %>%
+  mutate(psd_p_clean = ifelse(is.na(psd_p), 100, psd_p))
 
-mergeddat <- left_join(rttmp, hfatmp, by=c("id","eye","x","y")) %>%
-  # remove blindspots and locations directly above and below blindspots
-  # remove locations directly above and below blindspots
-  filter(!(x==15 & y==3) & !(x==15 & y==-3) & !(x==15 & y==9) & !(x==15 & y==-9))
+# Convert the data frame to an sf (simple features) object
+points_sf <- st_as_sf(my_data_processed, coords = c("x", "y"), crs = NA)
 
-rtplot <- mergeddat %>%
-  ggplot(aes(x, y, psd_p, dB.x)) +
-  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
-  geom_text(aes(label = dB.x, x = x, y = y), size = 3) +
+# 2. Filtering Defective Points
+# Filter for points where psd_p is less than 5% (including 0.5% and 5.0%)
+filtered_points_sf <- points_sf %>%
+  filter(psd_p_clean < 5)
+
+# Ensure there are defective points to analyze
+if (nrow(filtered_points_sf) > 0) {
+  # 3. Connected Components Labeling using Distance-Based Neighbors
+  # Create a spatial weights matrix based on distance for the filtered points
+  # d1 = 0: minimum distance (points must be distinct)
+  # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+  #         given your coordinate spacing of 6 units, sqrt(6^2 + 6^2) approx 8.485)
+  filtered_neighbors <- dnearneigh(filtered_points_sf, d1 = 0, d2 = 9)
+
+  # Check if there are any connections among the filtered points
+  if (length(unlist(filtered_neighbors)) > 0) {
+    # Find connected components (contiguous groups)
+    components <- n.comp.nb(filtered_neighbors)
+
+    # Assign component IDs back to the filtered data
+    filtered_points_sf$component_id <- components$comp.id
+
+    # 4. Filtering Connected Components by Scotoma Criteria
+    scotomas_found <- list()
+    unique_component_ids <- unique(filtered_points_sf$component_id)
+
+    for (comp_id in unique_component_ids) {
+      current_cluster <- filtered_points_sf %>%
+        filter(component_id == comp_id)
+
+      num_points <- nrow(current_cluster)
+      # Check if any point in this cluster has psd_p < 1% (i.e., psd_p_clean == 0.5)
+      has_p_lt_1_percent <- any(current_cluster$psd_p_clean < 1)
+
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      if (num_points >= 3 && has_p_lt_1_percent) {
+        scotomas_found[[as.character(comp_id)]] <- current_cluster %>%
+          # Extract x and y coordinates from the geometry column
+          mutate(
+            x_coord = st_coordinates(.)[, "X"],
+            y_coord = st_coordinates(.)[, "Y"]
+          ) %>%
+          # Now select the desired columns, including the newly extracted x_coord and y_coord
+          select(x_coord, y_coord, psd_p) %>%
+          # Drop the geometry column as it's no longer needed for the table output
+          st_drop_geometry() %>%
+          # Rename x_coord and y_coord back to x and y for consistency with the table format
+          rename(x = x_coord, y = y_coord)
+      }
+    }
+
+    # Prepare results for the report table
+    scotoma_results_list <- list()
+    if (length(scotomas_found) > 0) {
+      scotoma_id_counter <- 1
+      for (scotoma_label in names(scotomas_found)) {
+        scotoma_data <- scotomas_found[[scotoma_label]]
+        num_points <- nrow(scotoma_data)
+        min_psd_p_actual <- min(scotoma_data$psd_p, na.rm = TRUE) # Use original psd_p for reporting
+
+        # Format constituent points string
+        constituent_points_str <- paste(
+          paste0("(", scotoma_data$x, ",", scotoma_data$y, ") [p=", scotoma_data$psd_p, "%]"),
+          collapse = "; "
+        )
+
+        scotoma_results_list[[scotoma_id_counter]] <- data.frame(
+          Scotoma_ID = scotoma_id_counter,
+          Number_of_Points = num_points,
+          Minimum_psd_p_percent = min_psd_p_actual,
+          Constituent_Points = constituent_points_str,
+          stringsAsFactors = FALSE
+        )
+        scotoma_id_counter <- scotoma_id_counter + 1
+      }
+    }
+
+    # Final table of identified scotomas
+    identified_scotomas_table_df <- if (length(scotoma_results_list) > 0) {
+      do.call(rbind, scotoma_results_list)
+    } else {
+      data.frame(
+        Scotoma_ID = integer(),
+        Number_of_Points = integer(),
+        Minimum_psd_p_percent = numeric(),
+        Constituent_Points = character(),
+        stringsAsFactors = FALSE
+      )
+    }
+
+  } else {
+    identified_scotomas_table_df <- data.frame(
+      Scotoma_ID = integer(),
+      Number_of_Points = integer(),
+      Minimum_psd_p_percent = numeric(),
+      Constituent_Points = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+} else {
+  identified_scotomas_table_df <- data.frame(
+    Scotoma_ID = integer(),
+    Number_of_Points = integer(),
+    Minimum_psd_p_percent = numeric(),
+    Constituent_Points = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Print the table (for verification within the R environment)
+print(identified_scotomas_table_df)
+
+# Define custom colors for psd_p values for the background raster
+customcolors <- brewer.pal(4, "YlOrRd")
+customcolors <- rev(customcolors)
+
+# Plot 1: HFA Pattern Deviation Probability Plot (similar to user's 'p' plot)
+# This plot shows the psd_p values for all test points.
+p_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p)), size = 3) +
   coord_fixed(ratio = 1) +
-  scale_fill_manual(values = rev(brewer.pal(3, "YlOrRd")), na.value="gray") +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
   theme_bw() +
-  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
-  theme(legend.position="none")
+  ggtitle("HFA", subtitle = "PSD p-values") +
+  theme(legend.position = "none")
 
-hfaplot <- mergeddat %>%
-  ggplot(aes(x, y, psd_p, dB.y)) +
-  geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
-  geom_text(aes(label = dB.y, x = x, y = y), size = 3) +
+dB_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) +
   coord_fixed(ratio = 1) +
-  scale_fill_manual(values = rev(brewer.pal(3, "YlOrRd")), na.value="gray") +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
   theme_bw() +
   ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
-  theme(legend.position="none")
+  theme(legend.position = "none")
 
-# mergeddat %>%
-#   ggplot(aes(x, y, psd_p)) +
-#   geom_raster(aes(x = x, y = y, fill = factor(psd_p))) +
-#   geom_text(aes(label = psd_p, x = x, y = y), size = 3) +
-#   coord_fixed(ratio = 1) +
-#   scale_fill_manual(values = customcolors, na.value="gray") +
-#   theme_bw() +
-#   ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
-#   theme(legend.position="none")
+rttmp_filtered_for_plot <- rttmp %>%
+  semi_join(my_data_processed, by = c("x", "y"))
 
-(p + plot_scotoma) / (hfaplot + rtplot)
+# Join filtered_rttmp with my_data_processed to get psd_p for coloring the background
+rttmp_for_plot_with_psdp <- rttmp_filtered_for_plot %>%
+  left_join(my_data_processed %>% select(x, y, psd_p), by = c("x", "y"))
+
+# Plot 4: Retinalogik Threshold Sensitivity dB values
+rt_plot <- rttmp_for_plot_with_psdp %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use HFA psd_p for fill as per user's example
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) + # Use Retinalogik dB for label
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+# Prepare data for the scotoma highlight plot
+# Combine all identified scotoma points into a single data frame for plotting
+all_scotoma_points_for_plot <- data.frame()
+if (length(scotomas_found) > 0) {
+  scotoma_id_map <- 1
+  for (original_comp_id in names(scotomas_found)) {
+    temp_df <- scotomas_found[[original_comp_id]]
+    temp_df$scotoma_plot_id <- scotoma_id_map # Assign a sequential ID for plotting colors
+    all_scotoma_points_for_plot <- bind_rows(all_scotoma_points_for_plot, temp_df)
+    scotoma_id_map <- scotoma_id_map + 1
+  }
+}
+
+# Plot 2: Identified Scotomas Highlighted (similar to user's 'plot_scotoma')
+# This plot overlays the identified scotoma points on a grey background of all points.
+plot_scotoma_highlight <- ggplot() +
+  geom_point(data = my_data_processed, aes(x = x, y = y), color = "grey", size = 1, alpha = 0.5) + # All points as background
+  {
+    if (nrow(all_scotoma_points_for_plot) > 0) {
+      list(
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y, color = as.factor(scotoma_plot_id)),
+                   size = 3, shape = 16), # Highlight scotoma points
+        scale_color_viridis_d(option = "viridis", name = "Scotoma ID"), # Use viridis for distinct scotoma colors
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y),
+                   color = "black", size = 5, shape = 1) # Add black outline for emphasis
+      )
+    }
+  } +
+  labs(title = "Identified Scotomas",
+       x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+(p_plot + plot_scotoma_highlight)/
+  (dB_plot + rt_plot)
 
 ```
 
@@ -438,6 +474,852 @@ hfaplot <- mergeddat %>%
 #   ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
 #   theme(legend.position="none")
 
-(p + plot_scotoma) / (hfaplot + rtplot)
+#(p + plot_scotoma) / (hfaplot + rtplot)
+
+# 1. Data Preparation and Binary Grid Creation
+my_data_processed <- my_data %>%
+  mutate(psd_p_clean = ifelse(is.na(psd_p), 100, psd_p))
+
+# Convert the data frame to an sf (simple features) object
+points_sf <- st_as_sf(my_data_processed, coords = c("x", "y"), crs = NA)
+
+# 2. Filtering Defective Points
+# Filter for points where psd_p is less than 5% (including 0.5% and 5.0%)
+filtered_points_sf <- points_sf %>%
+  filter(psd_p_clean < 5)
+
+# Ensure there are defective points to analyze
+if (nrow(filtered_points_sf) > 0) {
+  # 3. Connected Components Labeling using Distance-Based Neighbors
+  # Create a spatial weights matrix based on distance for the filtered points
+  # d1 = 0: minimum distance (points must be distinct)
+  # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+  #         given your coordinate spacing of 6 units, sqrt(6^2 + 6^2) approx 8.485)
+  filtered_neighbors <- dnearneigh(filtered_points_sf, d1 = 0, d2 = 9)
+
+  # Check if there are any connections among the filtered points
+  if (length(unlist(filtered_neighbors)) > 0) {
+    # Find connected components (contiguous groups)
+    components <- n.comp.nb(filtered_neighbors)
+
+    # Assign component IDs back to the filtered data
+    filtered_points_sf$component_id <- components$comp.id
+
+    # 4. Filtering Connected Components by Scotoma Criteria
+    scotomas_found <- list()
+    unique_component_ids <- unique(filtered_points_sf$component_id)
+
+    for (comp_id in unique_component_ids) {
+      current_cluster <- filtered_points_sf %>%
+        filter(component_id == comp_id)
+
+      num_points <- nrow(current_cluster)
+      # Check if any point in this cluster has psd_p < 1% (i.e., psd_p_clean == 0.5)
+      has_p_lt_1_percent <- any(current_cluster$psd_p_clean < 1)
+
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      if (num_points >= 3 && has_p_lt_1_percent) {
+        scotomas_found[[as.character(comp_id)]] <- current_cluster %>%
+          # Extract x and y coordinates from the geometry column
+          mutate(
+            x_coord = st_coordinates(.)[, "X"],
+            y_coord = st_coordinates(.)[, "Y"]
+          ) %>%
+          # Now select the desired columns, including the newly extracted x_coord and y_coord
+          select(x_coord, y_coord, psd_p) %>%
+          # Drop the geometry column as it's no longer needed for the table output
+          st_drop_geometry() %>%
+          # Rename x_coord and y_coord back to x and y for consistency with the table format
+          rename(x = x_coord, y = y_coord)
+      }
+    }
+
+    # Prepare results for the report table
+    scotoma_results_list <- list()
+    if (length(scotomas_found) > 0) {
+      scotoma_id_counter <- 1
+      for (scotoma_label in names(scotomas_found)) {
+        scotoma_data <- scotomas_found[[scotoma_label]]
+        num_points <- nrow(scotoma_data)
+        min_psd_p_actual <- min(scotoma_data$psd_p, na.rm = TRUE) # Use original psd_p for reporting
+
+        # Format constituent points string
+        constituent_points_str <- paste(
+          paste0("(", scotoma_data$x, ",", scotoma_data$y, ") [p=", scotoma_data$psd_p, "%]"),
+          collapse = "; "
+        )
+
+        scotoma_results_list[[scotoma_id_counter]] <- data.frame(
+          Scotoma_ID = scotoma_id_counter,
+          Number_of_Points = num_points,
+          Minimum_psd_p_percent = min_psd_p_actual,
+          Constituent_Points = constituent_points_str,
+          stringsAsFactors = FALSE
+        )
+        scotoma_id_counter <- scotoma_id_counter + 1
+      }
+    }
+
+    # Final table of identified scotomas
+    identified_scotomas_table_df <- if (length(scotoma_results_list) > 0) {
+      do.call(rbind, scotoma_results_list)
+    } else {
+      data.frame(
+        Scotoma_ID = integer(),
+        Number_of_Points = integer(),
+        Minimum_psd_p_percent = numeric(),
+        Constituent_Points = character(),
+        stringsAsFactors = FALSE
+      )
+    }
+
+  } else {
+    identified_scotomas_table_df <- data.frame(
+      Scotoma_ID = integer(),
+      Number_of_Points = integer(),
+      Minimum_psd_p_percent = numeric(),
+      Constituent_Points = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+} else {
+  identified_scotomas_table_df <- data.frame(
+    Scotoma_ID = integer(),
+    Number_of_Points = integer(),
+    Minimum_psd_p_percent = numeric(),
+    Constituent_Points = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Print the table (for verification within the R environment)
+print(identified_scotomas_table_df)
+
+# Define custom colors for psd_p values for the background raster
+customcolors <- brewer.pal(4, "YlOrRd")
+customcolors <- rev(customcolors)
+
+# Plot 1: HFA Pattern Deviation Probability Plot (similar to user's 'p' plot)
+# This plot shows the psd_p values for all test points.
+p_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "PSD p-values") +
+  theme(legend.position = "none")
+
+dB_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+rttmp_filtered_for_plot <- rttmp %>%
+  semi_join(my_data_processed, by = c("x", "y"))
+
+# Join filtered_rttmp with my_data_processed to get psd_p for coloring the background
+rttmp_for_plot_with_psdp <- rttmp_filtered_for_plot %>%
+  left_join(my_data_processed %>% select(x, y, psd_p), by = c("x", "y"))
+
+# Plot 4: Retinalogik Threshold Sensitivity dB values
+rt_plot <- rttmp_for_plot_with_psdp %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use HFA psd_p for fill as per user's example
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) + # Use Retinalogik dB for label
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+# Prepare data for the scotoma highlight plot
+# Combine all identified scotoma points into a single data frame for plotting
+all_scotoma_points_for_plot <- data.frame()
+if (length(scotomas_found) > 0) {
+  scotoma_id_map <- 1
+  for (original_comp_id in names(scotomas_found)) {
+    temp_df <- scotomas_found[[original_comp_id]]
+    temp_df$scotoma_plot_id <- scotoma_id_map # Assign a sequential ID for plotting colors
+    all_scotoma_points_for_plot <- bind_rows(all_scotoma_points_for_plot, temp_df)
+    scotoma_id_map <- scotoma_id_map + 1
+  }
+}
+
+# Plot 2: Identified Scotomas Highlighted (similar to user's 'plot_scotoma')
+# This plot overlays the identified scotoma points on a grey background of all points.
+plot_scotoma_highlight <- ggplot() +
+  geom_point(data = my_data_processed, aes(x = x, y = y), color = "grey", size = 1, alpha = 0.5) + # All points as background
+  {
+    if (nrow(all_scotoma_points_for_plot) > 0) {
+      list(
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y, color = as.factor(scotoma_plot_id)),
+                   size = 3, shape = 16), # Highlight scotoma points
+        scale_color_viridis_d(option = "viridis", name = "Scotoma ID"), # Use viridis for distinct scotoma colors
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y),
+                   color = "black", size = 5, shape = 1) # Add black outline for emphasis
+      )
+    }
+  } +
+  labs(title = "Identified Scotomas",
+       x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+# To display these plots in your R environment, you would use:
+# print(p_plot)
+# print(plot_scotoma_highlight)
+# If you have the 'patchwork' package installed, you can combine them like:
+# library(patchwork)
+(p_plot + plot_scotoma_highlight)/
+  (dB_plot + rt_plot)
+
+```
+
+#### Visit 3
+```{r scotoma3, warning=FALSE, fig.width=7.5, fig.height=7.5}
+my_data <- psdpvalues_hfa %>%
+  filter(datetime==ymd_hms("2025-05-23 10:00:11") & eye=="R")
+
+rttmp <- dBdat %>%
+  filter(id=="RL35", visit==3, eye=="R", device=="retinalogik") %>%
+  select(id, eye, x, y, dB)
+
+# 1. Data Preparation and Binary Grid Creation
+my_data_processed <- my_data %>%
+  mutate(psd_p_clean = ifelse(is.na(psd_p), 100, psd_p))
+
+# Convert the data frame to an sf (simple features) object
+points_sf <- st_as_sf(my_data_processed, coords = c("x", "y"), crs = NA)
+
+# 2. Filtering Defective Points
+# Filter for points where psd_p is less than 5% (including 0.5% and 5.0%)
+filtered_points_sf <- points_sf %>%
+  filter(psd_p_clean < 5)
+
+# Ensure there are defective points to analyze
+if (nrow(filtered_points_sf) > 0) {
+  # 3. Connected Components Labeling using Distance-Based Neighbors
+  # Create a spatial weights matrix based on distance for the filtered points
+  # d1 = 0: minimum distance (points must be distinct)
+  # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+  #         given your coordinate spacing of 6 units, sqrt(6^2 + 6^2) approx 8.485)
+  filtered_neighbors <- dnearneigh(filtered_points_sf, d1 = 0, d2 = 9)
+
+  # Check if there are any connections among the filtered points
+  if (length(unlist(filtered_neighbors)) > 0) {
+    # Find connected components (contiguous groups)
+    components <- n.comp.nb(filtered_neighbors)
+
+    # Assign component IDs back to the filtered data
+    filtered_points_sf$component_id <- components$comp.id
+
+    # 4. Filtering Connected Components by Scotoma Criteria
+    scotomas_found <- list()
+    unique_component_ids <- unique(filtered_points_sf$component_id)
+
+    for (comp_id in unique_component_ids) {
+      current_cluster <- filtered_points_sf %>%
+        filter(component_id == comp_id)
+
+      num_points <- nrow(current_cluster)
+      # Check if any point in this cluster has psd_p < 1% (i.e., psd_p_clean == 0.5)
+      has_p_lt_1_percent <- any(current_cluster$psd_p_clean < 1)
+
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      if (num_points >= 3 && has_p_lt_1_percent) {
+        scotomas_found[[as.character(comp_id)]] <- current_cluster %>%
+          # Extract x and y coordinates from the geometry column
+          mutate(
+            x_coord = st_coordinates(.)[, "X"],
+            y_coord = st_coordinates(.)[, "Y"]
+          ) %>%
+          # Now select the desired columns, including the newly extracted x_coord and y_coord
+          select(x_coord, y_coord, psd_p) %>%
+          # Drop the geometry column as it's no longer needed for the table output
+          st_drop_geometry() %>%
+          # Rename x_coord and y_coord back to x and y for consistency with the table format
+          rename(x = x_coord, y = y_coord)
+      }
+    }
+
+    # Prepare results for the report table
+    scotoma_results_list <- list()
+    if (length(scotomas_found) > 0) {
+      scotoma_id_counter <- 1
+      for (scotoma_label in names(scotomas_found)) {
+        scotoma_data <- scotomas_found[[scotoma_label]]
+        num_points <- nrow(scotoma_data)
+        min_psd_p_actual <- min(scotoma_data$psd_p, na.rm = TRUE) # Use original psd_p for reporting
+
+        # Format constituent points string
+        constituent_points_str <- paste(
+          paste0("(", scotoma_data$x, ",", scotoma_data$y, ") [p=", scotoma_data$psd_p, "%]"),
+          collapse = "; "
+        )
+
+        scotoma_results_list[[scotoma_id_counter]] <- data.frame(
+          Scotoma_ID = scotoma_id_counter,
+          Number_of_Points = num_points,
+          Minimum_psd_p_percent = min_psd_p_actual,
+          Constituent_Points = constituent_points_str,
+          stringsAsFactors = FALSE
+        )
+        scotoma_id_counter <- scotoma_id_counter + 1
+      }
+    }
+
+    # Final table of identified scotomas
+    identified_scotomas_table_df <- if (length(scotoma_results_list) > 0) {
+      do.call(rbind, scotoma_results_list)
+    } else {
+      data.frame(
+        Scotoma_ID = integer(),
+        Number_of_Points = integer(),
+        Minimum_psd_p_percent = numeric(),
+        Constituent_Points = character(),
+        stringsAsFactors = FALSE
+      )
+    }
+
+  } else {
+    identified_scotomas_table_df <- data.frame(
+      Scotoma_ID = integer(),
+      Number_of_Points = integer(),
+      Minimum_psd_p_percent = numeric(),
+      Constituent_Points = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+} else {
+  identified_scotomas_table_df <- data.frame(
+    Scotoma_ID = integer(),
+    Number_of_Points = integer(),
+    Minimum_psd_p_percent = numeric(),
+    Constituent_Points = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Print the table (for verification within the R environment)
+print(identified_scotomas_table_df)
+
+# Define custom colors for psd_p values for the background raster
+customcolors <- brewer.pal(4, "YlOrRd")
+customcolors <- rev(customcolors)
+
+# Plot 1: HFA Pattern Deviation Probability Plot (similar to user's 'p' plot)
+# This plot shows the psd_p values for all test points.
+p_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "PSD p-values") +
+  theme(legend.position = "none")
+
+dB_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+rttmp_filtered_for_plot <- rttmp %>%
+  semi_join(my_data_processed, by = c("x", "y"))
+
+# Join filtered_rttmp with my_data_processed to get psd_p for coloring the background
+rttmp_for_plot_with_psdp <- rttmp_filtered_for_plot %>%
+  left_join(my_data_processed %>% select(x, y, psd_p), by = c("x", "y"))
+
+# Plot 4: Retinalogik Threshold Sensitivity dB values
+rt_plot <- rttmp_for_plot_with_psdp %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use HFA psd_p for fill as per user's example
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) + # Use Retinalogik dB for label
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+# Prepare data for the scotoma highlight plot
+# Combine all identified scotoma points into a single data frame for plotting
+all_scotoma_points_for_plot <- data.frame()
+if (length(scotomas_found) > 0) {
+  scotoma_id_map <- 1
+  for (original_comp_id in names(scotomas_found)) {
+    temp_df <- scotomas_found[[original_comp_id]]
+    temp_df$scotoma_plot_id <- scotoma_id_map # Assign a sequential ID for plotting colors
+    all_scotoma_points_for_plot <- bind_rows(all_scotoma_points_for_plot, temp_df)
+    scotoma_id_map <- scotoma_id_map + 1
+  }
+}
+
+# Plot 2: Identified Scotomas Highlighted (similar to user's 'plot_scotoma')
+# This plot overlays the identified scotoma points on a grey background of all points.
+plot_scotoma_highlight <- ggplot() +
+  geom_point(data = my_data_processed, aes(x = x, y = y), color = "grey", size = 1, alpha = 0.5) + # All points as background
+  {
+    if (nrow(all_scotoma_points_for_plot) > 0) {
+      list(
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y, color = as.factor(scotoma_plot_id)),
+                   size = 3, shape = 16), # Highlight scotoma points
+        scale_color_viridis_d(option = "viridis", name = "Scotoma ID"), # Use viridis for distinct scotoma colors
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y),
+                   color = "black", size = 5, shape = 1) # Add black outline for emphasis
+      )
+    }
+  } +
+  labs(title = "Identified Scotomas",
+       x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+(p_plot + plot_scotoma_highlight)/
+  (dB_plot + rt_plot)
+
+```
+
+#### Visit 4
+```{r scotoma4, warning=FALSE, fig.width=7.5, fig.height=7.5}
+my_data <- psdpvalues_hfa %>%
+  filter(datetime==ymd_hms("2025-05-27 10:07:48") & eye=="R")
+
+rttmp <- dBdat %>%
+  filter(id=="RL35", visit==4, eye=="R", device=="retinalogik") %>%
+  select(id, eye, x, y, dB)
+
+# 1. Data Preparation and Binary Grid Creation
+my_data_processed <- my_data %>%
+  mutate(psd_p_clean = ifelse(is.na(psd_p), 100, psd_p))
+
+# Convert the data frame to an sf (simple features) object
+points_sf <- st_as_sf(my_data_processed, coords = c("x", "y"), crs = NA)
+
+# 2. Filtering Defective Points
+# Filter for points where psd_p is less than 5% (including 0.5% and 5.0%)
+filtered_points_sf <- points_sf %>%
+  filter(psd_p_clean < 5)
+
+# Ensure there are defective points to analyze
+if (nrow(filtered_points_sf) > 0) {
+  # 3. Connected Components Labeling using Distance-Based Neighbors
+  # Create a spatial weights matrix based on distance for the filtered points
+  # d1 = 0: minimum distance (points must be distinct)
+  # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+  #         given your coordinate spacing of 6 units, sqrt(6^2 + 6^2) approx 8.485)
+  filtered_neighbors <- dnearneigh(filtered_points_sf, d1 = 0, d2 = 9)
+
+  # Check if there are any connections among the filtered points
+  if (length(unlist(filtered_neighbors)) > 0) {
+    # Find connected components (contiguous groups)
+    components <- n.comp.nb(filtered_neighbors)
+
+    # Assign component IDs back to the filtered data
+    filtered_points_sf$component_id <- components$comp.id
+
+    # 4. Filtering Connected Components by Scotoma Criteria
+    scotomas_found <- list()
+    unique_component_ids <- unique(filtered_points_sf$component_id)
+
+    for (comp_id in unique_component_ids) {
+      current_cluster <- filtered_points_sf %>%
+        filter(component_id == comp_id)
+
+      num_points <- nrow(current_cluster)
+      # Check if any point in this cluster has psd_p < 1% (i.e., psd_p_clean == 0.5)
+      has_p_lt_1_percent <- any(current_cluster$psd_p_clean < 1)
+
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      if (num_points >= 3 && has_p_lt_1_percent) {
+        scotomas_found[[as.character(comp_id)]] <- current_cluster %>%
+          # Extract x and y coordinates from the geometry column
+          mutate(
+            x_coord = st_coordinates(.)[, "X"],
+            y_coord = st_coordinates(.)[, "Y"]
+          ) %>%
+          # Now select the desired columns, including the newly extracted x_coord and y_coord
+          select(x_coord, y_coord, psd_p) %>%
+          # Drop the geometry column as it's no longer needed for the table output
+          st_drop_geometry() %>%
+          # Rename x_coord and y_coord back to x and y for consistency with the table format
+          rename(x = x_coord, y = y_coord)
+      }
+    }
+
+    # Prepare results for the report table
+    scotoma_results_list <- list()
+    if (length(scotomas_found) > 0) {
+      scotoma_id_counter <- 1
+      for (scotoma_label in names(scotomas_found)) {
+        scotoma_data <- scotomas_found[[scotoma_label]]
+        num_points <- nrow(scotoma_data)
+        min_psd_p_actual <- min(scotoma_data$psd_p, na.rm = TRUE) # Use original psd_p for reporting
+
+        # Format constituent points string
+        constituent_points_str <- paste(
+          paste0("(", scotoma_data$x, ",", scotoma_data$y, ") [p=", scotoma_data$psd_p, "%]"),
+          collapse = "; "
+        )
+
+        scotoma_results_list[[scotoma_id_counter]] <- data.frame(
+          Scotoma_ID = scotoma_id_counter,
+          Number_of_Points = num_points,
+          Minimum_psd_p_percent = min_psd_p_actual,
+          Constituent_Points = constituent_points_str,
+          stringsAsFactors = FALSE
+        )
+        scotoma_id_counter <- scotoma_id_counter + 1
+      }
+    }
+
+    # Final table of identified scotomas
+    identified_scotomas_table_df <- if (length(scotoma_results_list) > 0) {
+      do.call(rbind, scotoma_results_list)
+    } else {
+      data.frame(
+        Scotoma_ID = integer(),
+        Number_of_Points = integer(),
+        Minimum_psd_p_percent = numeric(),
+        Constituent_Points = character(),
+        stringsAsFactors = FALSE
+      )
+    }
+
+  } else {
+    identified_scotomas_table_df <- data.frame(
+      Scotoma_ID = integer(),
+      Number_of_Points = integer(),
+      Minimum_psd_p_percent = numeric(),
+      Constituent_Points = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+} else {
+  identified_scotomas_table_df <- data.frame(
+    Scotoma_ID = integer(),
+    Number_of_Points = integer(),
+    Minimum_psd_p_percent = numeric(),
+    Constituent_Points = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Print the table (for verification within the R environment)
+print(identified_scotomas_table_df)
+
+# Define custom colors for psd_p values for the background raster
+customcolors <- brewer.pal(4, "YlOrRd")
+customcolors <- rev(customcolors)
+
+# Plot 1: HFA Pattern Deviation Probability Plot (similar to user's 'p' plot)
+# This plot shows the psd_p values for all test points.
+p_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "PSD p-values") +
+  theme(legend.position = "none")
+
+dB_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+rttmp_filtered_for_plot <- rttmp %>%
+  semi_join(my_data_processed, by = c("x", "y"))
+
+# Join filtered_rttmp with my_data_processed to get psd_p for coloring the background
+rttmp_for_plot_with_psdp <- rttmp_filtered_for_plot %>%
+  left_join(my_data_processed %>% select(x, y, psd_p), by = c("x", "y"))
+
+# Plot 4: Retinalogik Threshold Sensitivity dB values
+rt_plot <- rttmp_for_plot_with_psdp %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use HFA psd_p for fill as per user's example
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) + # Use Retinalogik dB for label
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+# Prepare data for the scotoma highlight plot
+# Combine all identified scotoma points into a single data frame for plotting
+all_scotoma_points_for_plot <- data.frame()
+if (length(scotomas_found) > 0) {
+  scotoma_id_map <- 1
+  for (original_comp_id in names(scotomas_found)) {
+    temp_df <- scotomas_found[[original_comp_id]]
+    temp_df$scotoma_plot_id <- scotoma_id_map # Assign a sequential ID for plotting colors
+    all_scotoma_points_for_plot <- bind_rows(all_scotoma_points_for_plot, temp_df)
+    scotoma_id_map <- scotoma_id_map + 1
+  }
+}
+
+# Plot 2: Identified Scotomas Highlighted (similar to user's 'plot_scotoma')
+# This plot overlays the identified scotoma points on a grey background of all points.
+plot_scotoma_highlight <- ggplot() +
+  geom_point(data = my_data_processed, aes(x = x, y = y), color = "grey", size = 1, alpha = 0.5) + # All points as background
+  {
+    if (nrow(all_scotoma_points_for_plot) > 0) {
+      list(
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y, color = as.factor(scotoma_plot_id)),
+                   size = 3, shape = 16), # Highlight scotoma points
+        scale_color_viridis_d(option = "viridis", name = "Scotoma ID"), # Use viridis for distinct scotoma colors
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y),
+                   color = "black", size = 5, shape = 1) # Add black outline for emphasis
+      )
+    }
+  } +
+  labs(title = "Identified Scotomas",
+       x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+(p_plot + plot_scotoma_highlight)/
+  (dB_plot + rt_plot)
+
+```
+
+#### Visit 5
+```{r scotoma5, warning=FALSE, fig.width=7.5, fig.height=7.5}
+my_data <- psdpvalues_hfa %>%
+  filter(datetime==ymd_hms("2025-05-29 09:47:54") & eye=="R")
+
+rttmp <- dBdat %>%
+  filter(id=="RL35", visit==5, eye=="R", device=="retinalogik") %>%
+  select(id, eye, x, y, dB)
+
+# 1. Data Preparation and Binary Grid Creation
+my_data_processed <- my_data %>%
+  mutate(psd_p_clean = ifelse(is.na(psd_p), 100, psd_p))
+
+# Convert the data frame to an sf (simple features) object
+points_sf <- st_as_sf(my_data_processed, coords = c("x", "y"), crs = NA)
+
+# 2. Filtering Defective Points
+# Filter for points where psd_p is less than 5% (including 0.5% and 5.0%)
+filtered_points_sf <- points_sf %>%
+  filter(psd_p_clean < 5)
+
+# Ensure there are defective points to analyze
+if (nrow(filtered_points_sf) > 0) {
+  # 3. Connected Components Labeling using Distance-Based Neighbors
+  # Create a spatial weights matrix based on distance for the filtered points
+  # d1 = 0: minimum distance (points must be distinct)
+  # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+  #         given your coordinate spacing of 6 units, sqrt(6^2 + 6^2) approx 8.485)
+  filtered_neighbors <- dnearneigh(filtered_points_sf, d1 = 0, d2 = 9)
+
+  # Check if there are any connections among the filtered points
+  if (length(unlist(filtered_neighbors)) > 0) {
+    # Find connected components (contiguous groups)
+    components <- n.comp.nb(filtered_neighbors)
+
+    # Assign component IDs back to the filtered data
+    filtered_points_sf$component_id <- components$comp.id
+
+    # 4. Filtering Connected Components by Scotoma Criteria
+    scotomas_found <- list()
+    unique_component_ids <- unique(filtered_points_sf$component_id)
+
+    for (comp_id in unique_component_ids) {
+      current_cluster <- filtered_points_sf %>%
+        filter(component_id == comp_id)
+
+      num_points <- nrow(current_cluster)
+      # Check if any point in this cluster has psd_p < 1% (i.e., psd_p_clean == 0.5)
+      has_p_lt_1_percent <- any(current_cluster$psd_p_clean < 1)
+
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      # Apply scotoma definition: at least 3 points AND at least 1 location at p < 1%
+      if (num_points >= 3 && has_p_lt_1_percent) {
+        scotomas_found[[as.character(comp_id)]] <- current_cluster %>%
+          # Extract x and y coordinates from the geometry column
+          mutate(
+            x_coord = st_coordinates(.)[, "X"],
+            y_coord = st_coordinates(.)[, "Y"]
+          ) %>%
+          # Now select the desired columns, including the newly extracted x_coord and y_coord
+          select(x_coord, y_coord, psd_p) %>%
+          # Drop the geometry column as it's no longer needed for the table output
+          st_drop_geometry() %>%
+          # Rename x_coord and y_coord back to x and y for consistency with the table format
+          rename(x = x_coord, y = y_coord)
+      }
+    }
+
+    # Prepare results for the report table
+    scotoma_results_list <- list()
+    if (length(scotomas_found) > 0) {
+      scotoma_id_counter <- 1
+      for (scotoma_label in names(scotomas_found)) {
+        scotoma_data <- scotomas_found[[scotoma_label]]
+        num_points <- nrow(scotoma_data)
+        min_psd_p_actual <- min(scotoma_data$psd_p, na.rm = TRUE) # Use original psd_p for reporting
+
+        # Format constituent points string
+        constituent_points_str <- paste(
+          paste0("(", scotoma_data$x, ",", scotoma_data$y, ") [p=", scotoma_data$psd_p, "%]"),
+          collapse = "; "
+        )
+
+        scotoma_results_list[[scotoma_id_counter]] <- data.frame(
+          Scotoma_ID = scotoma_id_counter,
+          Number_of_Points = num_points,
+          Minimum_psd_p_percent = min_psd_p_actual,
+          Constituent_Points = constituent_points_str,
+          stringsAsFactors = FALSE
+        )
+        scotoma_id_counter <- scotoma_id_counter + 1
+      }
+    }
+
+    # Final table of identified scotomas
+    identified_scotomas_table_df <- if (length(scotoma_results_list) > 0) {
+      do.call(rbind, scotoma_results_list)
+    } else {
+      data.frame(
+        Scotoma_ID = integer(),
+        Number_of_Points = integer(),
+        Minimum_psd_p_percent = numeric(),
+        Constituent_Points = character(),
+        stringsAsFactors = FALSE
+      )
+    }
+
+  } else {
+    identified_scotomas_table_df <- data.frame(
+      Scotoma_ID = integer(),
+      Number_of_Points = integer(),
+      Minimum_psd_p_percent = numeric(),
+      Constituent_Points = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+} else {
+  identified_scotomas_table_df <- data.frame(
+    Scotoma_ID = integer(),
+    Number_of_Points = integer(),
+    Minimum_psd_p_percent = numeric(),
+    Constituent_Points = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Print the table (for verification within the R environment)
+print(identified_scotomas_table_df)
+
+# Define custom colors for psd_p values for the background raster
+customcolors <- brewer.pal(4, "YlOrRd")
+customcolors <- rev(customcolors)
+
+# Plot 1: HFA Pattern Deviation Probability Plot (similar to user's 'p' plot)
+# This plot shows the psd_p values for all test points.
+p_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(psd_p), "", psd_p)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "PSD p-values") +
+  theme(legend.position = "none")
+
+dB_plot <- my_data_processed %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use original psd_p for fill
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) +
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+rttmp_filtered_for_plot <- rttmp %>%
+  semi_join(my_data_processed, by = c("x", "y"))
+
+# Join filtered_rttmp with my_data_processed to get psd_p for coloring the background
+rttmp_for_plot_with_psdp <- rttmp_filtered_for_plot %>%
+  left_join(my_data_processed %>% select(x, y, psd_p), by = c("x", "y"))
+
+# Plot 4: Retinalogik Threshold Sensitivity dB values
+rt_plot <- rttmp_for_plot_with_psdp %>%
+  ggplot(aes(x, y)) +
+  geom_raster(aes(fill = factor(psd_p))) + # Use HFA psd_p for fill as per user's example
+  geom_text(aes(label = ifelse(is.na(dB), "", dB)), size = 3) + # Use Retinalogik dB for label
+  coord_fixed(ratio = 1) +
+  scale_fill_manual(values = customcolors, na.value = "gray") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = "Threshold sensitivity dB values") +
+  theme(legend.position = "none")
+
+# Prepare data for the scotoma highlight plot
+# Combine all identified scotoma points into a single data frame for plotting
+all_scotoma_points_for_plot <- data.frame()
+if (length(scotomas_found) > 0) {
+  scotoma_id_map <- 1
+  for (original_comp_id in names(scotomas_found)) {
+    temp_df <- scotomas_found[[original_comp_id]]
+    temp_df$scotoma_plot_id <- scotoma_id_map # Assign a sequential ID for plotting colors
+    all_scotoma_points_for_plot <- bind_rows(all_scotoma_points_for_plot, temp_df)
+    scotoma_id_map <- scotoma_id_map + 1
+  }
+}
+
+# Plot 2: Identified Scotomas Highlighted (similar to user's 'plot_scotoma')
+# This plot overlays the identified scotoma points on a grey background of all points.
+plot_scotoma_highlight <- ggplot() +
+  geom_point(data = my_data_processed, aes(x = x, y = y), color = "grey", size = 1, alpha = 0.5) + # All points as background
+  {
+    if (nrow(all_scotoma_points_for_plot) > 0) {
+      list(
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y, color = as.factor(scotoma_plot_id)),
+                   size = 3, shape = 16), # Highlight scotoma points
+        scale_color_viridis_d(option = "viridis", name = "Scotoma ID"), # Use viridis for distinct scotoma colors
+        geom_point(data = all_scotoma_points_for_plot,
+                   aes(x = x, y = y),
+                   color = "black", size = 5, shape = 1) # Add black outline for emphasis
+      )
+    }
+  } +
+  labs(title = "Identified Scotomas",
+       x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+(p_plot + plot_scotoma_highlight)/
+  (dB_plot + rt_plot)
 
 ```
