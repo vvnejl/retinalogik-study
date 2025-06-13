@@ -1617,7 +1617,7 @@ Technologies, Inc.</a></h4>
 <h2>Setup</h2>
 <div id="versioning" class="section level3">
 <h3>Versioning</h3>
-<p>Last updated on 2025-Jun-10 at 11:02 AM.</p>
+<p>Last updated on 2025-Jun-10 at 01:50 PM.</p>
 <ul>
 <li>2025-Jun-04: Created separate .Rmd file as index.Rmd was getting
 very cluttered.</li>
@@ -1710,7 +1710,7 @@ sessionInfo()
 ## 
 ## other attached packages:
 ##  [1] spatstat.geom_3.4-1   spatstat.univar_3.1-3 spatstat.data_3.1-6  
-##  [4] patchwork_1.3.0       RColorBrewer_1.1-3    spdep_1.3-11         
+##  [4] patchwork_1.3.0       RColorBrewer_1.1-3    spdep_1.3-13         
 ##  [7] spData_2.3.4          sf_1.0-21             gridExtra_2.3        
 ## [10] htmltools_0.5.8.1     svglite_2.2.1         viridis_0.6.5        
 ## [13] viridisLite_0.4.2     plotly_4.10.4         DT_0.33              
@@ -1772,6 +1772,216 @@ consecutive examinations with reliability indices better than 30% were
 included.</p>
 <div id="analysis" class="section level2 tabset">
 <h2 class="tabset">Analysis</h2>
+<pre class="r"><code>
+# --- Define the main analysis function ---
+analyze_visual_field_data &lt;- function(my_data_input, rttmp_raw_input) {
+
+  # 1. Data Preparation and Spatial Object Creation
+  # Create a clean psd_p column, treating NA as non-defective (e.g., value &gt; 5)
+  my_data_processed &lt;- my_data_input %&gt;%
+    mutate(psd_p_clean = ifelse(is.na(psd_p), 100, psd_p))
+
+  # Convert the data frame to an sf (simple features) object
+  points_sf &lt;- st_as_sf(my_data_processed, coords = c(&quot;x&quot;, &quot;y&quot;), crs = NA)
+
+  # 2. Filtering Defective Points
+  # Filter for points where psd_p is less than 5% (including 0.5% and 5.0%)
+  filtered_points_sf &lt;- points_sf %&gt;%
+    filter(psd_p_clean &lt; 5)
+
+  # Initialize outputs
+  identified_scotomas_table_df &lt;- data.frame(
+    Scotoma_ID = integer(),
+    Number_of_Points = integer(),
+    Minimum_psd_p_percent = numeric(),
+    Constituent_Points = character(),
+    stringsAsFactors = FALSE
+  )
+  all_scotoma_points_for_plot &lt;- data.frame()
+
+  # Ensure there are defective points to analyze
+  if (nrow(filtered_points_sf) &gt; 0) {
+    # 3. Connected Components Labeling using Distance-Based Neighbors
+    # Create a spatial weights matrix based on distance for the filtered points
+    # d1 = 0: minimum distance (points must be distinct)
+    # d2 = 9: maximum distance (captures vertical, horizontal, and diagonal neighbors
+    #         given your coordinate spacing of 6 units, sqrt(6^2 + 6^2) approx 8.485)
+    filtered_neighbors &lt;- dnearneigh(filtered_points_sf, d1 = 0, d2 = 9)
+
+    # Check if there are any connections among the filtered points
+    if (length(unlist(filtered_neighbors)) &gt; 0) {
+      # Find connected components (contiguous groups)
+      components &lt;- n.comp.nb(filtered_neighbors)
+
+      # Assign component IDs back to the filtered data
+      filtered_points_sf$component_id &lt;- components$comp.id
+
+      # 4. Filtering Connected Components by Scotoma Criteria
+      scotomas_found &lt;- list()
+      unique_component_ids &lt;- unique(filtered_points_sf$component_id)
+
+      for (comp_id in unique_component_ids) {
+        current_cluster &lt;- filtered_points_sf %&gt;%
+          filter(component_id == comp_id)
+
+        num_points &lt;- nrow(current_cluster)
+        # Check if any point in this cluster has psd_p &lt; 1% (i.e., psd_p_clean == 0.5)
+        has_p_lt_1_percent &lt;- any(current_cluster$psd_p_clean &lt; 1)
+
+        # Apply scotoma definition: at least 3 points AND at least 1 location at p &lt; 1%
+        if (num_points &gt;= 3 &amp;&amp; has_p_lt_1_percent) {
+          scotomas_found[[as.character(comp_id)]] &lt;- current_cluster %&gt;%
+            # Extract x and y coordinates from the geometry column
+            mutate(
+              x_coord = st_coordinates(.)[, &quot;X&quot;],
+              y_coord = st_coordinates(.)[, &quot;Y&quot;]
+            ) %&gt;%
+            # Now select the desired columns, including the newly extracted x_coord and y_coord
+            select(x_coord, y_coord, psd_p) %&gt;%
+            # Drop the geometry column as it&#39;s no longer needed for the table output
+            st_drop_geometry() %&gt;%
+            # Rename x_coord and y_coord back to x and y for consistency with the table format
+            rename(x = x_coord, y = y_coord)
+        }
+      }
+
+      # Prepare results for the report table
+      scotoma_results_list &lt;- list()
+      if (length(scotomas_found) &gt; 0) {
+        scotoma_id_counter &lt;- 1
+        for (scotoma_label in names(scotomas_found)) {
+          scotoma_data &lt;- scotomas_found[[scotoma_label]]
+          num_points &lt;- nrow(scotoma_data)
+          min_psd_p_actual &lt;- min(scotoma_data$psd_p, na.rm = TRUE) # Use original psd_p for reporting
+
+          # Format constituent points string
+          constituent_points_str &lt;- paste(
+            paste0(&quot;(&quot;, scotoma_data$x, &quot;,&quot;, scotoma_data$y, &quot;) [p=&quot;, scotoma_data$psd_p, &quot;%]&quot;),
+            collapse = &quot;; &quot;
+          )
+
+          scotoma_results_list[[scotoma_id_counter]] &lt;- data.frame(
+            Scotoma_ID = scotoma_id_counter,
+            Number_of_Points = num_points,
+            Minimum_psd_p_percent = min_psd_p_actual,
+            Constituent_Points = constituent_points_str,
+            stringsAsFactors = FALSE
+          )
+          scotoma_id_counter &lt;- scotoma_id_counter + 1
+        }
+      }
+
+      # Final table of identified scotomas
+      identified_scotomas_table_df &lt;- if (length(scotoma_results_list) &gt; 0) {
+        do.call(rbind, scotoma_results_list)
+      } else {
+        data.frame(
+          Scotoma_ID = integer(),
+          Number_of_Points = integer(),
+          Minimum_psd_p_percent = numeric(),
+          Constituent_Points = character(),
+          stringsAsFactors = FALSE
+        )
+      }
+
+      # Prepare all scotoma points for plotting with a sequential ID
+      if (length(scotomas_found) &gt; 0) {
+        scotoma_id_map &lt;- 1
+        for (original_comp_id in names(scotomas_found)) {
+          temp_df &lt;- scotomas_found[[original_comp_id]]
+          temp_df$scotoma_plot_id &lt;- scotoma_id_map # Assign a sequential ID for plotting colors
+          all_scotoma_points_for_plot &lt;- bind_rows(all_scotoma_points_for_plot, temp_df)
+          scotoma_id_map &lt;- scotoma_id_map + 1
+        }
+      }
+    }
+  }
+
+  # Prepare data for Retinalogik dB plot
+  # Filter rttmp_raw_input to only include points present in my_data_processed (50 points)
+  rttmp_filtered_for_plot &lt;- rttmp_raw_input %&gt;%
+    semi_join(my_data_processed, by = c(&quot;x&quot;, &quot;y&quot;))
+
+  # Join filtered_rttmp with my_data_processed to get psd_p for coloring the background
+  rttmp_for_plot_with_psdp &lt;- rttmp_filtered_for_plot %&gt;%
+    left_join(my_data_processed %&gt;% select(x, y, psd_p), by = c(&quot;x&quot;, &quot;y&quot;))
+
+  return(list(
+    scotoma_table = identified_scotomas_table_df,
+    hfa_data_processed = my_data_processed,
+    scotoma_points_for_plot = all_scotoma_points_for_plot,
+    rttmp_data_for_plot = rttmp_for_plot_with_psdp
+  ))
+}
+
+# --- Define plotting functions ---
+
+generate_hfa_psd_plot &lt;- function(hfa_data_processed) {
+  customcolors &lt;- brewer.pal(4, &quot;YlOrRd&quot;)
+  customcolors &lt;- rev(customcolors)
+
+  hfa_data_processed %&gt;%
+    ggplot(aes(x, y)) +
+    geom_raster(aes(fill = factor(psd_p))) +
+    geom_text(aes(label = ifelse(is.na(psd_p), &quot;&quot;, psd_p)), size = 3) +
+    coord_fixed(ratio = 1) +
+    scale_fill_manual(values = customcolors, na.value = &quot;gray&quot;) +
+    theme_bw() +
+    ggtitle(&quot;HFA&quot;, subtitle = &quot;PSD p-values&quot;) +
+    theme(legend.position = &quot;none&quot;)
+}
+
+generate_hfa_db_plot &lt;- function(hfa_data_processed) {
+  customcolors &lt;- brewer.pal(4, &quot;YlOrRd&quot;)
+  customcolors &lt;- rev(customcolors)
+
+  hfa_data_processed %&gt;%
+    ggplot(aes(x, y)) +
+    geom_raster(aes(fill = factor(psd_p))) +
+    geom_text(aes(label = ifelse(is.na(dB), &quot;&quot;, dB)), size = 3) +
+    coord_fixed(ratio = 1) +
+    scale_fill_manual(values = customcolors, na.value = &quot;gray&quot;) +
+    theme_bw() +
+    ggtitle(&quot;HFA&quot;, subtitle = &quot;Threshold sensitivity dB values&quot;) +
+    theme(legend.position = &quot;none&quot;)
+}
+
+generate_scotoma_highlight_plot &lt;- function(hfa_data_processed, scotoma_points_for_plot) {
+  ggplot() +
+    geom_point(data = hfa_data_processed, aes(x = x, y = y), color = &quot;grey&quot;, size = 1, alpha = 0.5) +
+    {
+      if (nrow(scotoma_points_for_plot) &gt; 0) {
+        list(
+          geom_point(data = scotoma_points_for_plot,
+                     aes(x = x, y = y, color = as.factor(scotoma_plot_id)),
+                     size = 3, shape = 16),
+          scale_color_viridis_d(option = &quot;viridis&quot;, name = &quot;Scotoma ID&quot;),
+          geom_point(data = scotoma_points_for_plot,
+                     aes(x = x, y = y),
+                     color = &quot;black&quot;, size = 5, shape = 1)
+        )
+      }
+    } +
+    labs(title = &quot;Identified Scotomas on Visual Field&quot;,
+         x = &quot;X-coordinate (degrees)&quot;, y = &quot;Y-coordinate (degrees)&quot;) +
+    theme_minimal() +
+    theme(legend.position = &quot;right&quot;)
+}
+
+generate_retinalogik_plot &lt;- function(rttmp_data_for_plot) {
+  retinalogik_colors &lt;- rev(brewer.pal(3, &quot;YlOrRd&quot;))
+
+  rttmp_data_for_plot %&gt;%
+    ggplot(aes(x, y)) +
+    geom_raster(aes(fill = factor(psd_p))) +
+    geom_text(aes(label = ifelse(is.na(dB), &quot;&quot;, dB)), size = 3) +
+    coord_fixed(ratio = 1) +
+    scale_fill_manual(values = retinalogik_colors, na.value = &quot;gray&quot;) +
+    theme_bw() +
+    ggtitle(&quot;Retinalogik&quot;, subtitle = &quot;Threshold sensitivity dB values&quot;) +
+    theme(legend.position = &quot;none&quot;)
+}
+</code></pre>
 <div id="rl35" class="section level3 tabset">
 <h3 class="tabset">RL35</h3>
 <div id="visit-1" class="section level4">

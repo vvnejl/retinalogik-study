@@ -8,6 +8,7 @@ library(hexbin)
 library(RColorBrewer)
 library(BlandAltmanLeh)
 library(patchwork)
+library(viridis)
 
 rm(list = ls()) 
 load(here("dBdat.Rda"))
@@ -20,27 +21,41 @@ dBdat_flipped <- dBdat %>%
   )) %>%
   # remove blind spots
   filter(!(x == 15 & y == -3)) %>%
-  filter(!(x == 15 & y == +3))
+  filter(!(x == 15 & y == +3)) %>%
+  #remove first 2 visits
+  filter(visit != 1 & visit != 2) %>%
+  #remove reliability indices <30%
+  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30) %>%
+  group_by(id, device, eye) %>%
+  mutate(meanmd = mean(md))
 
 df <- dBdat_flipped %>%
   distinct(id, device, visit, eye, x, y, dB) %>%
-  pivot_wider(names_from = device, values_from = dB) %>%
-  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) 
+  group_by(id, device, eye, x, y) %>%
+  mutate(meandB = mean(dB)) %>%
+  distinct(id, device, eye, x, y, meandB) %>%
+  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
+
+dBdat_flipped %>%
+  distinct(id, device, visit, eye, md) %>%
+  pivot_wider(names_from = device, values_from = md) %>%
+  clipr::write_clip()
 
 # Fig 1. MS and Variability Figures for Normal Eyes, Overall GON, Early, Mod, Adv GON
 ## Normal eyes
 nRT <- dBdat_flipped %>%
-  filter(md > 0 & device == "retinalogik") %>%
+  filter(meanmd >= 0 & device == "retinalogik") %>%
   distinct(id, device, visit, eye) %>%
   n_distinct()
 
 nHFA <- dBdat_flipped %>%
-  filter(md > 0 & device == "hfa") %>%
+  filter(meanmd >= 0 & device == "hfa") %>%
   distinct(id, device, visit, eye) %>%
   n_distinct()
 
 meanSensitivity <- dBdat_flipped %>%
-  filter(md > 0) %>%
+  filter(meanmd >= 0) %>%
   distinct(id, device, visit, eye, x, y, dB) %>%
   pivot_wider(names_from = device, values_from = dB) %>%
   group_by(x, y) %>%
@@ -54,7 +69,7 @@ rtplot_healthy <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
   geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -66,7 +81,7 @@ hfaplot_healthy <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
   geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -76,17 +91,17 @@ hfaplot_healthy <- meanSensitivity %>%
 
 ## Overall GON
 nRT <- dBdat_flipped %>%
-  filter(md < 0 & device == "retinalogik") %>%
+  filter(meanmd < 0 & device == "retinalogik") %>%
   distinct(id, device, visit, eye) %>%
   n_distinct()
 
 nHFA <- dBdat_flipped %>%
-  filter(md < 0 & device == "hfa") %>%
+  filter(meanmd < 0 & device == "hfa") %>%
   distinct(id, device, visit, eye) %>%
   n_distinct()
 
 meanSensitivity <- dBdat_flipped %>%
-  filter(md < 0) %>%
+  filter(meanmd < 0) %>%
   distinct(id, device, visit, eye, x, y, dB) %>%
   pivot_wider(names_from = device, values_from = dB) %>%
   group_by(x, y) %>%
@@ -100,7 +115,7 @@ rtplot_overallGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
   geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -112,7 +127,7 @@ hfaplot_overallGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
   geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
-                x = x, y = y), size = 3) +
+                x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
@@ -266,13 +281,13 @@ rtplot_advancedGON + hfaplot_advancedGON
 
 # Fig 2. Bland-Altman (RL/HFA Bland-Altman inverse so line goes up with lower dBs).
 blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
-bias <- mean(df$retinalogik) - mean(df$hfa)
+bias <- mean(df$retinalogik, na.rm=T) - mean(df$hfa, na.rm=T)
 
 print(blandplot +
         geom_smooth(method = "lm", se = FALSE) +
         # geom_point(position = "jitter") +
         geom_hline(yintercept = 0, color = "black") +
-        geom_hline(yintercept = bias, color = "red", linetype = "solid", size = 1) +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
         xlab("dB") +
         ylab("Difference in dB (Retinalogik-HFA)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
@@ -281,14 +296,38 @@ print(blandplot +
 # Fig 2 Hexbin Plots (polynomial line through Hexbin)
 df %>%
   ggplot(aes(x = df$hfa, y = df$retinalogik)) +
-  geom_hex(bins = 20) +
+  geom_hex(bins = 40) +
   scale_fill_viridis_c() +
   geom_smooth(method = "loess", se = TRUE, colour = "red") +
+  geom_abline(intercept = 0, slope = 1) +
   labs(title="Hexbin plot of threshold sensitivities for all locations",
-       subtitle="(Size of bin = 20)") +
+       subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 40)") +
   xlab("HFA (dB)") +
   ylab("Retinalogik (dB)") +
+  xlim(-2, 40) +
+  ylim(-2, 40) +
   theme_bw()
+
+df %>%
+  ggplot(aes(x = df$hfa, y = df$retinalogik)) +
+  geom_hex(bins = 30) +
+  scale_fill_viridis_c() +
+  geom_smooth(method = "loess", se = TRUE, colour = "red") +
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title="Hexbin plot of threshold sensitivities for all locations",
+       subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 30)") +
+  xlab("HFA (dB)") +
+  ylab("Retinalogik (dB)") +
+  xlim(-2, 40) +
+  ylim(-2, 40) +
+  theme_bw()
+
+## Table
+healthytable <- dBdat_flipped %>%
+  distinct(id, device, eye, meanmd) %>%
+  filter(meanmd >= 0) %>%
+  count(device)
+  
 
 # Fig 3. Scotoma Analysis Plots…
 
