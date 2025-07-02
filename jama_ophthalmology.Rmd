@@ -21,6 +21,7 @@ output:
 Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
 
 * 2025-Jun-11: Created separate .Rmd file as index.Rmd was getting very cluttered.
+* 2025-Jun-26: Extract data based on classification during screening.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -91,6 +92,35 @@ We define a scotoma as the presence of at least 3 vertically, horizontally, or d
 
 ## Analysis
 
+```{r wrangling}
+classification <- readxl::read_excel("RetinaLogik Data Classification.xlsx") %>%
+  mutate(
+    # Extract the numeric part after "RL"
+    numeric_part = as.numeric(str_extract(ID, "\\d+")),
+    # Format the numeric part to have at least two digits with leading zeros
+    formatted_numeric = str_pad(numeric_part, width = 2, side = "left", pad = "0"),
+    # Combine "RL" with the formatted number
+    ID = paste0("RL", formatted_numeric)
+  ) %>%
+  # Remove the temporary columns
+  select(-numeric_part, -formatted_numeric) %>%
+  rename(id = ID, classification = Classifcation, eye = `Eye (OD/OS)`) %>%
+  mutate(eye = case_when(eye == "OS" ~ "L",
+                         eye == "OD" ~ "R",
+                         eye == "OU" ~ "R"))
+
+dBdat_filtered <- merge(dBdat_filtered, classification)
+
+mild <- dBdat_filtered %>%
+  filter(classification == "Mild") %>%
+  group_by(id, device, eye, x, y) %>%
+  mutate(meandB = mean(dB)) %>%
+  distinct(id, device, eye, meandB) %>%
+  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
+
+```
+
 ### Mean sensitivity
 > The mean sensitivity was significantly higher in the VR-RL perimeter (stats).
 
@@ -99,7 +129,7 @@ We define a scotoma as the presence of at least 3 vertically, horizontally, or d
 #   group_by(device) %>%
 #   summarise(meandB = mean(dB), sd = sd(dB))
 
-df <- dBdat_filtered %>%
+df <- tmp %>%
   group_by(id, device) %>%
   mutate(meandB = mean(dB)) %>%
   distinct(id, device, meandB) %>%

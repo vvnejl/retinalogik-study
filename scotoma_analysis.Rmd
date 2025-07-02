@@ -54,6 +54,41 @@ load(here("dBdat.Rda"))
 
 load(here("retinalogik_hfadatawpsd.Rda"))
 
+# remove locations directly above and below blindspots
+psdpvalues_hfa <- alldat %>%
+  filter(!(x==15 & y==9) & !(x==15 & y==-9))
+
+# remove reliability indices <30%
+psdpvalues_hfa <- psdpvalues_hfa %>%
+  filter((fl/flTest) < 0.3 & fnPerc < 0.3 & fpPerc < 0.3)
+
+dBdat_filtered <- dBdat %>%
+  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+  mutate(x = case_when(
+    eye == "L" & device == "retinalogik" ~ x*-1,
+    TRUE ~ as.numeric(x)
+  )) %>%
+  # remove blind spots
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
+  #remove first 2 visits
+  filter(visit != 1 & visit != 2) %>%
+  #remove reliability indices <30%
+  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30) %>%
+  group_by(id, device, eye) %>%
+  mutate(meanmd = mean(md))
+
+tmp <- merge(psdpvalues_hfa, dBdat_filtered)
+
+hfa_keys <- tmp %>%
+  select(id, eye, visit) %>%
+  distinct()
+
+tmp2 <- dBdat_filtered %>%
+  semi_join(hfa_keys, by = c("id", "eye", "visit"))
+
+analyze_visual_field_data()
+
 ```
 
 # Study summary
