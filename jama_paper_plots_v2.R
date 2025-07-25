@@ -293,9 +293,17 @@ hfaplot_advancedGON <- meanSensitivity %>%
 
 (rtplot_healthy + hfaplot_healthy)/
   (rtplot_overallGON + hfaplot_overallGON)
-rtplot_earlyGON + hfaplot_earlyGON 
-rtplot_moderateGON + hfaplot_moderateGON 
+ggsave("plots/healthygon.png", width = 10, height = 10)
+
+rtplot_earlyGON + hfaplot_earlyGON
+ggsave("plots/earlygon.png", width = 10, height = 6)
+
+rtplot_moderateGON + hfaplot_moderateGON
+ggsave("plots/moderategon.png", width = 10, height = 6)
+
 rtplot_advancedGON + hfaplot_advancedGON
+ggsave("plots/advancedgon.png", width = 10, height = 6)
+
 
 # Fig 2. Bland-Altman (RL/HFA Bland-Altman inverse so line goes up with lower dBs).
 blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
@@ -306,10 +314,89 @@ print(blandplot +
         # geom_point(position = "jitter") +
         geom_hline(yintercept = 0, color = "black") +
         geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
+        ylim(c(-20, 30)) +
         xlab("dB") +
         ylab("Difference in dB (Retinalogik-HFA)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot for all locations"))
+
+ggsave("plots/blandaltman-allgon.png", width = 7, height = 5)
+
+milddf <- dBdat_filtered %>%
+  filter(classification == "Mild") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  group_by(id, device, eye, x, y) %>%
+  mutate(meandB = mean(dB)) %>%
+  distinct(id, device, eye, x, y, meandB) %>%
+  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
+
+blandplotmild <- bland.altman.plot(milddf$retinalogik, milddf$hfa, graph.sys = "ggplot2", geom_count=T)
+biasmild <- mean(milddf$retinalogik, na.rm=T) - mean(milddf$hfa, na.rm=T)
+
+ print(blandplotmild +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = biasmild, color = "red", linetype = "solid", linewidth = 2) +
+        ylim(c(-20, 30)) +
+        xlab("dB") +
+        ylab("Difference in dB (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(biasmild, 2), "dB")) +
+        ggtitle("Bland-Altman plot for all locations in patients with mild glaucoma"))
+
+ggsave("plots/blandaltman-mild.png", width = 7, height = 5)
+
+moderatedf <- dBdat_filtered %>%
+  filter(classification == "Moderate") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  group_by(id, device, eye, x, y) %>%
+  mutate(meandB = mean(dB)) %>%
+  distinct(id, device, eye, x, y, meandB) %>%
+  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
+
+blandplotmoderate <- bland.altman.plot(moderatedf$retinalogik, moderatedf$hfa, graph.sys = "ggplot2", geom_count=T)
+biasmoderate <- mean(moderatedf$retinalogik, na.rm=T) - mean(moderatedf$hfa, na.rm=T)
+
+print(blandplotmoderate +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = biasmoderate, color = "red", linetype = "solid", linewidth = 2) +
+        ylim(c(-20, 30)) +
+        xlab("dB") +
+        ylab("Difference in dB (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(biasmoderate, 2), "dB")) +
+        ggtitle("Bland-Altman plot for all locations in patients with moderate glaucoma"))
+
+ggsave("plots/blandaltman-moderate.png", width = 7, height = 5)
+
+advanceddf <- dBdat_filtered %>%
+  filter(classification == "Advanced") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  group_by(id, device, eye, x, y) %>%
+  mutate(meandB = mean(dB)) %>%
+  distinct(id, device, eye, x, y, meandB) %>%
+  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
+
+blandplotadvanced <- bland.altman.plot(advanceddf$retinalogik, advanceddf$hfa, graph.sys = "ggplot2", geom_count=T)
+biasadvanced <- mean(advanceddf$retinalogik, na.rm=T) - mean(advanceddf$hfa, na.rm=T)
+
+print(blandplotadvanced +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = biasadvanced, color = "red", linetype = "solid", linewidth = 2) +
+        ylim(c(-20, 30)) +
+        xlab("dB") +
+        ylab("Difference in dB (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(biasadvanced, 2), "dB")) +
+        ggtitle("Bland-Altman plot for all locations in patients with advanced glaucoma"))
+
+ggsave("plots/blandaltman-advanced.png", width = 7, height = 5)
+
 
 # Fig 2 Hexbin Plots (polynomial line through Hexbin)
 df %>%
@@ -326,6 +413,8 @@ df %>%
   ylim(-2, 40) +
   theme_bw()
 
+ggsave("plots/hexbin40.png", width = 5, height = 5)
+
 df %>%
   ggplot(aes(x = df$hfa, y = df$retinalogik)) +
   geom_hex(bins = 30) +
@@ -339,6 +428,8 @@ df %>%
   xlim(-2, 40) +
   ylim(-2, 40) +
   theme_bw()
+
+ggsave("plots/hexbin30.png", width = 5, height = 5)
 
 ## Table
 # healthytable <- dBdat_filtered %>%
