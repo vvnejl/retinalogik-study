@@ -21,7 +21,7 @@ output:
 Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
 
 * 2025-Jun-04: Created separate .Rmd file as index.Rmd was getting very cluttered.
-* 2025-Jul-16: Scripted using latest dataset with 1st 2 visits removed & reliable data & 1 eye only.
+* 2025-Jul-16: Scripted using latest dataset with 1st 2 visits removed using reliable data & 1 eye only.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
