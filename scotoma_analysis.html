@@ -1617,7 +1617,7 @@ Technologies, Inc.</a></h4>
 <h2>Setup</h2>
 <div id="versioning" class="section level3">
 <h3>Versioning</h3>
-<p>Last updated on 2025-Jul-28 at 03:19 PM.</p>
+<p>Last updated on 2025-Jul-30 at 08:39 AM.</p>
 <ul>
 <li>2025-Jun-04: Created separate .Rmd file as index.Rmd was getting
 very cluttered.</li>
@@ -1691,6 +1691,27 @@ library(spatstat.geom)
 ## The following object is masked from &#39;package:patchwork&#39;:
 ## 
 ##     area
+library(data.table)
+## 
+## Attaching package: &#39;data.table&#39;
+## 
+## The following object is masked from &#39;package:spatstat.geom&#39;:
+## 
+##     shift
+## 
+## The following objects are masked from &#39;package:lubridate&#39;:
+## 
+##     hour, isoweek, mday, minute, month, quarter, second, wday, week,
+##     yday, year
+## 
+## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     between, first, last
+## 
+## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     transpose
+library(ggplot2)
 
 sessionInfo()
 ## R version 4.5.0 (2025-04-11)
@@ -1711,37 +1732,37 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] spatstat.geom_3.5-0   spatstat.univar_3.1-4 spatstat.data_3.1-6  
-##  [4] patchwork_1.3.1       RColorBrewer_1.1-3    spdep_1.3-13         
-##  [7] spData_2.3.4          sf_1.0-21             gridExtra_2.3        
-## [10] htmltools_0.5.8.1     svglite_2.2.1         viridis_0.6.5        
-## [13] viridisLite_0.4.2     plotly_4.11.0         DT_0.33              
-## [16] here_1.0.1            lubridate_1.9.4       forcats_1.0.0        
-## [19] stringr_1.5.1         dplyr_1.1.4           purrr_1.1.0          
-## [22] readr_2.1.5           tidyr_1.3.1           tibble_3.3.0         
-## [25] ggplot2_3.5.2         tidyverse_2.0.0      
+##  [1] data.table_1.17.8     spatstat.geom_3.5-0   spatstat.univar_3.1-4
+##  [4] spatstat.data_3.1-6   patchwork_1.3.1       RColorBrewer_1.1-3   
+##  [7] spdep_1.3-13          spData_2.3.4          sf_1.0-21            
+## [10] gridExtra_2.3         htmltools_0.5.8.1     svglite_2.2.1        
+## [13] viridis_0.6.5         viridisLite_0.4.2     plotly_4.11.0        
+## [16] DT_0.33               here_1.0.1            lubridate_1.9.4      
+## [19] forcats_1.0.0         stringr_1.5.1         dplyr_1.1.4          
+## [22] purrr_1.1.0           readr_2.1.5           tidyr_1.3.1          
+## [25] tibble_3.3.0          ggplot2_3.5.2         tidyverse_2.0.0      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] gtable_0.3.6         xfun_0.52            bslib_0.9.0         
 ##  [4] htmlwidgets_1.6.4    lattice_0.22-7       tzdb_0.5.0          
 ##  [7] spatstat.utils_3.1-5 vctrs_0.6.5          tools_4.5.0         
 ## [10] generics_0.1.4       proxy_0.4-27         pkgconfig_2.0.3     
-## [13] Matrix_1.7-3         KernSmooth_2.23-26   data.table_1.17.8   
-## [16] lifecycle_1.0.4      compiler_4.5.0       farver_2.1.2        
-## [19] deldir_2.0-4         textshaping_1.0.1    class_7.3-23        
-## [22] sass_0.4.10          yaml_2.3.10          lazyeval_0.2.2      
-## [25] pillar_1.11.0        jquerylib_0.1.4      classInt_0.4-11     
-## [28] cachem_1.1.0         wk_0.9.4             boot_1.3-31         
-## [31] tidyselect_1.2.1     digest_0.6.37        stringi_1.8.7       
-## [34] polyclip_1.10-7      rprojroot_2.1.0      fastmap_1.2.0       
-## [37] grid_4.5.0           cli_3.6.5            magrittr_2.0.3      
-## [40] e1071_1.7-16         withr_3.0.2          scales_1.4.0        
-## [43] sp_2.2-0             timechange_0.3.0     rmarkdown_2.29      
-## [46] httr_1.4.7           hms_1.1.3            evaluate_1.0.4      
-## [49] knitr_1.50           s2_1.1.9             rlang_1.1.6         
-## [52] Rcpp_1.1.0           glue_1.8.0           DBI_1.2.3           
-## [55] rstudioapi_0.17.1    jsonlite_2.0.0       R6_2.6.1            
-## [58] systemfonts_1.2.3    units_0.8-7
+## [13] Matrix_1.7-3         KernSmooth_2.23-26   lifecycle_1.0.4     
+## [16] compiler_4.5.0       farver_2.1.2         deldir_2.0-4        
+## [19] textshaping_1.0.1    class_7.3-23         sass_0.4.10         
+## [22] yaml_2.3.10          lazyeval_0.2.2       pillar_1.11.0       
+## [25] jquerylib_0.1.4      classInt_0.4-11      cachem_1.1.0        
+## [28] wk_0.9.4             boot_1.3-31          tidyselect_1.2.1    
+## [31] digest_0.6.37        stringi_1.8.7        polyclip_1.10-7     
+## [34] rprojroot_2.1.0      fastmap_1.2.0        grid_4.5.0          
+## [37] cli_3.6.5            magrittr_2.0.3       e1071_1.7-16        
+## [40] withr_3.0.2          scales_1.4.0         sp_2.2-0            
+## [43] timechange_0.3.0     rmarkdown_2.29       httr_1.4.7          
+## [46] hms_1.1.3            evaluate_1.0.4       knitr_1.50          
+## [49] s2_1.1.9             rlang_1.1.6          Rcpp_1.1.0          
+## [52] glue_1.8.0           DBI_1.2.3            rstudioapi_0.17.1   
+## [55] jsonlite_2.0.0       R6_2.6.1             systemfonts_1.2.3   
+## [58] units_0.8-7
 
 # default chunk options
 knitr::opts_chunk$set(
@@ -1769,10 +1790,7 @@ consecutive examinations with reliability indices better than 30% were
 included.</p>
 <div id="analysis" class="section level2">
 <h2>Analysis</h2>
-<pre class="r"><code>library(here)
-library(tidyverse)
-
-rm(list = ls()) 
+<pre class="r"><code>rm(list = ls()) 
 
 load(here(&quot;dBdat.Rda&quot;))
 load(here(&quot;retinalogik_hfadatawpsd.Rda&quot;))
@@ -1835,58 +1853,15 @@ psddf &lt;- psdpvalues_hfa %&gt;%
 #write.csv(dBdat_filtered,&quot;~/Downloads/alldata.csv&quot;, row.names = FALSE)
   
 # Install and load necessary packages if you don&#39;t have them
-# install.packages(&quot;tidyverse&quot;)
-# install.packages(&quot;data.table&quot;)
-library(tidyverse)
-library(data.table)
-&gt; 
-&gt; Attaching package: &#39;data.table&#39;
-&gt; The following object is masked from &#39;package:spatstat.geom&#39;:
-&gt; 
-&gt;     shift
-&gt; The following objects are masked from &#39;package:lubridate&#39;:
-&gt; 
-&gt;     hour, isoweek, mday, minute, month, quarter, second, wday, week,
-&gt;     yday, year
-&gt; The following objects are masked from &#39;package:dplyr&#39;:
-&gt; 
-&gt;     between, first, last
-&gt; The following object is masked from &#39;package:purrr&#39;:
-&gt; 
-&gt;     transpose
-library(ggplot2)
-library(RColorBrewer)
+# library(data.table)
+# library(ggplot2)
+# library(RColorBrewer)
 
 # --- 1. Load the data ---
 scotoma_hfa &lt;- psddf
 alldata &lt;- dBdat_filtered
 
 # --- 2. Define Blind Spots and Exclusion Points ---
-# Blind spots (BS) and points directly above/below BS for both eyes
-# For X coordinate, the blind spot is at 15. The hemifield check for contiguity
-# means we need to consider the sign of x. For a right eye (R), positive x is temporal field,
-# negative x is nasal. For a left eye (L), positive x is nasal, negative x is temporal.
-# The blind spot is in the temporal hemifield for both eyes.
-
-# However, the coordinates given (15, +3), (15, -3) are likely absolute HFA coordinates.
-# Let&#39;s assume (15,y) is the blind spot region regardless of eye,
-# and (15, +9), (15, -9) are the points directly above/below.
-# The crucial part is &quot;excluding points directly above or below the blind spots&quot;
-# and &quot;within the same hemifield&quot;.
-
-# Standard HFA coordinates:
-# Right eye: temporal field is x &gt; 0, nasal field is x &lt; 0. Blind spot is ~ (15, -3) and (15, 3)
-# Left eye: temporal field is x &lt; 0, nasal field is x &gt; 0. Blind spot is ~ (-15, -3) and (-15, 3)
-# The problem statement gives (15, +3) and (15, -3) for *both* eyes, which is unusual for standard HFA.
-# Assuming this refers to the *absolute value* of the x-coordinate for the blind spot region
-# and the actual x-coordinates would be (15, Y) for right eye and (-15, Y) for left eye.
-# Let&#39;s clarify this interpretation:
-# Given: Blind spots are (15, +3) and (15, -3) for both left and right eye.
-# Points directly above/below are (15, +9) and (15, -9) for both left and right eye.
-
-# This implies a simplified coordinate system or a specific device output.
-# I will interpret (15, Y) as the critical X coordinate for blind spots for both eyes.
-
 excluded_points &lt;- data.table(
   x = c(15, 15, 15, 15),
   y = c(3, -3, 9, -9)
@@ -1918,132 +1893,6 @@ scotoma_candidates &lt;- scotoma_candidates %&gt;%
 
 # Initialize scotoma_id column
 scotoma_candidates$scotoma_group &lt;- NA_character_
-
-# A function to find contiguous points
-# This is a simplified contiguity check. A more robust solution would involve graph theory or
-# iterative region growing, which can be computationally intensive for large datasets.
-# This version checks for direct neighbors in a grid-like fashion.
-# For diagonal, horizontal, vertical: check (x+/-dx, y+/-dy) where dx, dy are from {-6, 0, 6} based on HFA grid spacing.
-# Assuming standard 6-degree spacing for test points.
-
-# Let&#39;s make a grid of possible neighbors (dx, dy)
-# For standard HFA, common spacing is 6 degrees.
-# So, neighbors can be:
-# (x, y+6), (x, y-6), (x+6, y), (x-6, y) (horizontal/vertical)
-# (x+6, y+6), (x+6, y-6), (x-6, y+6), (x-6, y-6) (diagonal)
-# Given the varied coordinates in HFA, direct +/- 6 might not always be the case.
-# A simpler approach for contiguity is to check if a point (x&#39;, y&#39;) is in the set of points,
-# and abs(x-x&#39;) &lt;= 6 and abs(y-y&#39;) &lt;= 6 and not both 0.
-
-# find_contiguous_scotoma &lt;- function(data) {
-#   scotoma_data &lt;- data.table(data)
-#   scotoma_data[, `:=`(scotoma_flag = FALSE, scotoma_cluster_id = NA_integer_)]
-# 
-#   current_cluster_id &lt;- 0
-# 
-#   # Iterate through each unique patient, eye, and hemifield
-#   for (patient_id in unique(scotoma_data$id)) {
-#     for (eye_val in unique(scotoma_data[id == patient_id]$eye)) {
-#       for (hf_val in unique(scotoma_data[id == patient_id &amp; eye == eye_val]$hemifield)) {
-# 
-#         subset_data &lt;- scotoma_data[id == patient_id &amp; eye == eye_val &amp; hemifield == hf_val]
-# 
-#         if (nrow(subset_data) == 0) next
-# 
-#         # Process points within this subset
-#         for (i in 1:nrow(subset_data)) {
-#           if (!is.na(subset_data$scotoma_cluster_id[i])) {
-#             next # Already processed as part of a cluster
-#           }
-# 
-#           current_cluster_id &lt;- current_cluster_id + 1
-#           stack &lt;- list(subset_data[i, c(&quot;x&quot;, &quot;y&quot;, &quot;psd_p&quot;)]) # Store x, y, and psd_p to check p&lt;1 condition
-#           cluster_points &lt;- list()
-#           cluster_indices &lt;- c(i) # Store original indices in subset_data
-# 
-#           while (length(stack) &gt; 0) {
-#             current_point &lt;- stack[[1]]
-#             stack &lt;- stack[-1]
-# 
-#             # Add to current cluster
-#             cluster_points &lt;- c(cluster_points, list(current_point))
-# 
-#             # Find neighbors
-#             current_x &lt;- current_point$x
-#             current_y &lt;- current_point$y
-# 
-#             # Iterate through all other points in the subset to find neighbors
-#             for (j in 1:nrow(subset_data)) {
-#               if (j %in% cluster_indices || !is.na(subset_data$scotoma_cluster_id[j])) {
-#                 next # Already in current cluster or processed in another cluster
-#               }
-# 
-#               neighbor_x &lt;- subset_data$x[j]
-#               neighbor_y &lt;- subset_data$y[j]
-# 
-#               # Check for contiguity (within a 6-degree grid or direct neighbors)
-#               # Assuming HFA grid points are multiples of 3 or 6, simplified to absolute difference.
-#               # This captures vertical, horizontal, and diagonal adjacencies for typical grids.
-#               is_contiguous &lt;- (abs(current_x - neighbor_x) &lt;= 6 &amp;&amp; abs(current_y - neighbor_y) &lt;= 6) &amp;&amp;
-#                                 !(current_x == neighbor_x &amp;&amp; current_y == neighbor_y) # Not the same point
-# 
-#               if (is_contiguous) {
-#                 # Add neighbor to stack if not already processed
-#                 if (!is.na(subset_data$scotoma_cluster_id[j])) { # Already part of another cluster
-#                   next
-#                 }
-#                 # Check if this neighbor is already in the current stack or cluster_points to avoid infinite loop
-#                 is_already_in_stack_or_cluster &lt;- FALSE
-#                 for(k in seq_along(stack)){
-#                   if(stack[[k]]$x == neighbor_x &amp;&amp; stack[[k]]$y == neighbor_y){
-#                     is_already_in_stack_or_cluster &lt;- TRUE
-#                     break
-#                   }
-#                 }
-#                 if (!is_already_in_stack_or_cluster) {
-#                   for(k in seq_along(cluster_points)){
-#                     if(cluster_points[[k]]$x == neighbor_x &amp;&amp; cluster_points[[k]]$y == neighbor_y){
-#                       is_already_in_stack_or_cluster &lt;- TRUE
-#                       break
-#                     }
-#                   }
-#                 }
-# 
-#                 if (!is_already_in_stack_or_cluster) {
-#                   stack &lt;- c(stack, list(subset_data[j, c(&quot;x&quot;, &quot;y&quot;, &quot;psd_p&quot;)]))
-#                   cluster_indices &lt;- c(cluster_indices, j) # Mark index as processed for this cluster
-#                 }
-#               }
-#             }
-#           }
-# 
-#           # After exploring all contiguous points for this cluster
-#           if (length(cluster_points) &gt;= 3) {
-#             # Check for at least 1 point with psd_p &lt; 1
-#             has_p_less_than_1 &lt;- any(sapply(cluster_points, function(p) p$psd_p &lt; 1))
-# 
-#             if (has_p_less_than_1) {
-#               # Mark these points as scotoma
-#               original_indices &lt;- subset_data$original_row_index[cluster_indices] # Assuming we added original row index
-#               scotoma_data[original_indices, `:=`(scotoma_flag = TRUE, scotoma_cluster_id = current_cluster_id)]
-#             }
-#           }
-#           # Mark all points in the current cluster (even if not a scotoma) to avoid re-processing
-#           scotoma_data[subset_data$original_row_index[cluster_indices], scotoma_cluster_id := current_cluster_id]
-#         }
-#       }
-#     }
-#   }
-#   return(scotoma_data)
-# }
-
-
-
-# Add an original row index to `scotoma_candidates` before processing
-#scotoma_candidates$original_row_index &lt;- 1:nrow(scotoma_candidates)
-
-# Apply the scotoma identification function
-#scotoma_identified_data &lt;- find_contiguous_scotoma(scotoma_candidates)
 
 # Define neighbor offsets for a 6-degree grid (standard HFA)
 # These represent horizontal, vertical, and diagonal neighbors
@@ -2158,69 +2007,7 @@ all_scotoma_points &lt;- dBdat_filtered %&gt;%
   rename(retinalogik = dB.x, hfa = dB.y) %&gt;%
   select(!c(device.x, device.y)) # Remove redundant device columns
 
-# all_scotoma_points &lt;- dBdat_filtered %&gt;%
-#   filter(device==&quot;retinalogik&quot;) %&gt;%
-#   select(id, eye, x, y, device, visit, dB, classification) %&gt;%
-#   merge(hfa_scotoma_points, by=c(&quot;id&quot;, &quot;eye&quot;, &quot;x&quot;, &quot;y&quot;, &quot;visit&quot;)) %&gt;%
-#   rename(retinalogik = dB.x, hfa = dB.y) %&gt;%
-#   select(!c(device.x, device.y))
-
 #clipr::write_clip(all_scotoma_points)
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
-&gt; 
-&gt;   Paired t-test
-&gt; 
-&gt; data:  Pair(retinalogik, hfa)
-&gt; t = 17.248, df = 421, p-value &lt; 2.2e-16
-&gt; alternative hypothesis: true mean difference is not equal to 0
-&gt; 95 percent confidence interval:
-&gt;  6.321965 7.948177
-&gt; sample estimates:
-&gt; mean difference 
-&gt;        7.135071
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% &quot;Mild&quot;)
-&gt; 
-&gt;   One Sample t-test
-&gt; 
-&gt; data:  Pair(retinalogik, hfa)
-&gt; t = 40.603, df = 187, p-value &lt; 2.2e-16
-&gt; alternative hypothesis: true mean is not equal to 0
-&gt; 95 percent confidence interval:
-&gt;  20.99184 23.13582
-&gt; sample estimates:
-&gt; mean of x 
-&gt;  22.06383
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% &quot;Moderate&quot;)
-&gt; 
-&gt;   One Sample t-test
-&gt; 
-&gt; data:  Pair(retinalogik, hfa)
-&gt; t = 36.061, df = 379, p-value &lt; 2.2e-16
-&gt; alternative hypothesis: true mean is not equal to 0
-&gt; 95 percent confidence interval:
-&gt;  16.61548 18.53189
-&gt; sample estimates:
-&gt; mean of x 
-&gt;  17.57368
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% &quot;Advanced&quot;)
-&gt; 
-&gt;   One Sample t-test
-&gt; 
-&gt; data:  Pair(retinalogik, hfa)
-&gt; t = 17.182, df = 275, p-value &lt; 2.2e-16
-&gt; alternative hypothesis: true mean is not equal to 0
-&gt; 95 percent confidence interval:
-&gt;   9.21036 11.59399
-&gt; sample estimates:
-&gt; mean of x 
-&gt;  10.40217
 
 # --- 4. Plot for verification ---
 long_data &lt;- all_scotoma_points %&gt;%
@@ -2261,6 +2048,107 @@ create_vf_plot &lt;- function(data_subset) {
     coord_fixed(ratio = 1)
 }
 </code></pre>
+<pre class="r"><code>t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
+&gt; 
+&gt;   Paired t-test
+&gt; 
+&gt; data:  Pair(retinalogik, hfa)
+&gt; t = 17.248, df = 421, p-value &lt; 2.2e-16
+&gt; alternative hypothesis: true mean difference is not equal to 0
+&gt; 95 percent confidence interval:
+&gt;  6.321965 7.948177
+&gt; sample estimates:
+&gt; mean difference 
+&gt;        7.135071
+
+ttest_mild &lt;- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+       subset = classification %in% &quot;Mild&quot;)
+p_mild &lt;- ttest_mild$p.value
+means_mild &lt;- all_scotoma_points %&gt;%
+  filter(classification==&quot;Mild&quot;) %&gt;%
+  summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
+            Mean_HFA = mean(hfa, na.rm = TRUE))
+
+ttest_moderate &lt;- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+       subset = classification %in% &quot;Moderate&quot;)
+p_moderate &lt;- ttest_moderate$p.value
+means_moderate &lt;- all_scotoma_points %&gt;%
+  filter(classification==&quot;Moderate&quot;) %&gt;%
+  summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
+            Mean_HFA = mean(hfa, na.rm = TRUE))
+
+ttest_advanced &lt;- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+       subset = classification %in% &quot;Advanced&quot;)
+p_advanced &lt;- ttest_advanced$p.value
+means_advanced &lt;- all_scotoma_points %&gt;%
+  filter(classification==&quot;Advanced&quot;) %&gt;%
+  summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
+            Mean_HFA = mean(hfa, na.rm = TRUE))
+
+# Collect p-values
+p_values &lt;- c(p_mild, p_moderate, p_advanced)
+
+# 2. Apply Bonferroni correction using p.adjust
+adjusted_p_values &lt;- p.adjust(p_values, method = &quot;bonferroni&quot;)
+
+# Print the adjusted p-values
+names(adjusted_p_values) &lt;- c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;) # Adjust names for clarity if needed
+
+library(knitr)
+
+ttestdf &lt;- data.frame(
+  #Group = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;), # Added Group column for clarity
+  Retinalogik_means = c(means_mild[1,1], means_moderate[1,1], means_advanced[1,1]),
+  HFA_means = c(means_mild[1,2], means_moderate[1,2], means_advanced[1,2]), 
+  P_Value = ifelse(p_values &lt; 0.01, &quot;&lt; 0.01&quot;,
+                               as.character(round(p_values, 2))),
+  Bonferroni_adjusted_P_Value = adjusted_p_values
+) %&gt;%
+  mutate(
+    # Create a new column for the formatted p-value display
+    Formatted_P_Value = ifelse(Bonferroni_adjusted_P_Value &lt; 0.01, &quot;&lt; 0.01&quot;,
+                               as.character(round(Bonferroni_adjusted_P_Value, 2)))
+  ) %&gt;%
+  select(-Bonferroni_adjusted_P_Value)
+
+ttestdf %&gt;% # Remove the original numeric adjusted column
+  kable(format = &quot;simple&quot;,
+        col.names = c(&quot;Retinalogik Means (dB)&quot;, &quot;HFA Means (dB)&quot;, &quot;Unadjusted P-value&quot;, &quot;Bonferroni Adjusted P-value&quot;),
+        align=&quot;c&quot;) </code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="center">Retinalogik Means (dB)</th>
+<th align="center">HFA Means (dB)</th>
+<th align="center">Unadjusted P-value</th>
+<th align="center">Bonferroni Adjusted P-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mild</td>
+<td align="center">25.30851</td>
+<td align="center">18.819149</td>
+<td align="center">&lt; 0.01</td>
+<td align="center">&lt; 0.01</td>
+</tr>
+<tr class="even">
+<td>Moderate</td>
+<td align="center">21.68947</td>
+<td align="center">13.457895</td>
+<td align="center">&lt; 0.01</td>
+<td align="center">&lt; 0.01</td>
+</tr>
+<tr class="odd">
+<td>Advanced</td>
+<td align="center">13.43478</td>
+<td align="center">7.369565</td>
+<td align="center">&lt; 0.01</td>
+<td align="center">&lt; 0.01</td>
+</tr>
+</tbody>
+</table>
 <div id="plots-for-verification" class="section level3">
 <h3>Plots for verification</h3>
 <div class="tabset tabset-fade">
@@ -2333,8 +2221,8 @@ for (current_id in unique(long_data$id)) {
 </div>
 </div>
 </div>
-<div id="one-patient-all-visits-no-filters" class="section level2">
-<h2>One patient, all visits, no filters</h2>
+<div id="one-patient-all-visits-no-filters-right-eye" class="section level2">
+<h2>One patient, all visits, no filters, right eye</h2>
 <pre class="r"><code># --- Define the main analysis function ---
 analyze_visual_field_data &lt;- function(my_data_input, rttmp_raw_input) {
 

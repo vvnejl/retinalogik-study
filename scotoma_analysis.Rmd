@@ -42,6 +42,8 @@ library(spdep)
 library(RColorBrewer)
 library(patchwork)
 library(spatstat.geom)
+library(data.table)
+library(ggplot2)
 
 sessionInfo()
 
@@ -60,9 +62,6 @@ We define a scotoma as the presence of at least 3 vertically, horizontally, or d
 
 ## Analysis 
 ```{r analysis, collapse=TRUE}
-library(here)
-library(tidyverse)
-
 rm(list = ls()) 
 
 load(here("dBdat.Rda"))
@@ -126,43 +125,15 @@ psddf <- psdpvalues_hfa %>%
 #write.csv(dBdat_filtered,"~/Downloads/alldata.csv", row.names = FALSE)
   
 # Install and load necessary packages if you don't have them
-# install.packages("tidyverse")
-# install.packages("data.table")
-library(tidyverse)
-library(data.table)
-library(ggplot2)
-library(RColorBrewer)
+# library(data.table)
+# library(ggplot2)
+# library(RColorBrewer)
 
 # --- 1. Load the data ---
 scotoma_hfa <- psddf
 alldata <- dBdat_filtered
 
 # --- 2. Define Blind Spots and Exclusion Points ---
-# Blind spots (BS) and points directly above/below BS for both eyes
-# For X coordinate, the blind spot is at 15. The hemifield check for contiguity
-# means we need to consider the sign of x. For a right eye (R), positive x is temporal field,
-# negative x is nasal. For a left eye (L), positive x is nasal, negative x is temporal.
-# The blind spot is in the temporal hemifield for both eyes.
-
-# However, the coordinates given (15, +3), (15, -3) are likely absolute HFA coordinates.
-# Let's assume (15,y) is the blind spot region regardless of eye,
-# and (15, +9), (15, -9) are the points directly above/below.
-# The crucial part is "excluding points directly above or below the blind spots"
-# and "within the same hemifield".
-
-# Standard HFA coordinates:
-# Right eye: temporal field is x > 0, nasal field is x < 0. Blind spot is ~ (15, -3) and (15, 3)
-# Left eye: temporal field is x < 0, nasal field is x > 0. Blind spot is ~ (-15, -3) and (-15, 3)
-# The problem statement gives (15, +3) and (15, -3) for *both* eyes, which is unusual for standard HFA.
-# Assuming this refers to the *absolute value* of the x-coordinate for the blind spot region
-# and the actual x-coordinates would be (15, Y) for right eye and (-15, Y) for left eye.
-# Let's clarify this interpretation:
-# Given: Blind spots are (15, +3) and (15, -3) for both left and right eye.
-# Points directly above/below are (15, +9) and (15, -9) for both left and right eye.
-
-# This implies a simplified coordinate system or a specific device output.
-# I will interpret (15, Y) as the critical X coordinate for blind spots for both eyes.
-
 excluded_points <- data.table(
   x = c(15, 15, 15, 15),
   y = c(3, -3, 9, -9)
@@ -194,132 +165,6 @@ scotoma_candidates <- scotoma_candidates %>%
 
 # Initialize scotoma_id column
 scotoma_candidates$scotoma_group <- NA_character_
-
-# A function to find contiguous points
-# This is a simplified contiguity check. A more robust solution would involve graph theory or
-# iterative region growing, which can be computationally intensive for large datasets.
-# This version checks for direct neighbors in a grid-like fashion.
-# For diagonal, horizontal, vertical: check (x+/-dx, y+/-dy) where dx, dy are from {-6, 0, 6} based on HFA grid spacing.
-# Assuming standard 6-degree spacing for test points.
-
-# Let's make a grid of possible neighbors (dx, dy)
-# For standard HFA, common spacing is 6 degrees.
-# So, neighbors can be:
-# (x, y+6), (x, y-6), (x+6, y), (x-6, y) (horizontal/vertical)
-# (x+6, y+6), (x+6, y-6), (x-6, y+6), (x-6, y-6) (diagonal)
-# Given the varied coordinates in HFA, direct +/- 6 might not always be the case.
-# A simpler approach for contiguity is to check if a point (x', y') is in the set of points,
-# and abs(x-x') <= 6 and abs(y-y') <= 6 and not both 0.
-
-# find_contiguous_scotoma <- function(data) {
-#   scotoma_data <- data.table(data)
-#   scotoma_data[, `:=`(scotoma_flag = FALSE, scotoma_cluster_id = NA_integer_)]
-# 
-#   current_cluster_id <- 0
-# 
-#   # Iterate through each unique patient, eye, and hemifield
-#   for (patient_id in unique(scotoma_data$id)) {
-#     for (eye_val in unique(scotoma_data[id == patient_id]$eye)) {
-#       for (hf_val in unique(scotoma_data[id == patient_id & eye == eye_val]$hemifield)) {
-# 
-#         subset_data <- scotoma_data[id == patient_id & eye == eye_val & hemifield == hf_val]
-# 
-#         if (nrow(subset_data) == 0) next
-# 
-#         # Process points within this subset
-#         for (i in 1:nrow(subset_data)) {
-#           if (!is.na(subset_data$scotoma_cluster_id[i])) {
-#             next # Already processed as part of a cluster
-#           }
-# 
-#           current_cluster_id <- current_cluster_id + 1
-#           stack <- list(subset_data[i, c("x", "y", "psd_p")]) # Store x, y, and psd_p to check p<1 condition
-#           cluster_points <- list()
-#           cluster_indices <- c(i) # Store original indices in subset_data
-# 
-#           while (length(stack) > 0) {
-#             current_point <- stack[[1]]
-#             stack <- stack[-1]
-# 
-#             # Add to current cluster
-#             cluster_points <- c(cluster_points, list(current_point))
-# 
-#             # Find neighbors
-#             current_x <- current_point$x
-#             current_y <- current_point$y
-# 
-#             # Iterate through all other points in the subset to find neighbors
-#             for (j in 1:nrow(subset_data)) {
-#               if (j %in% cluster_indices || !is.na(subset_data$scotoma_cluster_id[j])) {
-#                 next # Already in current cluster or processed in another cluster
-#               }
-# 
-#               neighbor_x <- subset_data$x[j]
-#               neighbor_y <- subset_data$y[j]
-# 
-#               # Check for contiguity (within a 6-degree grid or direct neighbors)
-#               # Assuming HFA grid points are multiples of 3 or 6, simplified to absolute difference.
-#               # This captures vertical, horizontal, and diagonal adjacencies for typical grids.
-#               is_contiguous <- (abs(current_x - neighbor_x) <= 6 && abs(current_y - neighbor_y) <= 6) &&
-#                                 !(current_x == neighbor_x && current_y == neighbor_y) # Not the same point
-# 
-#               if (is_contiguous) {
-#                 # Add neighbor to stack if not already processed
-#                 if (!is.na(subset_data$scotoma_cluster_id[j])) { # Already part of another cluster
-#                   next
-#                 }
-#                 # Check if this neighbor is already in the current stack or cluster_points to avoid infinite loop
-#                 is_already_in_stack_or_cluster <- FALSE
-#                 for(k in seq_along(stack)){
-#                   if(stack[[k]]$x == neighbor_x && stack[[k]]$y == neighbor_y){
-#                     is_already_in_stack_or_cluster <- TRUE
-#                     break
-#                   }
-#                 }
-#                 if (!is_already_in_stack_or_cluster) {
-#                   for(k in seq_along(cluster_points)){
-#                     if(cluster_points[[k]]$x == neighbor_x && cluster_points[[k]]$y == neighbor_y){
-#                       is_already_in_stack_or_cluster <- TRUE
-#                       break
-#                     }
-#                   }
-#                 }
-# 
-#                 if (!is_already_in_stack_or_cluster) {
-#                   stack <- c(stack, list(subset_data[j, c("x", "y", "psd_p")]))
-#                   cluster_indices <- c(cluster_indices, j) # Mark index as processed for this cluster
-#                 }
-#               }
-#             }
-#           }
-# 
-#           # After exploring all contiguous points for this cluster
-#           if (length(cluster_points) >= 3) {
-#             # Check for at least 1 point with psd_p < 1
-#             has_p_less_than_1 <- any(sapply(cluster_points, function(p) p$psd_p < 1))
-# 
-#             if (has_p_less_than_1) {
-#               # Mark these points as scotoma
-#               original_indices <- subset_data$original_row_index[cluster_indices] # Assuming we added original row index
-#               scotoma_data[original_indices, `:=`(scotoma_flag = TRUE, scotoma_cluster_id = current_cluster_id)]
-#             }
-#           }
-#           # Mark all points in the current cluster (even if not a scotoma) to avoid re-processing
-#           scotoma_data[subset_data$original_row_index[cluster_indices], scotoma_cluster_id := current_cluster_id]
-#         }
-#       }
-#     }
-#   }
-#   return(scotoma_data)
-# }
-
-
-
-# Add an original row index to `scotoma_candidates` before processing
-#scotoma_candidates$original_row_index <- 1:nrow(scotoma_candidates)
-
-# Apply the scotoma identification function
-#scotoma_identified_data <- find_contiguous_scotoma(scotoma_candidates)
 
 # Define neighbor offsets for a 6-degree grid (standard HFA)
 # These represent horizontal, vertical, and diagonal neighbors
@@ -434,25 +279,7 @@ all_scotoma_points <- dBdat_filtered %>%
   rename(retinalogik = dB.x, hfa = dB.y) %>%
   select(!c(device.x, device.y)) # Remove redundant device columns
 
-# all_scotoma_points <- dBdat_filtered %>%
-#   filter(device=="retinalogik") %>%
-#   select(id, eye, x, y, device, visit, dB, classification) %>%
-#   merge(hfa_scotoma_points, by=c("id", "eye", "x", "y", "visit")) %>%
-#   rename(retinalogik = dB.x, hfa = dB.y) %>%
-#   select(!c(device.x, device.y))
-
 #clipr::write_clip(all_scotoma_points)
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% "Mild")
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% "Moderate")
-
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% "Advanced")
 
 # --- 4. Plot for verification ---
 long_data <- all_scotoma_points %>%
@@ -495,6 +322,66 @@ create_vf_plot <- function(data_subset) {
 
 ```
 
+```{r stats}
+t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
+
+ttest_mild <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+       subset = classification %in% "Mild")
+p_mild <- ttest_mild$p.value
+means_mild <- all_scotoma_points %>%
+  filter(classification=="Mild") %>%
+  summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
+            Mean_HFA = mean(hfa, na.rm = TRUE))
+
+ttest_moderate <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+       subset = classification %in% "Moderate")
+p_moderate <- ttest_moderate$p.value
+means_moderate <- all_scotoma_points %>%
+  filter(classification=="Moderate") %>%
+  summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
+            Mean_HFA = mean(hfa, na.rm = TRUE))
+
+ttest_advanced <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+       subset = classification %in% "Advanced")
+p_advanced <- ttest_advanced$p.value
+means_advanced <- all_scotoma_points %>%
+  filter(classification=="Advanced") %>%
+  summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
+            Mean_HFA = mean(hfa, na.rm = TRUE))
+
+# Collect p-values
+p_values <- c(p_mild, p_moderate, p_advanced)
+
+# 2. Apply Bonferroni correction using p.adjust
+adjusted_p_values <- p.adjust(p_values, method = "bonferroni")
+
+# Print the adjusted p-values
+names(adjusted_p_values) <- c("Mild", "Moderate", "Advanced") # Adjust names for clarity if needed
+
+library(knitr)
+
+ttestdf <- data.frame(
+  #Group = c("Mild", "Moderate", "Advanced"), # Added Group column for clarity
+  Retinalogik_means = c(means_mild[1,1], means_moderate[1,1], means_advanced[1,1]),
+  HFA_means = c(means_mild[1,2], means_moderate[1,2], means_advanced[1,2]), 
+  P_Value = ifelse(p_values < 0.01, "< 0.01",
+                               as.character(round(p_values, 2))),
+  Bonferroni_adjusted_P_Value = adjusted_p_values
+) %>%
+  mutate(
+    # Create a new column for the formatted p-value display
+    Formatted_P_Value = ifelse(Bonferroni_adjusted_P_Value < 0.01, "< 0.01",
+                               as.character(round(Bonferroni_adjusted_P_Value, 2)))
+  ) %>%
+  select(-Bonferroni_adjusted_P_Value)
+
+ttestdf %>% # Remove the original numeric adjusted column
+  kable(format = "simple",
+        col.names = c("Retinalogik Means (dB)", "HFA Means (dB)", "Unadjusted P-value", "Bonferroni Adjusted P-value"),
+        align="c") 
+
+```
+
 ### Plots for verification
 
 ::: {.tabset .tabset-fade}
@@ -518,7 +405,7 @@ for (current_id in unique(long_data$id)) {
 
 :::
 
-## One patient, all visits, no filters
+## One patient, all visits, no filters, right eye
 ```{r functions}
 # --- Define the main analysis function ---
 analyze_visual_field_data <- function(my_data_input, rttmp_raw_input) {
