@@ -391,10 +391,14 @@ all_scotoma_points %>%
   pivot_longer(cols = c(retinalogik, hfa),
                names_to = "device",
                values_to = "dB") %>%
+  group_by(classification, device) %>%
+  summarise(means = mean(dB), sd = sd(dB)) %>%
   mutate(classification = factor(classification, levels=c('Mild','Moderate','Advanced')),
          device = factor(device, levels = c('retinalogik', 'hfa'))) %>%
-  ggplot(aes(x=classification, y=dB, fill=device)) +
+  ggplot(aes(x=classification, y=means, fill=device)) +
   geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=means-sd, ymax=means+sd), width=.2,
+                 position=position_dodge(.9)) 
   theme_bw()
 ```
 
