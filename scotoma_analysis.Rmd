@@ -398,7 +398,7 @@ all_scotoma_points %>%
   ggplot(aes(x=classification, y=means, fill=device)) +
   geom_bar(stat="identity", position=position_dodge()) +
   geom_errorbar(aes(ymin=means-sd, ymax=means+sd), width=.2,
-                 position=position_dodge(.9)) 
+                 position=position_dodge(.9)) +
   theme_bw()
 ```
 
