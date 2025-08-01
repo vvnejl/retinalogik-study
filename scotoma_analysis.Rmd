@@ -22,6 +22,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 
 * 2025-Jun-04: Created separate .Rmd file as index.Rmd was getting very cluttered.
 * 2025-Jul-16: Scripted using latest dataset with 1st 2 visits removed using reliable data & 1 eye only.
+* 2025-Jul-31: Added t-tests for Mild, Moderate, Advanced groups with Bonferroni correction.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -58,7 +59,7 @@ knitr::opts_chunk$set(
 We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract).
 
 # Methods (very briefly)
-We define a scotoma as the presence of at least 3 vertically, horizontally, or diagonally contiguous test points within the same hemifield on the pattern deviation probability plot at p <5%, with at least 1 point at p <1%, excluding points directly above or below the blind spot. Eyes with consistent glaucomatous VF loss on at least 2 consecutive examinations with reliability indices better than 30% were included. 
+We define a scotoma as the presence of at least 3 vertically, horizontally, or diagonally contiguous test points within the same hemifield on the pattern deviation probability plot at p <5%, with at least 1 point at p <1%, excluding points directly above or below the blind spot. Only eyes with consistent glaucomatous VF loss on at least 2 consecutive examinations with reliability indices better than 30% were included. 
 
 ## Analysis 
 ```{r analysis, collapse=TRUE}
@@ -356,14 +357,16 @@ p_values <- c(p_mild, p_moderate, p_advanced)
 adjusted_p_values <- p.adjust(p_values, method = "bonferroni")
 
 # Print the adjusted p-values
-names(adjusted_p_values) <- c("Mild", "Moderate", "Advanced") # Adjust names for clarity if needed
+names(adjusted_p_values) <- c("Mild", "Moderate", "Advanced") 
 
 library(knitr)
-
 ttestdf <- data.frame(
-  #Group = c("Mild", "Moderate", "Advanced"), # Added Group column for clarity
-  Retinalogik_means = c(means_mild[1,1], means_moderate[1,1], means_advanced[1,1]),
-  HFA_means = c(means_mild[1,2], means_moderate[1,2], means_advanced[1,2]), 
+  Retinalogik_means = c(round(means_mild[1,1], 2),
+                        round(means_moderate[1,1], 2),
+                        round(means_advanced[1,1], 2)),
+  HFA_means = c(round(means_mild[1,2], 2),
+                round(means_moderate[1,2], 2),
+                round(means_advanced[1,2], 2)), 
   P_Value = ifelse(p_values < 0.01, "< 0.01",
                                as.character(round(p_values, 2))),
   Bonferroni_adjusted_P_Value = adjusted_p_values

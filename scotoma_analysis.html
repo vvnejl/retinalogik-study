@@ -1617,12 +1617,14 @@ Technologies, Inc.</a></h4>
 <h2>Setup</h2>
 <div id="versioning" class="section level3">
 <h3>Versioning</h3>
-<p>Last updated on 2025-Jul-30 at 08:39 AM.</p>
+<p>Last updated on 2025-Aug-01 at 10:10 AM.</p>
 <ul>
 <li>2025-Jun-04: Created separate .Rmd file as index.Rmd was getting
 very cluttered.</li>
 <li>2025-Jul-16: Scripted using latest dataset with 1st 2 visits removed
 using reliable data &amp; 1 eye only.</li>
+<li>2025-Jul-31: Added t-tests for Mild, Moderate, Advanced groups with
+Bonferroni correction.</li>
 </ul>
 </div>
 <div id="acknowledgements" class="section level3">
@@ -1785,7 +1787,7 @@ et al. (2011)</a>.</p>
 horizontally, or diagonally contiguous test points within the same
 hemifield on the pattern deviation probability plot at p &lt;5%, with at
 least 1 point at p &lt;1%, excluding points directly above or below the
-blind spot. Eyes with consistent glaucomatous VF loss on at least 2
+blind spot. Only eyes with consistent glaucomatous VF loss on at least 2
 consecutive examinations with reliability indices better than 30% were
 included.</p>
 <div id="analysis" class="section level2">
@@ -2092,14 +2094,16 @@ p_values &lt;- c(p_mild, p_moderate, p_advanced)
 adjusted_p_values &lt;- p.adjust(p_values, method = &quot;bonferroni&quot;)
 
 # Print the adjusted p-values
-names(adjusted_p_values) &lt;- c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;) # Adjust names for clarity if needed
+names(adjusted_p_values) &lt;- c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;) 
 
 library(knitr)
-
 ttestdf &lt;- data.frame(
-  #Group = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;), # Added Group column for clarity
-  Retinalogik_means = c(means_mild[1,1], means_moderate[1,1], means_advanced[1,1]),
-  HFA_means = c(means_mild[1,2], means_moderate[1,2], means_advanced[1,2]), 
+  Retinalogik_means = c(round(means_mild[1,1], 2),
+                        round(means_moderate[1,1], 2),
+                        round(means_advanced[1,1], 2)),
+  HFA_means = c(round(means_mild[1,2], 2),
+                round(means_moderate[1,2], 2),
+                round(means_advanced[1,2], 2)), 
   P_Value = ifelse(p_values &lt; 0.01, &quot;&lt; 0.01&quot;,
                                as.character(round(p_values, 2))),
   Bonferroni_adjusted_P_Value = adjusted_p_values
@@ -2128,22 +2132,22 @@ ttestdf %&gt;% # Remove the original numeric adjusted column
 <tbody>
 <tr class="odd">
 <td>Mild</td>
-<td align="center">25.30851</td>
-<td align="center">18.819149</td>
+<td align="center">25.31</td>
+<td align="center">18.82</td>
 <td align="center">&lt; 0.01</td>
 <td align="center">&lt; 0.01</td>
 </tr>
 <tr class="even">
 <td>Moderate</td>
-<td align="center">21.68947</td>
-<td align="center">13.457895</td>
+<td align="center">21.69</td>
+<td align="center">13.46</td>
 <td align="center">&lt; 0.01</td>
 <td align="center">&lt; 0.01</td>
 </tr>
 <tr class="odd">
 <td>Advanced</td>
-<td align="center">13.43478</td>
-<td align="center">7.369565</td>
+<td align="center">13.43</td>
+<td align="center">7.37</td>
 <td align="center">&lt; 0.01</td>
 <td align="center">&lt; 0.01</td>
 </tr>
