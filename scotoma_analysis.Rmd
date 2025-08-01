@@ -324,7 +324,7 @@ create_vf_plot <- function(data_subset) {
 ```
 
 ```{r stats}
-t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
+#t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
 
 ttest_mild <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
        subset = classification %in% "Mild")
@@ -392,13 +392,18 @@ all_scotoma_points %>%
                names_to = "device",
                values_to = "dB") %>%
   group_by(classification, device) %>%
-  summarise(means = mean(dB), sd = sd(dB)) %>%
+  summarise(n = n(),
+            means = mean(dB),
+            sd = sd(dB)) %>%
+  mutate( se=sd/sqrt(n))  %>%
+  mutate( ic=se * qt((1-0.05)/2 + .5, n-1)) %>%
   mutate(classification = factor(classification, levels=c('Mild','Moderate','Advanced')),
          device = factor(device, levels = c('retinalogik', 'hfa'))) %>%
   ggplot(aes(x=classification, y=means, fill=device)) +
   geom_bar(stat="identity", position=position_dodge()) +
-  geom_errorbar(aes(ymin=means-sd, ymax=means+sd), width=.2,
+  geom_errorbar(aes(ymin=means-ic, ymax=means+ic), width=.2,
                  position=position_dodge(.9)) +
+  labs(caption = "(Note: Error bars are 95% confidence intervals)") +
   theme_bw()
 ```
 
