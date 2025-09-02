@@ -22,6 +22,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 
 * 2025-Jun-11: Created separate .Rmd file as index.Rmd was getting very cluttered.
 * 2025-Jun-26: Extract data based on classification during screening.
+* 2025-Aug-25: Extract, clean, and run stats on questionnaire data.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -85,10 +86,28 @@ df <- dBdat_filtered %>%
 ```
 
 # Study summary
-We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract).
+We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract). Scotoma analysis results may be found [here](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html).
 
 # Methods (very briefly)
-We define a scotoma as the presence of at least 3 vertically, horizontally, or diagonally contiguous test points within the same hemifield on the pattern deviation probability plot at p <5%, with at least 1 point at p <1%, excluding points directly above or below the blind spot. Eyes with consistent glaucomatous VF loss on at least 2 consecutive examinations with reliability indices better than 30% were included. 
+## Subjects
+Eligible participants were identified among patients of Dr. Brennan Eadie at the Eadie Eye Centre. If deemed eligible for the study, subjects were recruited consecutively.
+
+Each participant underwent five study visits. At each visit, they performed a VF test on both eyes using the two devices. The order of device tested was randomized at the first (baseline) study visit.
+
+Exclusion criteria were:
+
+* age <18 years
+* diagnosis of secondary glaucoma
+* diagnosis of non-glaucomatous optic neuropathy
+* significant media opacity
+* previous intraocular surgery
+* pregnancy
+* seizure disorder
+* cardiac pacemaker or other implantable device
+* severe vertigo or balance disturbance
+* inability to demonstrate competence to make an informed decision regarding study participation
+
+The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
 ## Analysis
 
@@ -129,7 +148,7 @@ mild <- dBdat_filtered %>%
 #   group_by(device) %>%
 #   summarise(meandB = mean(dB), sd = sd(dB))
 
-df <- tmp %>%
+df <- dBdat_filtered %>%
   group_by(id, device) %>%
   mutate(meandB = mean(dB)) %>%
   distinct(id, device, meandB) %>%
@@ -153,7 +172,7 @@ duration <- dBdat_filtered %>%
   distinct(device, mean, sd)
 
 rthfaduration <- dBdat_filtered %>%
-  distinct(id, visit, eye, duration) %>%
+  distinct(id, device, visit, eye, duration) %>%
   group_by(id, device) %>%
   mutate(duration = mean(duration)) %>%
   distinct(device, id, duration) %>%
@@ -166,6 +185,106 @@ t.test(as.numeric(rthfaduration$retinalogik), as.numeric(rthfaduration$hfa), pai
 ```
 
 Mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (SD = `r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (SD = `r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (p < .01).
+
+### Questionnaire
+```{r questionnaire}
+qdat <- read.csv("RetinaLogik Questionnaire Data(Sheet1).csv") %>%
+  mutate(
+    # Extract the numeric part after "RL"
+    numeric_part = as.numeric(str_extract(Patient.ID, "\\d+")),
+    # Format the numeric part to have at least two digits with leading zeros
+    formatted_numeric = str_pad(numeric_part, width = 2, side = "left", pad = "0"),
+    # Combine "RL" with the formatted number
+    ID = paste0("RL", formatted_numeric)
+  ) %>%
+  select(-Patient.ID)
+
+# Recode the columns 
+qdat_numeric <- qdat %>%
+  mutate(
+    Q1..Desktop.difficulty = case_match(Q1..Desktop.difficulty,
+      "very easy" ~ 5,
+      "somewhat easy" ~ 4,
+      "neutral" ~ 3,
+      "somewhat difficult" ~ 2,
+      "very difficult" ~ 1
+    ),
+    Q2..Head.mounted.difficulty = case_match(Q2..Head.mounted.difficulty,
+      "very easy" ~ 5,
+      "somewhat easy" ~ 4,
+      "neutral" ~ 3,
+      "somewhat difficult" ~ 2,
+      "very difficult" ~ 1
+    ),
+    Q3..Desktop.comfort = case_match(Q3..Desktop.comfort,
+      "very comfortable" ~ 5,
+      "somewhat comfortable" ~ 4,
+      "neutral" ~ 3,
+      "somewhat uncomfortable" ~ 2,
+      "very uncomfortable" ~ 1
+    ),
+    Q4..Head.mounted.comfort = case_match(Q4..Head.mounted.comfort,
+      "very comfortable" ~ 5,
+      "somewhat comfortable" ~ 4,
+      "neutral" ~ 3,
+      "somewhat uncomfortable" ~ 2,
+      "very uncomfortable" ~ 1
+    )
+  )
+
+summary_stats <- qdat_numeric %>%
+  summarise(
+    Avg_Q1 = mean(Q1..Desktop.difficulty, na.rm = TRUE),
+    SD_Q1 = sd(Q1..Desktop.difficulty, na.rm = TRUE),
+    Avg_Q2 = mean(Q2..Head.mounted.difficulty, na.rm = TRUE),
+    SD_Q2 = sd(Q2..Head.mounted.difficulty, na.rm = TRUE),
+    Avg_Q3 = mean(Q3..Desktop.comfort, na.rm = TRUE),
+    SD_Q3 = sd(Q3..Desktop.comfort, na.rm = TRUE),
+    Avg_Q4 = mean(Q4..Head.mounted.comfort, na.rm = TRUE),
+    SD_Q4 = sd(Q4..Head.mounted.comfort, na.rm = TRUE)
+  )
+
+print(summary_stats)
+
+patient_summary <- qdat_numeric %>%
+  group_by(ID) %>%
+  summarise(
+    Avg_Q1 = mean(Q1..Desktop.difficulty, na.rm = TRUE),
+    Avg_Q2 = mean(Q2..Head.mounted.difficulty, na.rm = TRUE),
+    Avg_Q3 = mean(Q3..Desktop.comfort, na.rm = TRUE),
+    Avg_Q4 = mean(Q4..Head.mounted.comfort, na.rm = TRUE)
+  )
+
+print(patient_summary)
+
+plot_data <- summary_stats %>%
+  tidyr::pivot_longer(
+    cols = c(Avg_Q1, Avg_Q2, Avg_Q3, Avg_Q4),
+    names_to = "Question",
+    values_to = "Average_Score"
+  )
+
+ggplot(plot_data, aes(x = Question, y = Average_Score)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Average Scores per Question",
+    x = "Question",
+    y = "Average Score (1-5 Scale)",
+    fill = "Patient ID"
+  ) +
+  theme_minimal()
+
+# Wilcoxon signed-rank test
+wilcox_difficulty <- wilcox.test(qdat_numeric$Q1..Desktop.difficulty, 
+                                 qdat_numeric$Q2..Head.mounted.difficulty, 
+                                 paired = TRUE)
+
+wilcox_comfort <- wilcox.test(qdat_numeric$Q3..Desktop.comfort, 
+                              qdat_numeric$Q4..Head.mounted.comfort, 
+                              paired = TRUE)
+
+
+```
 
 ### Threshold sensitivities
 Threshold sensitivities were significantly higher in peripheral locations with the VR-RL perimeter. Note: Do a ?linear regression with dB ~ perimeter * age * x * y 
