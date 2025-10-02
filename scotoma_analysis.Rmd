@@ -332,7 +332,13 @@ p_mild <- ttest_mild$p.value
 means_mild <- all_scotoma_points %>%
   filter(classification=="Mild") %>%
   summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
-            Mean_HFA = mean(hfa, na.rm = TRUE))
+            Mean_HFA = mean(hfa, na.rm = TRUE),
+            Median_Retinalogik = median(retinalogik, na.rm = TRUE),
+            q1_Retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+            q3_Retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+            Median_HFA = median(hfa, na.rm = TRUE),
+            q1_HFA = quantile(hfa, .25, na.rm = TRUE),
+            q3_HFA = quantile(hfa, .75, na.rm = TRUE))
 
 ttest_moderate <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
        subset = classification %in% "Moderate")
@@ -340,7 +346,13 @@ p_moderate <- ttest_moderate$p.value
 means_moderate <- all_scotoma_points %>%
   filter(classification=="Moderate") %>%
   summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
-            Mean_HFA = mean(hfa, na.rm = TRUE))
+            Mean_HFA = mean(hfa, na.rm = TRUE),
+            Median_Retinalogik = median(retinalogik, na.rm = TRUE),
+            q1_Retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+            q3_Retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+            Median_HFA = median(hfa, na.rm = TRUE),
+            q1_HFA = quantile(hfa, .25, na.rm = TRUE),
+            q3_HFA = quantile(hfa, .75, na.rm = TRUE))
 
 ttest_advanced <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
        subset = classification %in% "Advanced")
@@ -348,7 +360,13 @@ p_advanced <- ttest_advanced$p.value
 means_advanced <- all_scotoma_points %>%
   filter(classification=="Advanced") %>%
   summarise(Mean_Retinalogik = mean(retinalogik, na.rm = TRUE),
-            Mean_HFA = mean(hfa, na.rm = TRUE))
+            Mean_HFA = mean(hfa, na.rm = TRUE),
+            Median_Retinalogik = median(retinalogik, na.rm = TRUE),
+            q1_Retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+            q3_Retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+            Median_HFA = median(hfa, na.rm = TRUE),
+            q1_HFA = quantile(hfa, .25, na.rm = TRUE),
+            q3_HFA = quantile(hfa, .75, na.rm = TRUE))
 
 # Collect p-values
 p_values <- c(p_mild, p_moderate, p_advanced)
@@ -382,6 +400,36 @@ ttestdf %>% # Remove the original numeric adjusted column
   kable(format = "simple",
         col.names = c("Retinalogik Means (dB)", "HFA Means (dB)", "Unadjusted P-value", "Bonferroni Adjusted P-value"),
         align="c") 
+
+ttestdf2 <- data.frame(
+  Retinalogik_median = c(round(means_mild[1,3], 2),
+                         round(means_moderate[1,3], 2),
+                         round(means_advanced[1,3], 2)),
+  Retinalogik_Q1 = c(round(means_mild[1,4], 2),
+                     round(means_moderate[1,4], 2),
+                     round(means_advanced[1,4], 2)),
+  Retinalogik_Q3 = c(round(means_mild[1,5], 2),
+                     round(means_moderate[1,5], 2),
+                     round(means_advanced[1,5], 2)),
+  HFA_median = c(round(means_mild[1,6], 2),
+                 round(means_moderate[1,6], 2),
+                 round(means_advanced[1,6], 2)),
+  HFA_Q1 = c(round(means_mild[1,7], 2),
+             round(means_moderate[1,7], 2),
+             round(means_advanced[1,7], 2)),
+  HFA_Q3 = c(round(means_mild[1,8], 2),
+             round(means_moderate[1,8], 2),
+             round(means_advanced[1,8], 2))
+)
+
+rownames(ttestdf2) <- c("Mild", "Moderate", "Advanced")
+
+ttestdf2 %>%
+  kable(format = "simple",
+        col.names = c("Retinalogik Medians (dB)", "Q1", "Q3",
+                      "HFA Medians (dB)", "Q1", "Q3"),
+        align="c",
+        caption = "Table for COS")
 
 ```
 

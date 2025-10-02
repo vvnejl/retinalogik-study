@@ -43,7 +43,8 @@ classification <- readxl::read_excel("RetinaLogik Data Classification.xlsx") %>%
                          eye == "OD" ~ "R",
                          eye == "OU" ~ "R"))
 
-dBdat_filtered <- merge(dBdat_flipped, classification)
+dBdat_filtered <- merge(dBdat_flipped, classification) %>%
+  filter(id != "RL31")
 
 df <- dBdat_filtered %>%
   distinct(id, device, visit, eye, x, y, dB) %>%
@@ -192,7 +193,7 @@ dBdat_filtered %>%
 ms <- dBdat_filtered %>%
   group_by(id, device) %>%
   mutate(mean = mean(dB)) %>%
-  distinct(id, classification, mean) %>%
+  distinct(id, classification, mean, age, gender) %>%
   pivot_wider(names_from = device, values_from = mean) %>%
   filter(classification != "Control") %>%
   mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
@@ -208,5 +209,42 @@ ms %>%
     sd_hfa = sd(hfa, na.rm = TRUE)
   ) %>%
   nice_table()
+
+ms %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    median_retinalogik = median(retinalogik, na.rm = TRUE),
+    q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+    q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+    iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
+    median_hfa = median(hfa, na.rm = TRUE),
+    q1_hfa = quantile(hfa, .25, na.rm = TRUE),
+    q3_hfa = quantile(hfa, .75, na.rm = TRUE),
+    iqr_hfa = IQR(hfa, na.rm = TRUE)
+  ) %>%
+  nice_table()
+
+# demographics
+demo <- ms %>%
+  group_by(id, gender, classification) %>%
+  summarise(age = mean(age)) %>%
+  mutate(id = as.factor(id),
+         gender = as.factor(gender),
+         classification = as.factor(classification))
+
+summary(demo)
+
+msmild <- ms %>%
+  filter(classification == "Mild")
+t.test(x=msmild$hfa, y=msmild$retinalogik, paired = TRUE)
+
+msmod <- ms %>%
+  filter(classification == "Moderate")
+t.test(x=msmod$hfa, y=msmod$retinalogik, paired = TRUE)
+
+msadv <- ms %>%
+  filter(classification == "Advanced")
+t.test(x=msadv$hfa, y=msadv$retinalogik, paired = TRUE)
 
 
