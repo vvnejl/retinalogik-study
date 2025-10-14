@@ -120,6 +120,22 @@ Exclusion criteria were:
 The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
 
 ### Demographics
+Demographics information for partial dataset:
+
+```{r totaldemo}
+totaldemo <- dBdat_filtered %>%
+  group_by(id, gender, classification) %>%
+  summarise(age = mean(age)) %>%
+  mutate(id = as.factor(id),
+         gender = as.factor(gender),
+         classification = as.factor(classification))
+
+summary(totaldemo) %>%
+  kable()
+```
+
+After matching mean sensitivity, only 23 datasets remained for t-test comparisons. For example, RL07's HFA didn't meet criteria and RL11's RT data didn't meet criteria. Below are the ones reported for COS abstract.
+
 ```{r demographics}
 ms <- dBdat_filtered %>%
   group_by(id, device) %>%
@@ -141,8 +157,8 @@ summary(demo) %>%
 
 ```
 
-## Analysis
-
+## Stats
+### Mean sensitivity
 ```{r meansensitivity}
 ms %>%
   group_by(classification) %>%
@@ -158,5 +174,155 @@ ms %>%
     iqr_hfa = IQR(hfa, na.rm = TRUE)
   ) %>%
   nice_table()
+
+```
+
+## Plots
+Pointwise analysis revealed that the absolute difference was greatest at peripheral loci.
+
+```{r pointwise}
+nRT <- dBdat_filtered %>%
+  filter(classification == "Mild" & device == "retinalogik") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+nHFA <- dBdat_filtered %>%
+  filter(classification == "Mild" & device == "hfa") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+meanSensitivity <- dBdat_filtered %>%
+  filter(classification == "Mild") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+  ungroup() %>%
+  add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
+  add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
+
+rtplot_earlyGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " early GON eyes)")) +
+  theme(legend.position="none")
+
+hfaplot_earlyGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " early GON eyes)")) +
+  theme(legend.position="none")
+
+## Moderate GON
+nRT <- dBdat_filtered %>%
+  filter(classification == "Moderate" & device == "retinalogik") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+nHFA <- dBdat_filtered %>%
+  filter(classification == "Moderate" & device == "hfa") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+meanSensitivity <- dBdat_filtered %>%
+  filter(classification == "Moderate") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+  ungroup() %>%
+  add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
+  add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
+
+rtplot_moderateGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " moderate GON eyes)")) +
+  theme(legend.position="none")
+
+hfaplot_moderateGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " moderate GON eyes)")) +
+  theme(legend.position="none")
+
+## Advanced GON
+nRT <- dBdat_filtered %>%
+  filter(classification == "Advanced" & device == "retinalogik") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+nHFA <- dBdat_filtered %>%
+  filter(classification == "Advanced" & device == "hfa") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+meanSensitivity <- dBdat_filtered %>%
+  filter(classification == "Advanced") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+  ungroup() %>%
+  add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
+  add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
+
+rtplot_advancedGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " advanced GON eyes)")) +
+  theme(legend.position="none")
+
+hfaplot_advancedGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " advanced GON eyes)")) +
+  theme(legend.position="none")
+
+rtplot_earlyGON + hfaplot_earlyGON
+
+rtplot_moderateGON + hfaplot_moderateGON
+
+rtplot_advancedGON + hfaplot_advancedGON
+
 
 ```
