@@ -1,0 +1,162 @@
+---
+title: "Retinalogik vs HFA for COS 2026"
+author: "[Eadie Technologies, Inc.](https://www.eadietech.com/)"
+date: "2025-10-14"
+output: 
+  html_document:
+    theme: yeti
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    toc_float: 
+      collapsed: true
+    includes:
+        after_body: footer.html
+---
+
+## Setup
+
+### Versioning
+
+Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:%M %p')`.
+
+* 2025-Oct-14: Created separate .Rmd file as index.Rmd was getting very cluttered.
+
+### Acknowledgements
+Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
+
+```{r setup, collapse=TRUE}
+
+# load packages
+library(tidyverse)
+library(here)
+library(DT)
+library(plotly)
+library(viridis)
+library(svglite)
+library(htmltools)
+library(gridExtra)
+library(sf)
+library(spdep)
+library(RColorBrewer)
+library(patchwork)
+library(report)
+library(effectsize)
+library(rempsyc)
+library(kableExtra)
+
+sessionInfo()
+
+# default chunk options
+knitr::opts_chunk$set(
+  comment = '>', collapse = TRUE, cache = FALSE, dev= c("png")
+  )
+
+rm(list = ls()) 
+
+# load processed data
+load(here("dBdat_cos.Rda"))
+
+dBdat_flipped <- dBdat %>%
+  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+  mutate(x = case_when(
+    eye == "L" & device == "retinalogik" ~ x*-1,
+    TRUE ~ as.numeric(x)
+  )) %>%
+  # remove blind spots
+  filter(!(x == 15 & y == -3)) %>%
+  filter(!(x == 15 & y == +3)) %>%
+  #remove first 2 visits
+  filter(visit != 1 & visit != 2) %>%
+  #remove reliability indices <30%
+  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30) %>%
+  group_by(id, device, eye) %>%
+  mutate(meanmd = mean(md))
+
+classification <- readxl::read_excel("RetinaLogik Data Classification.xlsx") %>%
+  mutate(
+    # Extract the numeric part after "RL"
+    numeric_part = as.numeric(str_extract(ID, "\\d+")),
+    # Format the numeric part to have at least two digits with leading zeros
+    formatted_numeric = str_pad(numeric_part, width = 2, side = "left", pad = "0"),
+    # Combine "RL" with the formatted number
+    ID = paste0("RL", formatted_numeric)
+  ) %>%
+  # Remove the temporary columns
+  select(-numeric_part, -formatted_numeric) %>%
+  rename(id = ID, classification = Classifcation, eye = `Eye (OD/OS)`) %>%
+  mutate(eye = case_when(eye == "OS" ~ "L",
+                         eye == "OD" ~ "R",
+                         eye == "OU" ~ "R"))
+
+dBdat_filtered <- merge(dBdat_flipped, classification) %>%
+  filter(id != "RL31") %>% # patient kept ghosting Reann
+  filter(classification != "Control")
+
+```
+
+# Study summary
+We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract). Scotoma analysis results may be found [here](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html).
+
+# Methods (very briefly)
+## Subjects
+Eligible participants were identified among patients of Dr. Brennan Eadie at the Eadie Eye Centre. If deemed eligible for the study, subjects were recruited consecutively.
+
+Each participant underwent five study visits. At each visit, they performed a VF test on both eyes using the two devices. The order of device tested was randomized at the first (baseline) study visit.
+
+Exclusion criteria were:
+
+* age <18 years
+* diagnosis of secondary glaucoma
+* diagnosis of non-glaucomatous optic neuropathy
+* significant media opacity
+* previous intraocular surgery
+* pregnancy
+* seizure disorder
+* cardiac pacemaker or other implantable device
+* severe vertigo or balance disturbance
+* inability to demonstrate competence to make an informed decision regarding study participation
+
+The study adhered to the tenets of the Declaration of Helsinki for research involving human subjects and the protocol was approved by the Nova Scotia Health Research Ethics Board (#1030608). All participants gave their written informed consent before enrollment in the study.
+
+### Demographics
+```{r demographics}
+ms <- dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(mean = mean(dB)) %>%
+  distinct(id, classification, mean, age, gender) %>%
+  pivot_wider(names_from = device, values_from = mean) %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  drop_na()
+
+demo <- ms %>%
+  group_by(id, gender, classification) %>%
+  summarise(age = mean(age)) %>%
+  mutate(id = as.factor(id),
+         gender = as.factor(gender),
+         classification = as.factor(classification))
+
+summary(demo) %>%
+  kable()
+
+```
+
+## Analysis
+
+```{r meansensitivity}
+ms %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    median_retinalogik = median(retinalogik, na.rm = TRUE),
+    q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+    q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+    iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
+    median_hfa = median(hfa, na.rm = TRUE),
+    q1_hfa = quantile(hfa, .25, na.rm = TRUE),
+    q3_hfa = quantile(hfa, .75, na.rm = TRUE),
+    iqr_hfa = IQR(hfa, na.rm = TRUE)
+  ) %>%
+  nice_table()
+
+```

@@ -35,6 +35,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Apr-10: Added a hexbin plot.
 * 2025-May-02: Added new data after extensive data extraction script changes to account for changing layouts.
 * 2025-May-26: Added plot showing Deming regression line.
+* 2025-Oct-14: Added links to all the other sub-pages under new subsection: Links.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -65,6 +66,12 @@ load(here("dBdat.Rda"))
 
 # Study summary
 We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma.
+
+# Links to other subpages
+As this page grows and grows, it's starting to get cluttered. The following sub-pages were created to compartmentalize different analyses:
+
+* [COS stats and plots](https://vvnejl.github.io/retinalogik-study/cos.html)
+* [Scotoma analysis](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html)
 
 # Methods (briefly)
 ## Subjects
