@@ -181,7 +181,9 @@ ms %>%
 ```
 
 ## Plots
-"Pointwise analysis revealed that the absolute difference was greatest at peripheral loci." Mean threshold sensitivities (SDs in parentheses) are shown, followed by the mean differences in threshold sensitivities between the two devices and the SDs of those differences (in parentheses).
+"Pointwise analysis revealed that the absolute difference was greatest at peripheral loci."
+
+Mean threshold sensitivities (SDs in parentheses) are shown, followed by the mean differences in threshold sensitivities between the two devices and the SDs of those differences (in parentheses).
 
 ```{r pointwise}
 nRT <- dBdat_filtered %>%
