@@ -36,6 +36,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-May-02: Added new data after extensive data extraction script changes to account for changing layouts.
 * 2025-May-26: Added plot showing Deming regression line.
 * 2025-Oct-14: Added links to all the other sub-pages under new subsection: Links.
+* 2025-Oct-22: Added full dataset upon completing data collection.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -2978,7 +2979,8 @@ dBdat %>%
 duration <- dBdat %>%
   group_by(device) %>%
   mutate(mean = mean(as.duration(duration)), sd = sd(as.duration(duration))) %>%
-  distinct(device, mean, sd)
+  distinct(device, mean, sd) %>%
+  drop_na()
 
 rtduration <- dBdat %>%
   filter(device=="retinalogik") %>%
@@ -2988,7 +2990,9 @@ hfaduration <- dBdat %>%
   filter(device=="hfa") %>%
   distinct(id, visit, eye, duration)
 
-t.test(as.numeric(rtduration$duration), as.numeric(hfaduration$duration), paired=T)
+#t.test(as.numeric(rtduration$duration), as.numeric(hfaduration$duration), paired=T)
+
+t.test(as.numeric(rtduration$duration), as.numeric(hfaduration$duration))
 
 ```
 
@@ -2999,6 +3003,7 @@ Mean test duration time was `r round(duration$mean[duration$device=="retinalogik
 ```{r scatterplot2, warning=FALSE}
 widedat <- dBdat %>%
   select(id, device, visit, eye, x, y, dB) %>%
+  na.omit() %>%
   pivot_wider(., names_from = device, values_from = dB) %>%
   # mutate(retinalogik = ifelse(retinalogik == "<0", "-1", retinalogik)) %>%
   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
