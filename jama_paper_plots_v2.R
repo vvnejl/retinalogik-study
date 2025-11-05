@@ -399,21 +399,21 @@ ggsave("plots/blandaltman-advanced.png", width = 7, height = 5)
 
 
 # Fig 2 Hexbin Plots (polynomial line through Hexbin)
-df %>%
-  ggplot(aes(x = df$hfa, y = df$retinalogik)) +
-  geom_hex(bins = 40) +
-  scale_fill_viridis_c() +
-  geom_smooth(method = "loess", se = TRUE, colour = "red") +
-  geom_abline(intercept = 0, slope = 1) +
-  labs(title="Hexbin plot of threshold sensitivities for all locations",
-       subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 40)") +
-  xlab("HFA (dB)") +
-  ylab("Retinalogik (dB)") +
-  xlim(-2, 40) +
-  ylim(-2, 40) +
-  theme_bw()
-
-ggsave("plots/hexbin40.png", width = 5, height = 5)
+# df %>%
+#   ggplot(aes(x = df$hfa, y = df$retinalogik)) +
+#   geom_hex(bins = 40) +
+#   scale_fill_viridis_c() +
+#   geom_smooth(method = "loess", se = TRUE, colour = "red") +
+#   geom_abline(intercept = 0, slope = 1) +
+#   labs(title="Hexbin plot of threshold sensitivities for all locations",
+#        subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 40)") +
+#   xlab("HFA (dB)") +
+#   ylab("Retinalogik (dB)") +
+#   xlim(-2, 40) +
+#   ylim(-2, 40) +
+#   theme_bw()
+# 
+# ggsave("plots/hexbin40.png", width = 5, height = 5)
 
 df %>%
   ggplot(aes(x = df$hfa, y = df$retinalogik)) +

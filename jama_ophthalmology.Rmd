@@ -44,6 +44,7 @@ library(RColorBrewer)
 library(patchwork)
 library(report)
 library(effectsize)
+library(rempsyc)
 
 sessionInfo()
 
@@ -59,6 +60,22 @@ load(here("dBdat.Rda"))
 
 load(here("retinalogik_hfadatawpsd.Rda"))
 
+classification <- readxl::read_excel("RetinaLogik Data Classification.xlsx") %>%
+  mutate(
+    # Extract the numeric part after "RL"
+    numeric_part = as.numeric(str_extract(ID, "\\d+")),
+    # Format the numeric part to have at least two digits with leading zeros
+    formatted_numeric = str_pad(numeric_part, width = 2, side = "left", pad = "0"),
+    # Combine "RL" with the formatted number
+    ID = paste0("RL", formatted_numeric)
+  ) %>%
+  # Remove the temporary columns
+  select(-numeric_part, -formatted_numeric) %>%
+  rename(id = ID, classification = Classifcation, eye = `Eye (OD/OS)`) %>%
+  mutate(eye = case_when(eye == "OS" ~ "L",
+                         eye == "OD" ~ "R",
+                         eye == "OU" ~ "R"))
+
 dBdat_filtered <- dBdat %>%
   mutate(x = as.numeric(x), y = as.numeric(y)) %>%
   mutate(x = case_when(
@@ -69,18 +86,21 @@ dBdat_filtered <- dBdat %>%
   filter(!(x == 15 & y == -3)) %>%
   filter(!(x == 15 & y == +3)) %>%
   #remove first 2 visits
-  filter(visit != 1 & visit != 2) %>%
+  #filter(visit != 1 & visit != 2) %>%
   #remove reliability indices <30%
-  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30) %>%
+  #filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30) %>%
   group_by(id, device, eye) %>%
   mutate(meanmd = mean(md))
 
+dBdat_filtered <- merge(dBdat_filtered, classification) %>%
+  filter(classification != "Control")
+
 df <- dBdat_filtered %>%
-  distinct(id, device, visit, eye, x, y, dB) %>%
+  distinct(id, device, visit, eye, x, y, dB, classification) %>%
   group_by(id, device, eye, x, y) %>%
-  mutate(meandB = mean(dB)) %>%
-  distinct(id, device, eye, x, y, meandB) %>%
-  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(mediandB = median(dB)) %>%
+  distinct(id, device, eye, x, y, mediandB, classification) %>%
+  pivot_wider(names_from = device, values_from = mediandB) %>%
   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
 
 ```
@@ -111,57 +131,121 @@ The study adhered to the tenets of the Declaration of Helsinki for research invo
 
 ## Analysis
 
-```{r wrangling}
-classification <- readxl::read_excel("RetinaLogik Data Classification.xlsx") %>%
-  mutate(
-    # Extract the numeric part after "RL"
-    numeric_part = as.numeric(str_extract(ID, "\\d+")),
-    # Format the numeric part to have at least two digits with leading zeros
-    formatted_numeric = str_pad(numeric_part, width = 2, side = "left", pad = "0"),
-    # Combine "RL" with the formatted number
-    ID = paste0("RL", formatted_numeric)
-  ) %>%
-  # Remove the temporary columns
-  select(-numeric_part, -formatted_numeric) %>%
-  rename(id = ID, classification = Classifcation, eye = `Eye (OD/OS)`) %>%
-  mutate(eye = case_when(eye == "OS" ~ "L",
-                         eye == "OD" ~ "R",
-                         eye == "OU" ~ "R"))
+```{r demographics}
 
-dBdat_filtered <- merge(dBdat_filtered, classification)
+# mild <- dBdat_filtered %>%
+#   filter(classification == "Mild") %>%
+#   group_by(id, device, eye, x, y) %>%
+#   mutate(meandB = mean(dB)) %>%
+#   distinct(id, device, eye, meandB) %>%
+#   pivot_wider(names_from = device, values_from = meandB) %>%
+#   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
 
-mild <- dBdat_filtered %>%
-  filter(classification == "Mild") %>%
-  group_by(id, device, eye, x, y) %>%
-  mutate(meandB = mean(dB)) %>%
-  distinct(id, device, eye, meandB) %>%
-  pivot_wider(names_from = device, values_from = meandB) %>%
-  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
+vft <- dBdat_filtered %>%
+  distinct(id, visit, eye) %>%
+  count(eye)
+
+gender <- dBdat_filtered %>%
+  distinct(id, gender) %>%
+  count(gender)
+
+groups <- dBdat_filtered %>%
+  distinct(id, classification) %>%
+  mutate(classification = as.factor(classification)) %>%
+  count(classification)
 
 ```
 
-### Mean sensitivity
-> The mean sensitivity was significantly higher in the VR-RL perimeter (stats).
+### Demographics
+All OS data are transposed to OD format before analyses. `r sum(vft$n)` VF tests from `r length(unique(dBdat_filtered$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat_filtered$age)` to `r max(dBdat_filtered$age)` (*M* = `r round(mean(dBdat_filtered$age), 2)`, *SD* = `r round(sd(dBdat_filtered$age), 2)`) were included in the analysis (Early n = `r groups$n[groups$classification == "Mild"]`; Moderate n = `r groups$n[groups$classification == "Moderate"]`; Advanced n = `r groups$n[groups$classification == "Advanced"]`). 
+
+### General threshold sensitivity
+>General threshold sensitivity measured by the VR device was significantly higher than the HFA across all stages of glaucoma (p < 0.05).
 
 ```{r meansens}
 # meansens <- dBdat_filtered %>%
 #   group_by(device) %>%
 #   summarise(meandB = mean(dB), sd = sd(dB))
 
-df <- dBdat_filtered %>%
-  group_by(id, device) %>%
-  mutate(meandB = mean(dB)) %>%
-  distinct(id, device, meandB) %>%
-  pivot_wider(names_from = device, values_from = meandB) %>%
-  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
+dBdat_filtered <- dBdat_filtered %>%
+  #remove first 2 visits
+  filter(visit != 1 & visit != 2) %>%
+  #remove reliability indices <30%
+  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30)
+
+# ms <- dBdat_filtered %>%
+#   group_by(id, device) %>%
+#   mutate(median = median(dB)) %>%
+#   distinct(id, classification, median, age, gender) %>%
+#   pivot_wider(names_from = device, values_from = median) %>%
+#   mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+#   drop_na()
+# 
+# ms %>%
+#   group_by(classification) %>%
+#   summarise(
+#     n = n(),
+#     median_retinalogik = median(retinalogik, na.rm = TRUE),
+#     q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+#     q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+#     iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
+#     median_hfa = median(hfa, na.rm = TRUE),
+#     q1_hfa = quantile(hfa, .25, na.rm = TRUE),
+#     q3_hfa = quantile(hfa, .75, na.rm = TRUE),
+#     iqr_hfa = IQR(hfa, na.rm = TRUE)
+#   ) %>%
+#   nice_table()
+
+# tmp <- ms %>%
+#   group_by(classification) %>%
+#   t.test(retinalogik, hfa, paired=T) %>%
+#   report()
+
+tests <- dBdat_filtered %>%
+  group_by(id, classification, device) %>%
+  mutate(median = median(dB)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
   na.omit()
 
-tmp <- t.test(df$retinalogik, df$hfa, paired=T) %>%
+dBdat_filtered %>%
+  group_by(id, classification, device) %>%
+  mutate(median = median(dB)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
+  na.omit() %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    median_retinalogik = median(retinalogik, na.rm = TRUE),
+    q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+    q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+    iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
+    median_hfa = median(hfa, na.rm = TRUE),
+    q1_hfa = quantile(hfa, .25, na.rm = TRUE),
+    q3_hfa = quantile(hfa, .75, na.rm = TRUE),
+    iqr_hfa = IQR(hfa, na.rm = TRUE)
+  ) %>%
+  nice_table()
+
+mild_data <- subset(tests, classification == "Mild")
+t.test(mild_data$retinalogik, mild_data$hfa, paired = TRUE) %>%
+  report()
+
+moderate_data <- subset(tests, classification == "Moderate")
+t.test(moderate_data$retinalogik, moderate_data$hfa, paired = TRUE) %>%
+  report()
+
+advanced_data <- subset(tests, classification == "Advanced")
+t.test(advanced_data$retinalogik, advanced_data$hfa, paired = TRUE) %>%
   report()
 
 ```
 
-Mean sensitivity was significantly higher in the VR-RL perimeter (*M* = `r round(mean(df$retinalogik),2)`, *SD* = `r round(sd(df$retinalogik), 2)`) than HFA (*M* = `r round(mean(df$hfa), 2)`, *SD* = `r round(sd(df$hfa), 2)`). Paired t-test suggests that the  difference in mean sensitivity (`r round(mean(df$retinalogik)-mean(df$hfa), 2)` dB, 95% CI [0.58, 4.11]) is statistically significant (t(25) = 2.73, p = 0.011) and moderate (Cohen’s d = 0.54).
+Median threshold sensitivity was significantly higher in the VR-RL perimeter in advanced glaucoma patients. Paired t-test suggests that the mean difference in threshold sensitivity is statistically significant, and
+large (difference = 5.18, 95% CI [1.32, 9.05], t(10) = 2.99, p = 0.014;
+Cohen's d = 0.90, 95% CI [0.18, 1.59])
 
 ### Test duration
 
@@ -234,13 +318,13 @@ qdat_numeric <- qdat %>%
 
 summary_stats <- qdat_numeric %>%
   summarise(
-    Avg_Q1 = mean(Q1..Desktop.difficulty, na.rm = TRUE),
+    Med_Q1 = median(Q1..Desktop.difficulty, na.rm = TRUE),
     SD_Q1 = sd(Q1..Desktop.difficulty, na.rm = TRUE),
-    Avg_Q2 = mean(Q2..Head.mounted.difficulty, na.rm = TRUE),
+    Med_Q2 = median(Q2..Head.mounted.difficulty, na.rm = TRUE),
     SD_Q2 = sd(Q2..Head.mounted.difficulty, na.rm = TRUE),
-    Avg_Q3 = mean(Q3..Desktop.comfort, na.rm = TRUE),
+    Med_Q3 = median(Q3..Desktop.comfort, na.rm = TRUE),
     SD_Q3 = sd(Q3..Desktop.comfort, na.rm = TRUE),
-    Avg_Q4 = mean(Q4..Head.mounted.comfort, na.rm = TRUE),
+    Med_Q4 = median(Q4..Head.mounted.comfort, na.rm = TRUE),
     SD_Q4 = sd(Q4..Head.mounted.comfort, na.rm = TRUE)
   )
 
@@ -249,29 +333,33 @@ print(summary_stats)
 patient_summary <- qdat_numeric %>%
   group_by(ID) %>%
   summarise(
-    Avg_Q1 = mean(Q1..Desktop.difficulty, na.rm = TRUE),
-    Avg_Q2 = mean(Q2..Head.mounted.difficulty, na.rm = TRUE),
-    Avg_Q3 = mean(Q3..Desktop.comfort, na.rm = TRUE),
-    Avg_Q4 = mean(Q4..Head.mounted.comfort, na.rm = TRUE)
+    Med_Q1 = median(Q1..Desktop.difficulty, na.rm = TRUE),
+    Med_Q2 = median(Q2..Head.mounted.difficulty, na.rm = TRUE),
+    Med_Q3 = median(Q3..Desktop.comfort, na.rm = TRUE),
+    Med_Q4 = median(Q4..Head.mounted.comfort, na.rm = TRUE)
   )
 
 print(patient_summary)
 
-plot_data <- summary_stats %>%
+questionnaire_plot <- summary_stats %>%
   tidyr::pivot_longer(
-    cols = c(Avg_Q1, Avg_Q2, Avg_Q3, Avg_Q4),
+    cols = c(Med_Q1, Med_Q2, Med_Q3, Med_Q4),
     names_to = "Question",
-    values_to = "Average_Score"
+    values_to = "Median_Score"
   )
 
-ggplot(plot_data, aes(x = Question, y = Average_Score)) +
+questionnaire_plot %>%
+  ggplot(aes(x = Question, y = Median_Score)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   labs(
-    title = "Average Scores per Question",
-    x = "Question",
-    y = "Average Score (1-5 Scale)",
-    fill = "Patient ID"
+    title = "Median Scores for each Question",
+    x = "Questions",
+    y = "Median Score (1-5 Likert Scale)",
+    caption = "On the difficulty scale: 1 is very difficult, 5 is very easy;
+    On the comfort scale: 1 is very uncomfortable, 5 is very comfortable."
   ) +
+  scale_x_discrete(labels = c("HFA difficulty", "Retinalogik difficulty",
+                              "HFA comfort", "Retinalogik comfort")) +
   theme_minimal()
 
 # Wilcoxon signed-rank test
@@ -283,8 +371,15 @@ wilcox_comfort <- wilcox.test(qdat_numeric$Q3..Desktop.comfort,
                               qdat_numeric$Q4..Head.mounted.comfort, 
                               paired = TRUE)
 
+q5dat <- qdat %>%
+  select(ID, Q5..Overall.preference) %>%
+  mutate(Q5..Overall.preference = as.factor(Q5..Overall.preference)) %>%
+  count(Q5..Overall.preference)
 
 ```
+**Q5 is "Which test would you prefer to perform on an on-going basis?"**
+
+`r round(q5dat$n[2]/sum(q5dat$n)*100, 2)`% prefer "desktop" aka HFA, `r round(q5dat$n[3]/sum(q5dat$n)*100, 2)`% prefer head-mounted aka Retinalogik, and `r round(q5dat$n[4]/sum(q5dat$n)*100, 2)`% has no preference for either.
 
 ### Threshold sensitivities
 Threshold sensitivities were significantly higher in peripheral locations with the VR-RL perimeter. Note: Do a ?linear regression with dB ~ perimeter * age * x * y 
