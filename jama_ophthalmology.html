@@ -1691,7 +1691,7 @@ Technologies, Inc.</a></h4>
 <h2>Setup</h2>
 <div id="versioning" class="section level3">
 <h3>Versioning</h3>
-<p>Last updated on 2025-Nov-05 at 02:40 PM.</p>
+<p>Last updated on 2025-Nov-12 at 10:00 AM.</p>
 <ul>
 <li>2025-Jun-11: Created separate .Rmd file as index.Rmd was getting
 very cluttered.</li>
@@ -1901,19 +1901,9 @@ regarding study participation</li>
 research involving human subjects and the protocol was approved by the
 Nova Scotia Health Research Ethics Board (#1030608). All participants
 gave their written informed consent before enrollment in the study.</p>
-</div>
-<div id="analysis" class="section level2">
-<h2>Analysis</h2>
-<pre class="r"><code>
-# mild &lt;- dBdat_filtered %&gt;%
-#   filter(classification == &quot;Mild&quot;) %&gt;%
-#   group_by(id, device, eye, x, y) %&gt;%
-#   mutate(meandB = mean(dB)) %&gt;%
-#   distinct(id, device, eye, meandB) %&gt;%
-#   pivot_wider(names_from = device, values_from = meandB) %&gt;%
-#   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
-
-vft &lt;- dBdat_filtered %&gt;%
+<div id="demographics" class="section level3">
+<h3>Demographics</h3>
+<pre class="r"><code>vft &lt;- dBdat_filtered %&gt;%
   distinct(id, visit, eye) %&gt;%
   count(eye)
 
@@ -1926,67 +1916,89 @@ groups &lt;- dBdat_filtered %&gt;%
   mutate(classification = as.factor(classification)) %&gt;%
   count(classification)
 </code></pre>
-<div id="demographics" class="section level3">
-<h3>Demographics</h3>
 <p>All OS data are transposed to OD format before analyses. 254 VF tests
 from 51 participants (19 females, 32 males) aged 44 to 83 (<em>M</em> =
 70.08, <em>SD</em> = 8.84) were included in the analysis (Early n = 20;
 Moderate n = 14; Advanced n = 17).</p>
 </div>
+</div>
+<div id="analysis" class="section level2">
+<h2>Analysis</h2>
+<p>Of the 5 visits, the first 2 visits were removed from analysis. VFTs
+where reliability indices (FL, FP, and FN) &gt; 30% were removed from
+analysis as well.</p>
 <div id="general-threshold-sensitivity" class="section level3">
 <h3>General threshold sensitivity</h3>
 <blockquote>
-<p>General threshold sensitivity measured by the VR device was
+<p><del>General threshold sensitivity measured by the VR device was
 significantly higher than the HFA across all stages of glaucoma (p &lt;
-0.05).</p>
+0.05).</del></p>
 </blockquote>
-<pre class="r"><code># meansens &lt;- dBdat_filtered %&gt;%
-#   group_by(device) %&gt;%
-#   summarise(meandB = mean(dB), sd = sd(dB))
-
-dBdat_filtered &lt;- dBdat_filtered %&gt;%
+<p>Threshold sensitivity was significantly higher in the VR-RL perimeter
+in moderate and advanced glaucoma patients, as suggested by Wilcoxon
+signed-rank tests for the median of the patient-level mean differences
+for Mild, Moderate, and Advanced groups.</p>
+<pre class="r"><code>dBdat_filtered &lt;- dBdat_filtered %&gt;%
   #remove first 2 visits
   filter(visit != 1 &amp; visit != 2) %&gt;%
   #remove reliability indices &lt;30%
   filter(flPerc &lt; 30 &amp; fnPerc &lt; 30 &amp; fpPerc &lt; 30)
 
-# ms &lt;- dBdat_filtered %&gt;%
-#   group_by(id, device) %&gt;%
-#   mutate(median = median(dB)) %&gt;%
-#   distinct(id, classification, median, age, gender) %&gt;%
-#   pivot_wider(names_from = device, values_from = median) %&gt;%
-#   mutate(classification = factor(classification, levels = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;))) %&gt;%
-#   drop_na()
-# 
-# ms %&gt;%
-#   group_by(classification) %&gt;%
-#   summarise(
-#     n = n(),
-#     median_retinalogik = median(retinalogik, na.rm = TRUE),
-#     q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
-#     q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
-#     iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
-#     median_hfa = median(hfa, na.rm = TRUE),
-#     q1_hfa = quantile(hfa, .25, na.rm = TRUE),
-#     q3_hfa = quantile(hfa, .75, na.rm = TRUE),
-#     iqr_hfa = IQR(hfa, na.rm = TRUE)
-#   ) %&gt;%
-#   nice_table()
-
-# tmp &lt;- ms %&gt;%
-#   group_by(classification) %&gt;%
-#   t.test(retinalogik, hfa, paired=T) %&gt;%
-#   report()
-
-tests &lt;- dBdat_filtered %&gt;%
-  group_by(id, classification, device) %&gt;%
-  mutate(median = median(dB)) %&gt;%
-  distinct(id, classification, device, median) %&gt;%
-  pivot_wider(names_from = device, values_from = median) %&gt;%
-  na.omit()
-
 dBdat_filtered %&gt;%
-  group_by(id, classification, device) %&gt;%
+  group_by(id, device) %&gt;%
+  mutate(mean = mean(dB)) %&gt;%
+  distinct(id, classification, device, mean) %&gt;%
+  pivot_wider(names_from = device, values_from = mean) %&gt;%
+  na.omit() %&gt;%
+  mutate(classification = factor(classification, levels = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;))) %&gt;%
+  group_by(classification) %&gt;%
+  summarise(
+    n = n(),
+    mean_retinalogik = mean(retinalogik, na.rm = TRUE),
+    sd_retinalogik = sd(retinalogik, na.rm = TRUE),
+    mean_hfa = mean(hfa, na.rm = TRUE),
+    sd_hfa = sd(hfa, na.rm = TRUE)
+  ) %&gt;%
+  mutate(difference = mean_retinalogik-mean_hfa) %&gt;%
+  nice_table()</code></pre>
+<div class="tabwid"><style>.cl-ec8f00d4{table-layout:auto;}.cl-ec8baef2{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec8baefc{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec8d1184{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-ec8d118e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-ec8d1f94{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec8d1f95{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec8d1f9e{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec8d1f9f{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec8d1fa0{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-ec8f00d4"><thead><tr style="overflow-wrap:break-word;"><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baef2">classification</span></p></th><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baefc">n</span></p></th><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baef2">mean_retinalogik</span></p></th><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baef2">sd_retinalogik</span></p></th><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baef2">mean_hfa</span></p></th><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baef2">sd_hfa</span></p></th><th class="cl-ec8d1f94"><p class="cl-ec8d1184"><span class="cl-ec8baef2">difference</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-ec8d1f95"><p class="cl-ec8d118e"><span class="cl-ec8baef2">Mild</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">18</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">27.52</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">2.47</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">27.24</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">1.52</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">0.27</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-ec8d1f95"><p class="cl-ec8d118e"><span class="cl-ec8baef2">Moderate</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">13</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">23.13</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">1.88</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">20.79</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">2.33</span></p></td><td class="cl-ec8d1f9e"><p class="cl-ec8d1184"><span class="cl-ec8baef2">2.34</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-ec8d1f9f"><p class="cl-ec8d118e"><span class="cl-ec8baef2">Advanced</span></p></td><td class="cl-ec8d1fa0"><p class="cl-ec8d1184"><span class="cl-ec8baef2">11</span></p></td><td class="cl-ec8d1fa0"><p class="cl-ec8d1184"><span class="cl-ec8baef2">17.09</span></p></td><td class="cl-ec8d1fa0"><p class="cl-ec8d1184"><span class="cl-ec8baef2">6.30</span></p></td><td class="cl-ec8d1fa0"><p class="cl-ec8d1184"><span class="cl-ec8baef2">13.85</span></p></td><td class="cl-ec8d1fa0"><p class="cl-ec8d1184"><span class="cl-ec8baef2">5.43</span></p></td><td class="cl-ec8d1fa0"><p class="cl-ec8d1184"><span class="cl-ec8baef2">3.24</span></p></td></tr></tbody></table></div>
+<pre class="r"><code>
+#########
+dBdat_means &lt;- dBdat_filtered %&gt;%
+  group_by(id, device) %&gt;%
+  mutate(mean = mean(dB)) %&gt;%
+  distinct(id, classification, device, mean) %&gt;%
+  pivot_wider(names_from = device, values_from = mean) %&gt;%
+  na.omit() %&gt;%
+  mutate(difference = retinalogik-hfa)
+
+# 1. Group the cleaned, wide data by classification
+wilcoxon_results &lt;- dBdat_means %&gt;%
+  group_by(classification) %&gt;%
+  
+  # 2. Nest the data for group-wise application
+  nest() %&gt;%
+  
+  # 3. Apply the Wilcoxon test to the paired columns in each nested group
+  mutate(
+    wilcox_test = map(data, ~ wilcox.test(.x$retinalogik, .x$hfa, paired = TRUE)),
+    
+    # 4. Extract the key results cleanly
+    W_statistic = map_dbl(wilcox_test, &quot;statistic&quot;),
+    p_value = map_dbl(wilcox_test, &quot;p.value&quot;)
+  ) %&gt;%
+  
+  # 5. Select the final output columns
+  select(classification, W_statistic, p_value)
+
+wilcoxon_results %&gt;%
+  mutate(classification = factor(classification, levels = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;))) %&gt;%
+  arrange(classification) %&gt;%
+  nice_table(title = c(&quot;Wilcoxon signed rank test on paired samples&quot;))</code></pre>
+<div class="tabwid"><style>.cl-ec9aa90c{table-layout:auto;}.cl-ec97e0d2{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec97e0dc{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec99070a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-ec99070b{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-ec9912a4{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec9912ae{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec9912af{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec9912b8{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec9912b9{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec9912ba{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-ec9aa90c"><thead><tr style="overflow-wrap:break-word;"><th colspan="3" class="cl-ec9912a4"><p class="cl-ec99070a"><span class="cl-ec97e0d2">Wilcoxon signed rank test on paired samples</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-ec9912ae"><p class="cl-ec99070b"><span class="cl-ec97e0dc">classification</span></p></th><th class="cl-ec9912ae"><p class="cl-ec99070b"><span class="cl-ec97e0dc">W_statistic</span></p></th><th class="cl-ec9912ae"><p class="cl-ec99070b"><span class="cl-ec97e0dc">p_value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-ec9912af"><p class="cl-ec99070a"><span class="cl-ec97e0dc">Mild</span></p></td><td class="cl-ec9912b8"><p class="cl-ec99070b"><span class="cl-ec97e0dc">96.00</span></p></td><td class="cl-ec9912b8"><p class="cl-ec99070b"><span class="cl-ec97e0dc">0.67</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-ec9912af"><p class="cl-ec99070a"><span class="cl-ec97e0dc">Moderate</span></p></td><td class="cl-ec9912b8"><p class="cl-ec99070b"><span class="cl-ec97e0dc">80.00</span></p></td><td class="cl-ec9912b8"><p class="cl-ec99070b"><span class="cl-ec97e0dc">0.01</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-ec9912b9"><p class="cl-ec99070a"><span class="cl-ec97e0dc">Advanced</span></p></td><td class="cl-ec9912ba"><p class="cl-ec99070b"><span class="cl-ec97e0dc">61.00</span></p></td><td class="cl-ec9912ba"><p class="cl-ec99070b"><span class="cl-ec97e0dc">0.01</span></p></td></tr></tbody></table></div>
+<pre class="r"><code>
+dBdat_filtered %&gt;%
+  group_by(id, device) %&gt;%
   mutate(median = median(dB)) %&gt;%
   distinct(id, classification, device, median) %&gt;%
   pivot_wider(names_from = device, values_from = median) %&gt;%
@@ -2005,46 +2017,42 @@ dBdat_filtered %&gt;%
     iqr_hfa = IQR(hfa, na.rm = TRUE)
   ) %&gt;%
   nice_table()</code></pre>
-<div class="tabwid"><style>.cl-f587947a{table-layout:auto;}.cl-f5842916{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-f5842920{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-f5859350{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-f585935a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-f585a16a{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f585a174{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f585a17e{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f585a17f{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f585a180{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-f587947a"><thead><tr style="overflow-wrap:break-word;"><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">classification</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842920">n</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">median_retinalogik</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">q1_retinalogik</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">q3_retinalogik</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">iqr_retinalogik</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">median_hfa</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">q1_hfa</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">q3_hfa</span></p></th><th class="cl-f585a16a"><p class="cl-f5859350"><span class="cl-f5842916">iqr_hfa</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-f585a174"><p class="cl-f585935a"><span class="cl-f5842916">Mild</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">18</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">28.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">25.25</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">30.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">4.75</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">28.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">28.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">29.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">1.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-f585a174"><p class="cl-f585935a"><span class="cl-f5842916">Moderate</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">13</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">24.50</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">24.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">26.50</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">2.50</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">25.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">22.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">26.00</span></p></td><td class="cl-f585a17e"><p class="cl-f5859350"><span class="cl-f5842916">4.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-f585a17f"><p class="cl-f585935a"><span class="cl-f5842916">Advanced</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">11</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">22.00</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">18.50</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">24.00</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">5.50</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">17.50</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">10.50</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">19.50</span></p></td><td class="cl-f585a180"><p class="cl-f5859350"><span class="cl-f5842916">9.00</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-eca7bd5e{table-layout:auto;}.cl-eca4dcec{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-eca4dcf6{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-eca60af4{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-eca60afe{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-eca616de{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eca616e8{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eca616e9{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eca616ea{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eca616eb{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-eca7bd5e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">classification</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcf6">n</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">median_retinalogik</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">q1_retinalogik</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">q3_retinalogik</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">iqr_retinalogik</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">median_hfa</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">q1_hfa</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">q3_hfa</span></p></th><th class="cl-eca616de"><p class="cl-eca60af4"><span class="cl-eca4dcec">iqr_hfa</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-eca616e8"><p class="cl-eca60afe"><span class="cl-eca4dcec">Mild</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">18</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">28.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">25.25</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">30.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">4.75</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">28.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">28.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">29.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">1.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eca616e8"><p class="cl-eca60afe"><span class="cl-eca4dcec">Moderate</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">13</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">24.50</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">24.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">26.50</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">2.50</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">25.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">22.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">26.00</span></p></td><td class="cl-eca616e9"><p class="cl-eca60af4"><span class="cl-eca4dcec">4.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eca616ea"><p class="cl-eca60afe"><span class="cl-eca4dcec">Advanced</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">11</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">22.00</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">18.50</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">24.00</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">5.50</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">17.50</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">10.50</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">19.50</span></p></td><td class="cl-eca616eb"><p class="cl-eca60af4"><span class="cl-eca4dcec">9.00</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
-mild_data &lt;- subset(tests, classification == &quot;Mild&quot;)
-t.test(mild_data$retinalogik, mild_data$hfa, paired = TRUE) %&gt;%
-  report()
-&gt; For paired samples, &#39;repeated_measures_d()&#39; provides more options.
-&gt; Effect sizes were labelled following Cohen&#39;s (1988) recommendations.
-&gt; 
-&gt; The Paired t-test testing the difference between mild_data$retinalogik and
-&gt; mild_data$hfa (mean difference = -0.22) suggests that the effect is negative,
-&gt; statistically not significant, and very small (difference = -0.22, 95% CI
-&gt; [-1.58, 1.14], t(17) = -0.34, p = 0.734; Cohen&#39;s d = -0.08, 95% CI [-0.54,
-&gt; 0.38])
-
-moderate_data &lt;- subset(tests, classification == &quot;Moderate&quot;)
-t.test(moderate_data$retinalogik, moderate_data$hfa, paired = TRUE) %&gt;%
-  report()
-&gt; For paired samples, &#39;repeated_measures_d()&#39; provides more options.
-&gt; Effect sizes were labelled following Cohen&#39;s (1988) recommendations.
-&gt; 
-&gt; The Paired t-test testing the difference between moderate_data$retinalogik and
-&gt; moderate_data$hfa (mean difference = 1.00) suggests that the effect is
-&gt; positive, statistically not significant, and small (difference = 1.00, 95% CI
-&gt; [-0.53, 2.53], t(12) = 1.42, p = 0.180; Cohen&#39;s d = 0.39, 95% CI [-0.18, 0.95])
-
-advanced_data &lt;- subset(tests, classification == &quot;Advanced&quot;)
-t.test(advanced_data$retinalogik, advanced_data$hfa, paired = TRUE) %&gt;%
-  report()
-&gt; For paired samples, &#39;repeated_measures_d()&#39; provides more options.
-&gt; Effect sizes were labelled following Cohen&#39;s (1988) recommendations.
-&gt; 
-&gt; The Paired t-test testing the difference between advanced_data$retinalogik and
-&gt; advanced_data$hfa (mean difference = 5.18) suggests that the effect is
-&gt; positive, statistically significant, and large (difference = 5.18, 95% CI
-&gt; [1.32, 9.05], t(10) = 2.99, p = 0.014; Cohen&#39;s d = 0.90, 95% CI [0.18, 1.59])</code></pre>
-<p>Median threshold sensitivity was significantly higher in the VR-RL
-perimeter in advanced glaucoma patients. Paired t-test suggests that the
-mean difference in threshold sensitivity is statistically significant,
-and large (difference = 5.18, 95% CI [1.32, 9.05], t(10) = 2.99, p =
-0.014; Cohen’s d = 0.90, 95% CI [0.18, 1.59])</p>
+# mild_data &lt;- subset(dBdat_means, classification == &quot;Mild&quot;)
+# t.test(mild_data$retinalogik, mild_data$hfa, paired = TRUE) %&gt;%
+#   report()
+# 
+# moderate_data &lt;- subset(dBdat_means, classification == &quot;Moderate&quot;)
+# t.test(moderate_data$retinalogik, moderate_data$hfa, paired = TRUE) %&gt;%
+#   report()
+# 
+# advanced_data &lt;- subset(dBdat_means, classification == &quot;Advanced&quot;)
+# t.test(advanced_data$retinalogik, advanced_data$hfa, paired = TRUE) %&gt;%
+#   report() %&gt;% summary()
+# 
+# dBdat_medians &lt;- dBdat_filtered %&gt;%
+#   group_by(id, device) %&gt;%
+#   mutate(median = median(dB)) %&gt;%
+#   distinct(id, classification, device, median) %&gt;%
+#   pivot_wider(names_from = device, values_from = median) %&gt;%
+#   na.omit()
+# 
+# mild_tmp &lt;- dBdat_filtered %&gt;%
+#   subset(classification == &quot;Mild&quot;) %&gt;%
+#   pivot_wider(names_from = device, values_from = dB) %&gt;%
+#   na.omit()
+# wilcox.test(mild_tmp$retinalogik, mild_tmp$hfa, paired=TRUE)
+# 
+# mild_data &lt;- subset(dBdat_medians, classification == &quot;Mild&quot;)
+# wilcox.test(mild_data$retinalogik, mild_data$hfa, paired = TRUE)
+# 
+# moderate_data &lt;- subset(dBdat_medians, classification == &quot;Moderate&quot;)
+# wilcox.test(moderate_data$retinalogik, moderate_data$hfa, paired = TRUE)
+# 
+# advanced_data &lt;- subset(dBdat_medians, classification == &quot;Advanced&quot;)
+# wilcox.test(advanced_data$retinalogik, advanced_data$hfa, paired = TRUE)
+</code></pre>
 </div>
 <div id="test-duration" class="section level3">
 <h3>Test duration</h3>
