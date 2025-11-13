@@ -273,27 +273,37 @@ dBdat_filtered %>%
 ```
 
 ### Test duration
+>The duration of the RL-VF was significantly shorter than that of the Humphrey and did not vary with glaucoma severity in a similar manner to SAP administered with the HFA.
 
 ```{r duration, warning=FALSE}
 duration <- dBdat_filtered %>%
-  group_by(device) %>%
-  mutate(mean = mean(as.duration(duration)), sd = sd(as.duration(duration))) %>%
-  distinct(device, mean, sd)
+  group_by(classification, device) %>%
+  mutate(duration = as.duration(duration)) %>%
+  mutate(mean = mean(duration)/60,
+         sd = sd(duration)/60,
+         median = median(duration)/60,
+         iqr_q1 = quantile(duration, .25)/60, 
+         iqr_q3 = quantile(duration, .75)/60) %>%
+  distinct(classification, device, mean, sd, median, iqr_q1, iqr_q3) 
 
-rthfaduration <- dBdat_filtered %>%
-  distinct(id, device, visit, eye, duration) %>%
+duration %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced")),
+         device = factor(device, levels = c("retinalogik", "hfa"))) %>%
+  arrange(classification, device) %>%
+  nice_table()
+
+durationdat <- dBdat_filtered %>%
   group_by(id, device) %>%
-  mutate(duration = mean(duration)) %>%
-  distinct(device, id, duration) %>%
+  mutate(duration = mean(as.duration(duration))) %>%
+  distinct(id, classification, device, duration) %>%
   pivot_wider(names_from = device, values_from = duration) %>%
-  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
   na.omit()
 
-t.test(as.numeric(rthfaduration$retinalogik), as.numeric(rthfaduration$hfa), paired=T)
+durationtest <- wilcox.test(durationdat$retinalogik, durationdat$hfa, paired=TRUE)
 
 ```
 
-Mean test duration time was `r round(duration$mean[duration$device=="retinalogik"]/60, 2)` (SD = `r round(duration$sd[duration$device=="retinalogik"]/60, 2)`) mins for Retinalogik and `r round(duration$mean[duration$device=="hfa"]/60, 2)` (SD = `r round(duration$sd[duration$device=="hfa"]/60, 2)`) mins for HFA (p < .01).
+Median test duration time was `r round(median(durationdat$retinalogik)/60, 2)` (IQR = `r round(quantile(durationdat$retinalogik, .25)/60, 2)`, `r round(quantile(durationdat$retinalogik, .75)/60, 2)`) mins for Retinalogik and `r round(median(durationdat$hfa)/60, 2)` (IQR = `r round(quantile(durationdat$hfa, .25)/60, 2)`, `r round(quantile(durationdat$hfa, .75)/60, 2)`) mins for HFA. Wilcoxon signed rank test indicated that this `r round((median(durationdat$hfa)-median(durationdat$retinalogik))/60, 2)` mins difference was statistically significant, *V* = `r durationtest$statistic`, `r if (durationtest$p.value < 0.01) {"$p < 0.01$"} else {paste("$p = ", round(durationtest$p.value, 3), "$", sep="")}`.
 
 ### Questionnaire
 ```{r questionnaire}
