@@ -95,15 +95,10 @@ dBdat_filtered <- dBdat %>%
 dBdat_filtered <- merge(dBdat_filtered, classification) %>%
   filter(classification != "Control")
 
-df <- dBdat_filtered %>%
-  distinct(id, device, visit, eye, x, y, dB, classification) %>%
-  group_by(id, device, eye, x, y) %>%
-  mutate(mediandB = median(dB)) %>%
-  distinct(id, device, eye, x, y, mediandB, classification) %>%
-  pivot_wider(names_from = device, values_from = mediandB) %>%
-  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
-
 ```
+
+### Download plots
+[click me to find all generated plots](https://github.com/vvnejl/retinalogik-study/tree/1a1899dfd0279ba9833369e36be924233f90fb38/plots)
 
 # Study summary
 We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract). Scotoma analysis results may be found [here](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html).
@@ -144,6 +139,12 @@ groups <- dBdat_filtered %>%
   mutate(classification = as.factor(classification)) %>%
   count(classification)
 
+dBdat_filtered <- dBdat_filtered %>%
+  #remove first 2 visits
+  filter(visit != 1 & visit != 2) %>%
+  #remove reliability indices <30%
+  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30)
+
 ```
 
 All OS data are transposed to OD format before analyses. `r sum(vft$n)` VF tests from `r length(unique(dBdat_filtered$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat_filtered$age)` to `r max(dBdat_filtered$age)` (*M* = `r round(mean(dBdat_filtered$age), 2)`, *SD* = `r round(sd(dBdat_filtered$age), 2)`) were included in the analysis (Early n = `r groups$n[groups$classification == "Mild"]`; Moderate n = `r groups$n[groups$classification == "Moderate"]`; Advanced n = `r groups$n[groups$classification == "Advanced"]`).
@@ -151,19 +152,10 @@ All OS data are transposed to OD format before analyses. `r sum(vft$n)` VF tests
 ## Analysis
 Of the 5 visits, the first 2 visits were removed from analysis. VFTs where reliability indices (FL, FP, and FN) > 30% were removed from analysis as well.
 
-### General threshold sensitivity
-
->~~General threshold sensitivity measured by the VR device was significantly higher than the HFA across all stages of glaucoma (p < 0.05).~~
-
-Threshold sensitivity was significantly higher in the VR-RL perimeter in moderate and advanced glaucoma patients, as suggested by Wilcoxon signed-rank tests for the median of the patient-level mean differences for Mild, Moderate, and Advanced groups.
+### Mean sensitivity
+In patients with moderate and advanced glaucoma, the mean sensitivity was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
 
 ```{r meansens}
-dBdat_filtered <- dBdat_filtered %>%
-  #remove first 2 visits
-  filter(visit != 1 & visit != 2) %>%
-  #remove reliability indices <30%
-  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30)
-
 dBdat_filtered %>%
   group_by(id, device) %>%
   mutate(mean = mean(dB)) %>%
@@ -272,6 +264,318 @@ dBdat_filtered %>%
 
 ```
 
+### Mean deviation
+In patients with moderate and advanced glaucoma, the mean deviation was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
+
+```{r mdtable}
+dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(mean = mean(md)) %>%
+  distinct(id, classification, device, mean) %>%
+  pivot_wider(names_from = device, values_from = mean) %>%
+  na.omit() %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    mean_retinalogik = mean(retinalogik, na.rm = TRUE),
+    sd_retinalogik = sd(retinalogik, na.rm = TRUE),
+    mean_hfa = mean(hfa, na.rm = TRUE),
+    sd_hfa = sd(hfa, na.rm = TRUE)
+  ) %>%
+  mutate(difference = mean_retinalogik-mean_hfa) %>%
+  nice_table()
+
+#########
+md_means <- dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(mean = mean(md)) %>%
+  distinct(id, classification, device, mean) %>%
+  pivot_wider(names_from = device, values_from = mean) %>%
+  na.omit() %>%
+  mutate(difference = retinalogik-hfa)
+
+# 1. Group the cleaned, wide data by classification
+wilcoxon_results <- md_means %>%
+  group_by(classification) %>%
+  
+  # 2. Nest the data for group-wise application
+  nest() %>%
+  
+  # 3. Apply the Wilcoxon test to the paired columns in each nested group
+  mutate(
+    wilcox_test = map(data, ~ wilcox.test(.x$retinalogik, .x$hfa, paired = TRUE)),
+    
+    # 4. Extract the key results cleanly
+    W_statistic = map_dbl(wilcox_test, "statistic"),
+    p_value = map_dbl(wilcox_test, "p.value")
+  ) %>%
+  
+  # 5. Select the final output columns
+  select(classification, W_statistic, p_value)
+
+wilcoxon_results %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  arrange(classification) %>%
+  nice_table(title = c("Wilcoxon signed rank test on paired samples"))
+
+dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(median = median(md)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
+  na.omit() %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    median_retinalogik = median(retinalogik, na.rm = TRUE),
+    q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+    q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+    iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
+    median_hfa = median(hfa, na.rm = TRUE),
+    q1_hfa = quantile(hfa, .25, na.rm = TRUE),
+    q3_hfa = quantile(hfa, .75, na.rm = TRUE),
+    iqr_hfa = IQR(hfa, na.rm = TRUE)
+  ) %>%
+  nice_table()
+
+```
+
+```{r mdblandaltman}
+library(BlandAltmanLeh)
+
+df <- md_means
+
+blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
+bias <- mean(df$retinalogik, na.rm=T) - mean(df$hfa, na.rm=T)
+
+print(blandplot +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
+        ylim(c(-15, 15)) +
+        xlab("MD") +
+        ylab("Difference in MD (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing MD across all stages of glaucoma"))
+
+ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
+
+milddf <- df %>%
+  filter(classification == "Mild")
+
+blandplotmild <- bland.altman.plot(milddf$retinalogik, milddf$hfa, graph.sys = "ggplot2", geom_count=T)
+biasmild <- mean(milddf$retinalogik, na.rm=T) - mean(milddf$hfa, na.rm=T)
+
+ print(blandplotmild +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = biasmild, color = "red", linetype = "solid", linewidth = 2) +
+        ylim(c(-15, 15)) +
+        xlab("MD") +
+        ylab("Difference in MD (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(biasmild, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing MD in patients with mild glaucoma"))
+
+ggsave("plots/blandaltman-md-mild.png", width = 7, height = 5)
+
+moderatedf <- df %>%
+  filter(classification == "Moderate")
+
+blandplotmoderate <- bland.altman.plot(moderatedf$retinalogik, moderatedf$hfa, graph.sys = "ggplot2", geom_count=T)
+biasmoderate <- mean(moderatedf$retinalogik, na.rm=T) - mean(moderatedf$hfa, na.rm=T)
+
+print(blandplotmoderate +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = biasmoderate, color = "red", linetype = "solid", linewidth = 2) +
+        ylim(c(-15, 15)) +
+        xlab("MD") +
+        ylab("Difference in MD (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(biasmoderate, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing MD in patients with moderate glaucoma"))
+
+ggsave("plots/blandaltman-md-moderate.png", width = 7, height = 5)
+
+advanceddf <- df %>%
+  filter(classification == "Advanced")
+
+blandplotadvanced <- bland.altman.plot(advanceddf$retinalogik, advanceddf$hfa, graph.sys = "ggplot2", geom_count=T)
+biasadvanced <- mean(advanceddf$retinalogik, na.rm=T) - mean(advanceddf$hfa, na.rm=T)
+
+print(blandplotadvanced +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = biasadvanced, color = "red", linetype = "solid", linewidth = 2) +
+        ylim(c(-15, 15)) +
+        xlab("MD") +
+        ylab("Difference in MD (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(biasadvanced, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing MD in patients with advanced glaucoma"))
+
+ggsave("plots/blandaltman-md-advanced.png", width = 7, height = 5)
+
+```
+
+### Pointwise analysis
+```{r pointwise}
+
+## Early GON
+nRT <- dBdat_filtered %>%
+  filter(classification == "Mild" & device == "retinalogik") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+nHFA <- dBdat_filtered %>%
+  filter(classification == "Mild" & device == "hfa") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+meanSensitivity <- dBdat_filtered %>%
+  filter(classification == "Mild") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+  ungroup() %>%
+  add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
+  add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
+
+rtplot_earlyGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " early GON eyes)")) +
+  theme(legend.position="none")
+
+hfaplot_earlyGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " early GON eyes)")) +
+  theme(legend.position="none")
+
+## Moderate GON
+nRT <- dBdat_filtered %>%
+  filter(classification == "Moderate" & device == "retinalogik") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+nHFA <- dBdat_filtered %>%
+  filter(classification == "Moderate" & device == "hfa") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+meanSensitivity <- dBdat_filtered %>%
+  filter(classification == "Moderate") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+  ungroup() %>%
+  add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
+  add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
+
+rtplot_moderateGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " moderate GON eyes)")) +
+  theme(legend.position="none")
+
+hfaplot_moderateGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " moderate GON eyes)")) +
+  theme(legend.position="none")
+
+## Advanced GON
+nRT <- dBdat_filtered %>%
+  filter(classification == "Advanced" & device == "retinalogik") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+nHFA <- dBdat_filtered %>%
+  filter(classification == "Advanced" & device == "hfa") %>%
+  distinct(id, device, visit, eye) %>%
+  n_distinct()
+
+meanSensitivity <- dBdat_filtered %>%
+  filter(classification == "Advanced") %>%
+  distinct(id, device, visit, eye, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  group_by(x, y) %>%
+  summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+  ungroup() %>%
+  add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
+  add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
+
+rtplot_advancedGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanRT)) +
+  geom_raster(aes(x = x, y = y, fill = meanRT)) +
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " advanced GON eyes)")) +
+  theme(legend.position="none")
+
+hfaplot_advancedGON <- meanSensitivity %>%
+  ggplot(aes(x, y, meanHFA)) +
+  geom_raster(aes(x = x, y = y, fill = meanHFA)) +
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+                x = x, y = y), size = 3, colour="white") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " advanced GON eyes)")) +
+  theme(legend.position="none")
+
+rtplot_earlyGON + hfaplot_earlyGON
+#ggsave("plots/earlygon.png", width = 10, height = 6)
+
+rtplot_moderateGON + hfaplot_moderateGON
+#ggsave("plots/moderategon.png", width = 10, height = 6)
+
+rtplot_advancedGON + hfaplot_advancedGON
+#ggsave("plots/advancedgon.png", width = 10, height = 6)
+```
+
+### Scotoma analysis
+Please refer to [link](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html).
+
 ### Test duration
 >The duration of the RL-VF was significantly shorter than that of the Humphrey and did not vary with glaucoma severity in a similar manner to SAP administered with the HFA.
 
@@ -306,6 +610,7 @@ durationtest <- wilcox.test(durationdat$retinalogik, durationdat$hfa, paired=TRU
 Median test duration time was `r round(median(durationdat$retinalogik)/60, 2)` (IQR = `r round(quantile(durationdat$retinalogik, .25)/60, 2)`, `r round(quantile(durationdat$retinalogik, .75)/60, 2)`) mins for Retinalogik and `r round(median(durationdat$hfa)/60, 2)` (IQR = `r round(quantile(durationdat$hfa, .25)/60, 2)`, `r round(quantile(durationdat$hfa, .75)/60, 2)`) mins for HFA. Wilcoxon signed rank test indicated that this `r round((median(durationdat$hfa)-median(durationdat$retinalogik))/60, 2)` mins difference was statistically significant, *V* = `r durationtest$statistic`, `r if (durationtest$p.value < 0.01) {"$p < 0.01$"} else {paste("$p = ", round(durationtest$p.value, 3), "$", sep="")}`.
 
 ### Questionnaire
+
 ```{r questionnaire}
 qdat <- read.csv("RetinaLogik Questionnaire Data(Sheet1).csv") %>%
   mutate(
@@ -415,9 +720,6 @@ q5dat <- qdat %>%
 **Q5 is "Which test would you prefer to perform on an on-going basis?"**
 
 `r round(q5dat$n[2]/sum(q5dat$n)*100, 2)`% prefer "desktop" aka HFA, `r round(q5dat$n[3]/sum(q5dat$n)*100, 2)`% prefer head-mounted aka Retinalogik, and `r round(q5dat$n[4]/sum(q5dat$n)*100, 2)`% has no preference for either.
-
-### Threshold sensitivities
-Threshold sensitivities were significantly higher in peripheral locations with the VR-RL perimeter. Note: Do a ?linear regression with dB ~ perimeter * age * x * y 
 
 ### Test-retest variability
 > with conventional perimetry, test-retest variability increases with defect depth and eccentricity. [(Heijl, Lindgren & Lindgren, 1989)](https://pubmed.ncbi.nlm.nih.gov/2757094/)
