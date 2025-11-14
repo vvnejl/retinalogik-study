@@ -264,6 +264,29 @@ dBdat_filtered %>%
 
 ```
 
+```{r hexbin}
+dBdat_filtered %>%
+  group_by(id, device, x, y) %>%
+  mutate(meandB = mean(dB)) %>%
+  distinct(id, device, x, y, meandB) %>%
+  pivot_wider(names_from = device, values_from = meandB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
+  ggplot(aes(x = hfa, y = retinalogik)) +
+  geom_hex(bins = 30) +
+  scale_fill_viridis_c() +
+  geom_smooth(method = "loess", se = TRUE, colour = "red") +
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title="Hexbin plot of threshold sensitivities for all locations",
+       subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 30)") +
+  xlab("HFA (dB)") +
+  ylab("Retinalogik (dB)") +
+  xlim(-2, 40) +
+  ylim(-2, 40) +
+  theme_bw()
+
+ggsave("plots/hexbin30.png", width = 5, height = 4)
+```
+
 ### Mean deviation
 In patients with moderate and advanced glaucoma, the mean deviation was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
 
