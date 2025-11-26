@@ -327,8 +327,11 @@ create_vf_plot <- function(data_subset) {
 ```{r stats}
 #t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points)
 
-ttest_mild <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% "Mild")
+# ttest_mild <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
+#        subset = classification %in% "Mild")
+ttest_mild <- wilcox.test(Pair(retinalogik, hfa) ~ 1,
+                          data = all_scotoma_points,
+                          subset = classification %in% "Mild")
 p_mild <- ttest_mild$p.value
 means_mild <- all_scotoma_points %>%
   filter(classification=="Mild") %>%
@@ -341,8 +344,9 @@ means_mild <- all_scotoma_points %>%
             q1_HFA = quantile(hfa, .25, na.rm = TRUE),
             q3_HFA = quantile(hfa, .75, na.rm = TRUE))
 
-ttest_moderate <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% "Moderate")
+ttest_moderate <- wilcox.test(Pair(retinalogik, hfa) ~ 1,
+                          data = all_scotoma_points,
+                          subset = classification %in% "Moderate")
 p_moderate <- ttest_moderate$p.value
 means_moderate <- all_scotoma_points %>%
   filter(classification=="Moderate") %>%
@@ -355,8 +359,9 @@ means_moderate <- all_scotoma_points %>%
             q1_HFA = quantile(hfa, .25, na.rm = TRUE),
             q3_HFA = quantile(hfa, .75, na.rm = TRUE))
 
-ttest_advanced <- t.test(Pair(retinalogik, hfa) ~ 1, data = all_scotoma_points,
-       subset = classification %in% "Advanced")
+ttest_advanced <- wilcox.test(Pair(retinalogik, hfa) ~ 1,
+                          data = all_scotoma_points,
+                          subset = classification %in% "Advanced")
 p_advanced <- ttest_advanced$p.value
 means_advanced <- all_scotoma_points %>%
   filter(classification=="Advanced") %>%

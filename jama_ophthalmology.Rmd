@@ -45,6 +45,7 @@ library(patchwork)
 library(report)
 library(effectsize)
 library(rempsyc)
+library(psych)
 
 sessionInfo()
 
@@ -139,16 +140,11 @@ groups <- dBdat_filtered %>%
   mutate(classification = as.factor(classification)) %>%
   count(classification)
 
-dBdat_filtered <- dBdat_filtered %>%
-  #remove first 2 visits
-  filter(visit != 1 & visit != 2) %>%
-  #remove reliability indices <30%
-  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30)
-
 ```
 
 All OS data are transposed to OD format before analyses. `r sum(vft$n)` VF tests from `r length(unique(dBdat_filtered$id))` participants (`r sum(gender$n[gender$gender == "F"], na.rm = T)` females, `r sum(gender$n[gender$gender == "M"], na.rm = T)` males) aged `r min(dBdat_filtered$age)` to `r max(dBdat_filtered$age)` (*M* = `r round(mean(dBdat_filtered$age), 2)`, *SD* = `r round(sd(dBdat_filtered$age), 2)`) were included in the analysis (Early n = `r groups$n[groups$classification == "Mild"]`; Moderate n = `r groups$n[groups$classification == "Moderate"]`; Advanced n = `r groups$n[groups$classification == "Advanced"]`).
 
+# Results
 ## Analysis
 Of the 5 visits, the first 2 visits were removed from analysis. VFTs where reliability indices (FL, FP, and FN) > 30% were removed from analysis as well.
 
@@ -156,6 +152,12 @@ Of the 5 visits, the first 2 visits were removed from analysis. VFTs where relia
 In patients with moderate and advanced glaucoma, the mean sensitivity was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
 
 ```{r meansens}
+dBdat_filtered <- dBdat_filtered %>%
+  #remove first 2 visits
+  filter(visit != 1 & visit != 2) %>%
+  #remove reliability indices <30%
+  filter(flPerc < 30 & fnPerc < 30 & fpPerc < 30)
+
 dBdat_filtered %>%
   group_by(id, device) %>%
   mutate(mean = mean(dB)) %>%
@@ -632,6 +634,65 @@ durationtest <- wilcox.test(durationdat$retinalogik, durationdat$hfa, paired=TRU
 
 Median test duration time was `r round(median(durationdat$retinalogik)/60, 2)` (IQR = `r round(quantile(durationdat$retinalogik, .25)/60, 2)`, `r round(quantile(durationdat$retinalogik, .75)/60, 2)`) mins for Retinalogik and `r round(median(durationdat$hfa)/60, 2)` (IQR = `r round(quantile(durationdat$hfa, .25)/60, 2)`, `r round(quantile(durationdat$hfa, .75)/60, 2)`) mins for HFA. Wilcoxon signed rank test indicated that this `r round((median(durationdat$hfa)-median(durationdat$retinalogik))/60, 2)` mins difference was statistically significant, *V* = `r durationtest$statistic`, `r if (durationtest$p.value < 0.01) {"$p < 0.01$"} else {paste("$p = ", round(durationtest$p.value, 3), "$", sep="")}`.
 
+### ICC
+
+```{r icc}
+# ICC (1,3) Agreement between tests comparing "retinalogik" and "hfa" measurements.
+dB_wide_agreement <- dBdat_filtered %>%
+  group_by(id, device) %>%
+  summarise(mean_dB = mean(dB, na.rm = TRUE)) %>%
+  pivot_wider(names_from = device, values_from = mean_dB)
+
+icc_data_agreement <- dB_wide_agreement %>%
+  ungroup() %>%
+  select(retinalogik, hfa) %>%
+  mutate(
+    retinalogik = as.numeric(retinalogik),
+    hfa = as.numeric(hfa)
+  ) %>%
+  as.matrix() 
+
+#icc_result_1_3 <- ICC(icc_data_agreement, lmer = FALSE, missing=FALSE) # lmer=FALSE for base R stats
+icc_result_1_3 <- ICC(icc_data_agreement, lmer = TRUE, missing=FALSE)
+# use result from ICC3 Single_fixed_raters, e.g.,
+# Single_fixed_raters      ICC3 0.93 27  32  32 1.4e-15        0.86        0.96
+
+### For repeatability within a device
+retinalogik_visits <- dBdat_filtered %>%
+  filter(device == "retinalogik") %>%
+  # If you have varying numbers of visits, you might need to pad with NA or take a consistent number.
+  # For demonstration, let's assume we pivot directly.
+  # It's crucial that 'visit' actually represents repeated measures of the *same thing* to be averaged.
+  group_by(id, visit) %>%
+  summarise(mean_dB_visit = mean(dB, na.rm = TRUE)) %>% # If multiple dB per id, visit, device
+  pivot_wider(names_from = visit, values_from = mean_dB_visit, names_prefix = "Visit_") %>%
+  ungroup() # Ungroup after pivot_wider
+
+icc_data_retinalogik <- retinalogik_visits %>%
+  select(starts_with("Visit_")) %>%
+  as.matrix()
+
+icc_result_1_2_retinalogik <- ICC(icc_data_retinalogik)
+icc_result_1_2_retinalogik # use ICC2k results
+
+# repeat for HFA
+hfa_visits <- dBdat_filtered %>%
+  filter(device == "hfa") %>%
+  group_by(id, visit) %>%
+  summarise(mean_dB_visit = mean(dB, na.rm = TRUE)) %>%
+  pivot_wider(names_from = visit, values_from = mean_dB_visit, names_prefix = "Visit_") %>%
+  ungroup()
+
+icc_data_hfa <- hfa_visits %>%
+  select(starts_with("Visit_")) %>%
+  as.matrix()
+
+icc_result_1_2_hfa <- ICC(icc_data_hfa)
+icc_result_1_2_hfa # use ICC2k results
+```
+
+The ICC values for comparison between Retinalogik and HFA were `r round(icc_result_1_3$results[icc_result_1_3$results$type == "ICC3", "ICC"], 2)` (95% confidence interval [CI]: `r round(icc_result_1_3$results[icc_result_1_3$results$type == "ICC3", "lower bound"], 2)`-`r round(icc_result_1_3$results[icc_result_1_3$results$type == "ICC3", "upper bound"], 2)`). The ICCs for intra-device reproducibility were `r round(icc_result_1_2_retinalogik$results[icc_result_1_2_retinalogik$results$type == "ICC2k", "ICC"], 2)` (95% CI: `r round(icc_result_1_2_retinalogik$results[icc_result_1_2_retinalogik$results$type == "ICC2k", "lower bound"], 2)`-`r round(icc_result_1_2_retinalogik$results[icc_result_1_2_retinalogik$results$type == "ICC2k", "upper bound"], 2)`) for RetinaLogik, and `r round(icc_result_1_2_hfa$results[icc_result_1_2_hfa$results$type == "ICC2k", "ICC"], 2)` (95% CI: `r round(icc_result_1_2_hfa$results[icc_result_1_2_hfa$results$type == "ICC2k", "lower bound"], 2)`-`r round(icc_result_1_2_hfa$results[icc_result_1_2_hfa$results$type == "ICC2k", "upper bound"], 2)`) for the HFA. 
+
 ### Questionnaire
 
 ```{r questionnaire}
@@ -736,27 +797,13 @@ wilcox_comfort <- wilcox.test(qdat_numeric$Q3..Desktop.comfort,
 
 q5dat <- qdat %>%
   select(ID, Q5..Overall.preference) %>%
-  mutate(Q5..Overall.preference = as.factor(Q5..Overall.preference)) %>%
+  mutate(Q5..Overall.preference = as.factor(Q5..Overall.preference)) 
+
+q5dat <- q5dat[q5dat$Q5..Overall.preference != "", ] %>%
   count(Q5..Overall.preference)
 
 ```
 **Q5 is "Which test would you prefer to perform on an on-going basis?"**
 
-`r round(q5dat$n[2]/sum(q5dat$n)*100, 2)`% prefer "desktop" aka HFA, `r round(q5dat$n[3]/sum(q5dat$n)*100, 2)`% prefer head-mounted aka Retinalogik, and `r round(q5dat$n[4]/sum(q5dat$n)*100, 2)`% has no preference for either.
+`r round(q5dat$n[1]/sum(q5dat$n)*100, 2)`% prefer "desktop" aka HFA, `r round(q5dat$n[2]/sum(q5dat$n)*100, 2)`% prefer head-mounted aka Retinalogik, and `r round(q5dat$n[3]/sum(q5dat$n)*100, 2)`% has no preference for either.
 
-### Test-retest variability
-> with conventional perimetry, test-retest variability increases with defect depth and eccentricity. [(Heijl, Lindgren & Lindgren, 1989)](https://pubmed.ncbi.nlm.nih.gov/2757094/)
-
-> The global test-retest variability was assessed by the root mean square deviation (RMSD) of
-the TD values. We define RMSD as the square root of average square of TD differences over
-all 52 locations between two repeated measurements... [(Choi et al., 2021)](https://www.sciencedirect.com/science/article/abs/pii/S2589419620303197).
-
-> The test-retest variability at each location on the 24-2 grid of each participant was calculated as the absolute value of the difference in pointwise sensitivity of VF test 1 and test 2 at that location... The mean pointwise test-retest variability at a particular grid
-location was calculated as the mean value of the variability at that
-particular location of each of the 1426 participants... [(Tan, Agar, Kalloniatis & Phu, 2023)](https://doi.org/10.1016/j.ophtha.2023.12.018)
-
-```{r test-retest}
-
-
-
-```
