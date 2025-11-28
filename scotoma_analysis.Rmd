@@ -459,6 +459,26 @@ all_scotoma_points %>%
                  position=position_dodge(.9)) +
   labs(caption = "(Note: Error bars are 95% confidence intervals)") +
   theme_bw()
+
+all_scotoma_points %>%
+  pivot_longer(cols = c(retinalogik, hfa),
+               names_to = "device",
+               values_to = "dB") %>%
+  group_by(classification, device) %>%
+  summarise(n = n(),
+            medians = median(dB),
+            q1 = quantile(dB, .25, na.rm = TRUE),
+            q3 = quantile(dB, .75, na.rm = TRUE)) %>%
+  #mutate( se=sd/sqrt(n))  %>%
+  #mutate( ic=se * qt((1-0.05)/2 + .5, n-1)) %>%
+  mutate(classification = factor(classification, levels=c('Mild','Moderate','Advanced')),
+         device = factor(device, levels = c('retinalogik', 'hfa'))) %>%
+  ggplot(aes(x=classification, y=medians, fill=device)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  # geom_errorbar(aes(ymin=q1, ymax=q3), width=.2,
+  #                position=position_dodge(.9)) +
+  #labs(caption = "(Note: Error bars are 95% confidence intervals)") +
+  theme_bw()
 ```
 
 ### Plots for verification
