@@ -99,7 +99,7 @@ dBdat_filtered <- merge(dBdat_filtered, classification) %>%
 ```
 
 ### Download plots
-[click me to find all generated plots](https://github.com/vvnejl/retinalogik-study/tree/d141c98b78ff179f97b366e325965862771e59c9/plots)
+[click me to find all generated plots](https://github.com/vvnejl/retinalogik-study/tree/a484221d13b84da1c1692b1bc471db54e97ddd30/plots)
 
 # Study summary
 We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract). Scotoma analysis results may be found [here](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html).
