@@ -441,7 +441,7 @@ ttestdf2 %>%
 
 ### Bar graph
 ```{r bargraph}
-all_scotoma_points %>%
+scotoma_meansplot <- all_scotoma_points %>%
   pivot_longer(cols = c(retinalogik, hfa),
                names_to = "device",
                values_to = "dB") %>%
@@ -460,7 +460,7 @@ all_scotoma_points %>%
   labs(caption = "(Note: Error bars are 95% confidence intervals)") +
   theme_bw()
 
-all_scotoma_points %>%
+scotoma_mediansplot <- all_scotoma_points %>%
   pivot_longer(cols = c(retinalogik, hfa),
                names_to = "device",
                values_to = "dB") %>%
@@ -475,10 +475,37 @@ all_scotoma_points %>%
          device = factor(device, levels = c('retinalogik', 'hfa'))) %>%
   ggplot(aes(x=classification, y=medians, fill=device)) +
   geom_bar(stat="identity", position=position_dodge()) +
-  # geom_errorbar(aes(ymin=q1, ymax=q3), width=.2,
-  #                position=position_dodge(.9)) +
-  #labs(caption = "(Note: Error bars are 95% confidence intervals)") +
+  geom_errorbar(aes(ymin=q1, ymax=q3), width=.2,
+                 position=position_dodge(.9)) +
+  annotate("text", 
+           x = "Mild", 
+           y = 30, 
+           label = "***", 
+           size = 8) +
+  
+  # Annotation 2: Moderate (x-position 2)
+  annotate("text", 
+           x = "Moderate", 
+           y = 28,
+           label = "***", 
+           size = 8) +
+  
+  # Annotation 3: Advanced (x-position 3)
+  annotate("text", 
+           x = "Advanced", 
+           y = 22,
+           label = "***", 
+           size = 8) + # 4. Align with dodged bars)
+  labs(x = "Classification",
+       y = "Medians",
+       caption = "(Note: Error bars are IQR)") +
+  ylim(c(-1, 32)) +
   theme_bw()
+
+scotoma_meansplot
+scotoma_mediansplot
+#ggsave("plots/scotoma_mediansplot.png")
+
 ```
 
 ### Plots for verification

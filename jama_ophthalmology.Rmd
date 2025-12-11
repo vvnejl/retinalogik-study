@@ -496,6 +496,19 @@ hfaplot_earlyGON <- meanSensitivity %>%
   ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " early GON eyes)")) +
   theme(legend.position="none")
 
+diffplot_earlyGON <- meanSensitivity %>%
+  mutate(diff = meanRT-meanHFA) %>%
+  ggplot(aes(x, y, diff)) +
+  geom_raster(aes(x = x, y = y, fill = diff)) +
+  geom_text(aes(label = ifelse(is.na(diff), "", paste0(round(diff, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = colorRampPalette(c("red", "white", "red"))(27), limits = c(-13, 13), 
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Difference (Retinalogik-HFA)") +
+  theme(legend.position="none")
+
 ## Moderate GON
 nRT <- dBdat_filtered %>%
   filter(classification == "Moderate" & device == "retinalogik") %>%
@@ -540,6 +553,19 @@ hfaplot_moderateGON <- meanSensitivity %>%
                        na.value="darkred") +
   theme_bw() +
   ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " moderate GON eyes)")) +
+  theme(legend.position="none")
+
+diffplot_moderateGON <- meanSensitivity %>%
+  mutate(diff = meanRT-meanHFA) %>%
+  ggplot(aes(x, y, diff)) +
+  geom_raster(aes(x = x, y = y, fill = diff)) +
+  geom_text(aes(label = ifelse(is.na(diff), "", paste0(round(diff, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = colorRampPalette(c("red", "white", "red"))(27), limits = c(-13, 13), 
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Difference (Retinalogik-HFA)") +
   theme(legend.position="none")
 
 ## Advanced GON
@@ -588,14 +614,45 @@ hfaplot_advancedGON <- meanSensitivity %>%
   ggtitle("HFA", subtitle = paste0("(n = ", nHFA, " advanced GON eyes)")) +
   theme(legend.position="none")
 
+diffplot_advancedGON <- meanSensitivity %>%
+  mutate(diff = meanRT-meanHFA) %>%
+  ggplot(aes(x, y, diff)) +
+  geom_raster(aes(x = x, y = y, fill = diff)) +
+  geom_text(aes(label = ifelse(is.na(diff), "", paste0(round(diff, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradientn(colours = colorRampPalette(c("red", "white", "red"))(27), limits = c(-13, 13), 
+                       na.value="darkred") +
+  theme_bw() +
+  ggtitle("Difference (Retinalogik-HFA)") +
+  theme(legend.position="none")
+
+# rtplot_earlyGON + hfaplot_earlyGON
+# ggsave("plots/earlygon.png", width = 10, height = 6)
+# 
+# rtplot_moderateGON + hfaplot_moderateGON
+# ggsave("plots/moderategon.png", width = 10, height = 6)
+# 
+# rtplot_advancedGON + hfaplot_advancedGON
+# ggsave("plots/advancedgon.png", width = 10, height = 6)
+# 
+# rtplot_earlyGON + hfaplot_earlyGON + diffplot_earlyGON
+# ggsave("plots/earlygon_withdiff.png", width = 14, height = 6)
+# 
+# rtplot_moderateGON + hfaplot_moderateGON + diffplot_moderateGON
+# ggsave("plots/moderategon_withdiff.png", width = 14, height = 6)
+# 
+# rtplot_advancedGON + hfaplot_advancedGON + diffplot_advancedGON
+# ggsave("plots/advancedgon_withdiff.png", width = 14, height = 6)
+
 rtplot_earlyGON + hfaplot_earlyGON
-#ggsave("plots/earlygon.png", width = 10, height = 6)
+diffplot_earlyGON
 
 rtplot_moderateGON + hfaplot_moderateGON
-#ggsave("plots/moderategon.png", width = 10, height = 6)
+diffplot_moderateGON
 
 rtplot_advancedGON + hfaplot_advancedGON
-#ggsave("plots/advancedgon.png", width = 10, height = 6)
+diffplot_advancedGON
 ```
 
 ### Scotoma analysis
