@@ -288,6 +288,61 @@ dBdat_filtered %>%
 
 ggsave("plots/hexbin30.png", width = 5, height = 4)
 ```
+```{r mshexbin}
+# dBdat_filtered %>%
+#   group_by(id, device, visit) %>%
+#   summarize(ms = mean(dB)) %>%
+#   group_by(id, device) %>%
+#   summarize(meanms = mean(ms)) %>%
+#   pivot_wider(names_from = device, values_from = meanms) %>% 
+#   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
+#   ggplot(aes(x = hfa, y = retinalogik)) +
+#   geom_hex(bins = 5) +
+#   scale_fill_viridis_c() +
+#   geom_smooth(method = "loess", se = TRUE, colour = "red") +
+#   geom_abline(intercept = 0, slope = 1) +
+#   labs(title="Hexbin plot of mean sensitivities",
+#        subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 5)") +
+#   xlab("HFA (dB)") +
+#   ylab("Retinalogik (dB)") +
+#   xlim(0, 35) +
+#   ylim(0, 35) +
+#   theme_bw()
+
+#ggsave("plots/mshexbin.png", width = 5, height = 4)
+```
+
+```{r msblandaltman}
+library(BlandAltmanLeh)
+
+ms_means <- dBdat_filtered %>%
+  group_by(id, device, visit) %>%
+  summarize(ms = mean(dB)) %>%
+  group_by(id, device) %>%
+  summarize(meanms = mean(ms)) %>%
+  pivot_wider(names_from = device, values_from = meanms) %>%
+  na.omit() %>%
+  mutate(difference = retinalogik-hfa)
+
+df <- ms_means
+
+blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
+bias <- mean(df$retinalogik, na.rm=T) - mean(df$hfa, na.rm=T)
+
+print(blandplot +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
+        ylim(c(-10, 10)) +
+        xlab("Mean Sensitivity (MS)") +
+        ylab("Difference in MS (Retinalogik-HFA)") +
+        labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing MS across all stages of glaucoma"))
+
+ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
+
+```
 
 ### Mean deviation
 In patients with moderate and advanced glaucoma, the mean deviation was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
@@ -365,6 +420,30 @@ dBdat_filtered %>%
   ) %>%
   nice_table()
 
+```
+
+```{r mdhexbin}
+# dBdat_filtered %>%
+#   group_by(id, device, visit) %>%
+#   summarize(md = mean(md)) %>%
+#   group_by(id, device) %>%
+#   summarize(meanmd = mean(md)) %>%
+#   pivot_wider(names_from = device, values_from = meanmd) %>%
+#   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
+#   ggplot(aes(x = hfa, y = retinalogik)) +
+#   geom_hex(bins = 30) +
+#   scale_fill_viridis_c() +
+#   geom_smooth(method = "loess", se = TRUE, colour = "red") +
+#   geom_abline(intercept = 0, slope = 1) +
+#   labs(title="Hexbin plot of mean deviation",
+#        subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 30)") +
+#   xlab("HFA (dB)") +
+#   ylab("Retinalogik (dB)") +
+#   xlim(-30, 5) +
+#   ylim(-30, 5) +
+#   theme_bw()
+
+#ggsave("plots/hexbin30.png", width = 5, height = 4)
 ```
 
 ```{r mdblandaltman}
