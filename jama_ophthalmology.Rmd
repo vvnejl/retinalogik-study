@@ -546,7 +546,8 @@ meanSensitivity <- dBdat_filtered %>%
   pivot_wider(names_from = device, values_from = dB) %>%
   group_by(x, y) %>%
   summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
-            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
+            pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
   ungroup() %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
@@ -588,6 +589,18 @@ diffplot_earlyGON <- meanSensitivity %>%
   ggtitle("Difference (Retinalogik-HFA)") +
   theme(legend.position="none")
 
+pplot_earlyGON <- meanSensitivity %>%
+  ggplot(aes(x, y)) +
+  geom_tile(fill = "white", colour = "grey90") +
+  geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
+                x = x, y = y),  size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  #scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
+  theme_bw() +
+  ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+  theme(legend.position="none",
+        panel.grid = element_blank())
+
 ## Moderate GON
 nRT <- dBdat_filtered %>%
   filter(classification == "Moderate" & device == "retinalogik") %>%
@@ -605,7 +618,8 @@ meanSensitivity <- dBdat_filtered %>%
   pivot_wider(names_from = device, values_from = dB) %>%
   group_by(x, y) %>%
   summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
-            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
+            pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
   ungroup() %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
@@ -647,6 +661,18 @@ diffplot_moderateGON <- meanSensitivity %>%
   ggtitle("Difference (Retinalogik-HFA)") +
   theme(legend.position="none")
 
+pplot_moderateGON <- meanSensitivity %>%
+  ggplot(aes(x, y)) +
+  geom_tile(fill = "white", colour = "grey90") +
+  geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
+                x = x, y = y),  size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  #scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
+  theme_bw() +
+  ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+  theme(legend.position="none",
+        panel.grid = element_blank())
+
 ## Advanced GON
 nRT <- dBdat_filtered %>%
   filter(classification == "Advanced" & device == "retinalogik") %>%
@@ -664,7 +690,8 @@ meanSensitivity <- dBdat_filtered %>%
   pivot_wider(names_from = device, values_from = dB) %>%
   group_by(x, y) %>%
   summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
-            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T)) %>%
+            meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
+            pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
   ungroup() %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
@@ -706,6 +733,18 @@ diffplot_advancedGON <- meanSensitivity %>%
   ggtitle("Difference (Retinalogik-HFA)") +
   theme(legend.position="none")
 
+pplot_advancedGON <- meanSensitivity %>%
+  ggplot(aes(x, y)) +
+  geom_tile(fill = "white", colour = "grey90") +
+  geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
+                x = x, y = y),  size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
+  theme_bw() +
+  ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+  theme(legend.position="none",
+        panel.grid = element_blank())
+
 # rtplot_earlyGON + hfaplot_earlyGON
 # ggsave("plots/earlygon.png", width = 10, height = 6)
 # 
@@ -724,14 +763,23 @@ diffplot_advancedGON <- meanSensitivity %>%
 # rtplot_advancedGON + hfaplot_advancedGON + diffplot_advancedGON
 # ggsave("plots/advancedgon_withdiff.png", width = 14, height = 6)
 
+# rtplot_earlyGON + hfaplot_earlyGON + pplot_earlyGON
+# ggsave("plots/earlygon_withp.png", width = 14, height = 6)
+# 
+# rtplot_moderateGON + hfaplot_moderateGON + pplot_moderateGON
+# ggsave("plots/moderategon_withp.png", width = 14, height = 6)
+# 
+# rtplot_advancedGON + hfaplot_advancedGON + pplot_advancedGON
+# ggsave("plots/advancedgon_withp.png", width = 14, height = 6)
+
 rtplot_earlyGON + hfaplot_earlyGON
-diffplot_earlyGON
+diffplot_earlyGON+ pplot_earlyGON
 
 rtplot_moderateGON + hfaplot_moderateGON
-diffplot_moderateGON
+diffplot_moderateGON + pplot_moderateGON
 
 rtplot_advancedGON + hfaplot_advancedGON
-diffplot_advancedGON
+diffplot_advancedGON + pplot_advancedGON
 ```
 
 ### Scotoma analysis
