@@ -1484,6 +1484,230 @@ margin: 0 0 !important;
 
 });
 </script>
+<script>$(document).ready(function(){
+    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    if ($('[data-toggle="popover"]').popover === 'function') {
+        $('[data-toggle="popover"]').popover();
+    }
+});
+</script>
+<style type="text/css">
+.lightable-minimal {
+border-collapse: separate;
+border-spacing: 16px 1px;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-minimal td {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal th {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal thead tr:last-child th {
+border-bottom: 2px solid #00000050;
+empty-cells: hide;
+}
+.lightable-minimal tbody tr:first-child td {
+padding-top: 0.5em;
+}
+.lightable-minimal.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-minimal.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic {
+border-top: 0.16em solid #111111;
+border-bottom: 0.16em solid #111111;
+width: 100%;
+margin-bottom: 10px;
+margin: 10px 5px;
+}
+.lightable-classic tfoot tr td {
+border: 0;
+}
+.lightable-classic tfoot tr:first-child td {
+border-top: 0.14em solid #111111;
+}
+.lightable-classic caption {
+color: #222222;
+}
+.lightable-classic td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic thead tr:last-child th {
+border-bottom: 0.10em solid #111111;
+}
+.lightable-classic.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic-2 {
+border-top: 3px double #111111;
+border-bottom: 3px double #111111;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-classic-2 tfoot tr td {
+border: 0;
+}
+.lightable-classic-2 tfoot tr:first-child td {
+border-top: 3px double #111111;
+}
+.lightable-classic-2 caption {
+color: #222222;
+}
+.lightable-classic-2 td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic-2 th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic-2 tbody tr:last-child td {
+border-bottom: 3px double #111111;
+}
+.lightable-classic-2 thead tr:last-child th {
+border-bottom: 1px solid #111111;
+}
+.lightable-classic-2.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic-2.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #EEE;
+border-collapse: collapse;
+margin-bottom: 10px;
+}
+.lightable-material tfoot tr td {
+border: 0;
+}
+.lightable-material tfoot tr:first-child td {
+border-top: 1px solid #EEE;
+}
+.lightable-material th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+}
+.lightable-material td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+border-top: 1px solid #eeeeee;
+}
+.lightable-material.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #ddd;
+}
+.lightable-material-dark {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #FFFFFF12;
+border-collapse: collapse;
+margin-bottom: 10px;
+background-color: #363640;
+}
+.lightable-material-dark tfoot tr td {
+border: 0;
+}
+.lightable-material-dark tfoot tr:first-child td {
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF60;
+}
+.lightable-material-dark td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF;
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark.lightable-hover tbody tr:hover {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody tr:nth-child(even) {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material-dark.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #FFFFFF12;
+}
+.lightable-paper {
+width: 100%;
+margin-bottom: 10px;
+color: #444;
+}
+.lightable-paper tfoot tr td {
+border: 0;
+}
+.lightable-paper tfoot tr:first-child td {
+border-top: 1px solid #00000020;
+}
+.lightable-paper thead tr:last-child th {
+color: #666;
+vertical-align: bottom;
+border-bottom: 1px solid #00000020;
+line-height: 1.15em;
+padding: 10px 5px;
+}
+.lightable-paper td {
+vertical-align: middle;
+border-bottom: 1px solid #00000010;
+line-height: 1.15em;
+padding: 7px 5px;
+}
+.lightable-paper.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-paper.lightable-striped tbody tr:nth-child(even) {
+background-color: #00000008;
+}
+.lightable-paper.lightable-striped tbody td {
+border: 0;
+}
+</style>
 
 <style type="text/css">
 code{white-space: pre-wrap;}
@@ -1691,7 +1915,7 @@ Technologies, Inc.</a></h4>
 <h2>Setup</h2>
 <div id="versioning" class="section level3">
 <h3>Versioning</h3>
-<p>Last updated on 2026-Jan-15 at 01:16 PM.</p>
+<p>Last updated on 2026-Jan-16 at 12:08 PM.</p>
 <ul>
 <li>2025-Jun-11: Created separate .Rmd file as index.Rmd was getting
 very cluttered.</li>
@@ -1699,6 +1923,8 @@ very cluttered.</li>
 screening.</li>
 <li>2025-Aug-25: Extract, clean, and run stats on questionnaire
 data.</li>
+<li>2026-Jan-16: Added difference plots, p-value difference plots, LMM
+etc.</li>
 </ul>
 </div>
 <div id="acknowledgements" class="section level3">
@@ -1803,21 +2029,22 @@ sessionInfo()
 ## loaded via a namespace (and not attached):
 ##  [1] tidyselect_1.2.1   farver_2.1.2       S7_0.2.1           fastmap_1.2.0     
 ##  [5] lazyeval_0.2.2     bayestestR_0.17.0  digest_0.6.39      timechange_0.3.0  
-##  [9] lifecycle_1.0.5    magrittr_2.0.4     compiler_4.5.2     rlang_1.1.7       
-## [13] sass_0.4.10        tools_4.5.2        yaml_2.3.12        data.table_1.18.0 
-## [17] knitr_1.51         htmlwidgets_1.6.4  sp_2.2-0           classInt_0.4-11   
-## [21] mnormt_2.1.1       KernSmooth_2.23-26 withr_3.0.2        grid_4.5.2        
-## [25] datawizard_1.3.0   e1071_1.7-17       scales_1.4.0       insight_1.4.4     
-## [29] cli_3.6.5          rmarkdown_2.30     generics_0.1.4     otel_0.2.0        
-## [33] rstudioapi_0.17.1  httr_1.4.7         tzdb_0.5.0         parameters_0.28.3 
-## [37] DBI_1.2.3          cachem_1.1.0       proxy_0.4-29       parallel_4.5.2    
-## [41] s2_1.1.9           vctrs_0.6.5        boot_1.3-32        jsonlite_2.0.0    
-## [45] hms_1.1.4          systemfonts_1.3.1  jquerylib_0.1.4    units_1.0-0       
-## [49] glue_1.8.0         stringi_1.8.7      gtable_0.3.6       deldir_2.0-4      
-## [53] pillar_1.11.1      R6_2.6.1           wk_0.9.5           textshaping_1.0.4 
-## [57] rprojroot_2.1.1    evaluate_1.0.5     lattice_0.22-7     bslib_0.9.0       
-## [61] class_7.3-23       Rcpp_1.1.1         nlme_3.1-168       xfun_0.55         
-## [65] pkgconfig_2.0.3
+##  [9] estimability_1.5.1 lifecycle_1.0.5    magrittr_2.0.4     compiler_4.5.2    
+## [13] rlang_1.1.7        sass_0.4.10        tools_4.5.2        yaml_2.3.12       
+## [17] data.table_1.18.0  knitr_1.51         htmlwidgets_1.6.4  mnormt_2.1.1      
+## [21] sp_2.2-0           classInt_0.4-11    KernSmooth_2.23-26 withr_3.0.2       
+## [25] grid_4.5.2         datawizard_1.3.0   e1071_1.7-17       emmeans_2.0.1     
+## [29] scales_1.4.0       insight_1.4.4      cli_3.6.5          mvtnorm_1.3-3     
+## [33] rmarkdown_2.30     generics_0.1.4     otel_0.2.0         rstudioapi_0.17.1 
+## [37] httr_1.4.7         tzdb_0.5.0         parameters_0.28.3  DBI_1.2.3         
+## [41] cachem_1.1.0       proxy_0.4-29       parallel_4.5.2     s2_1.1.9          
+## [45] vctrs_0.6.5        boot_1.3-32        jsonlite_2.0.0     hms_1.1.4         
+## [49] systemfonts_1.3.1  jquerylib_0.1.4    units_1.0-0        glue_1.8.0        
+## [53] stringi_1.8.7      gtable_0.3.6       deldir_2.0-4       pillar_1.11.1     
+## [57] R6_2.6.1           wk_0.9.5           textshaping_1.0.4  rprojroot_2.1.1   
+## [61] evaluate_1.0.5     lattice_0.22-7     bslib_0.9.0        class_7.3-23      
+## [65] Rcpp_1.1.1         nlme_3.1-168       coda_0.19-4.1      xfun_0.55         
+## [69] pkgconfig_2.0.3
 
 # default chunk options
 knitr::opts_chunk$set(
@@ -1864,12 +2091,13 @@ dBdat_filtered &lt;- dBdat %&gt;%
   mutate(meanmd = mean(md))
 
 dBdat_filtered &lt;- merge(dBdat_filtered, classification) %&gt;%
-  filter(classification != &quot;Control&quot;)
+  filter(classification != &quot;Control&quot;) %&gt;%
+  mutate(classification = factor(classification, levels = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;)))
 </code></pre>
 </div>
 <div id="download-plots" class="section level3">
 <h3>Download plots</h3>
-<p><a href="https://github.com/vvnejl/retinalogik-study/tree/a484221d13b84da1c1692b1bc471db54e97ddd30/plots">click
+<p><a href="https://github.com/vvnejl/retinalogik-study/tree/53fa7ab3b9018493a098f8273695311d846ef265/plots">click
 me to find all generated plots</a></p>
 </div>
 </div>
@@ -1967,7 +2195,7 @@ dBdat_filtered %&gt;%
   ) %&gt;%
   mutate(difference = mean_retinalogik-mean_hfa) %&gt;%
   nice_table()</code></pre>
-<div class="tabwid"><style>.cl-00dc9ce8{table-layout:auto;}.cl-00d4e048{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-00d4e05c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-00d7d41a{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-00d7d42e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-00d7f08a{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00d7f08b{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00d7f094{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00d7f095{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00d7f096{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-00dc9ce8"><thead><tr style="overflow-wrap:break-word;"><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e048">classification</span></p></th><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e05c">n</span></p></th><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e048">mean_retinalogik</span></p></th><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e048">sd_retinalogik</span></p></th><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e048">mean_hfa</span></p></th><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e048">sd_hfa</span></p></th><th class="cl-00d7f08a"><p class="cl-00d7d41a"><span class="cl-00d4e048">difference</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-00d7f08b"><p class="cl-00d7d42e"><span class="cl-00d4e048">Mild</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">18</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">27.52</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">2.47</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">27.24</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">1.52</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">0.27</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-00d7f08b"><p class="cl-00d7d42e"><span class="cl-00d4e048">Moderate</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">13</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">23.13</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">1.88</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">20.79</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">2.33</span></p></td><td class="cl-00d7f094"><p class="cl-00d7d41a"><span class="cl-00d4e048">2.34</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-00d7f095"><p class="cl-00d7d42e"><span class="cl-00d4e048">Advanced</span></p></td><td class="cl-00d7f096"><p class="cl-00d7d41a"><span class="cl-00d4e048">11</span></p></td><td class="cl-00d7f096"><p class="cl-00d7d41a"><span class="cl-00d4e048">17.09</span></p></td><td class="cl-00d7f096"><p class="cl-00d7d41a"><span class="cl-00d4e048">6.30</span></p></td><td class="cl-00d7f096"><p class="cl-00d7d41a"><span class="cl-00d4e048">13.85</span></p></td><td class="cl-00d7f096"><p class="cl-00d7d41a"><span class="cl-00d4e048">5.43</span></p></td><td class="cl-00d7f096"><p class="cl-00d7d41a"><span class="cl-00d4e048">3.24</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-966f5dd0{table-layout:auto;}.cl-9667d6b4{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-9667d6c8{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-966bd200{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-966bd20a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-966beaec{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-966beaf6{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-966beaf7{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-966beb00{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-966beb01{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-966f5dd0"><thead><tr style="overflow-wrap:break-word;"><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6b4">classification</span></p></th><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6c8">n</span></p></th><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6b4">mean_retinalogik</span></p></th><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6b4">sd_retinalogik</span></p></th><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6b4">mean_hfa</span></p></th><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6b4">sd_hfa</span></p></th><th class="cl-966beaec"><p class="cl-966bd200"><span class="cl-9667d6b4">difference</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-966beaf6"><p class="cl-966bd20a"><span class="cl-9667d6b4">Mild</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">18</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">27.52</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">2.47</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">27.24</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">1.52</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">0.27</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-966beaf6"><p class="cl-966bd20a"><span class="cl-9667d6b4">Moderate</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">13</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">23.13</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">1.88</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">20.79</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">2.33</span></p></td><td class="cl-966beaf7"><p class="cl-966bd200"><span class="cl-9667d6b4">2.34</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-966beb00"><p class="cl-966bd20a"><span class="cl-9667d6b4">Advanced</span></p></td><td class="cl-966beb01"><p class="cl-966bd200"><span class="cl-9667d6b4">11</span></p></td><td class="cl-966beb01"><p class="cl-966bd200"><span class="cl-9667d6b4">17.09</span></p></td><td class="cl-966beb01"><p class="cl-966bd200"><span class="cl-9667d6b4">6.30</span></p></td><td class="cl-966beb01"><p class="cl-966bd200"><span class="cl-9667d6b4">13.85</span></p></td><td class="cl-966beb01"><p class="cl-966bd200"><span class="cl-9667d6b4">5.43</span></p></td><td class="cl-966beb01"><p class="cl-966bd200"><span class="cl-9667d6b4">3.24</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
 #########
 dBdat_means &lt;- dBdat_filtered %&gt;%
@@ -2001,7 +2229,7 @@ wilcoxon_results %&gt;%
   mutate(classification = factor(classification, levels = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;))) %&gt;%
   arrange(classification) %&gt;%
   nice_table(title = c(&quot;Wilcoxon signed rank test on paired samples&quot;))</code></pre>
-<div class="tabwid"><style>.cl-00efa6f8{table-layout:auto;}.cl-00ea67b0{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-00ea67ba{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-00ec98dc{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-00ec98e6{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-00ecb5ba{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00ecb5c4{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00ecb5ce{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00ecb5cf{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00ecb5d8{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-00ecb5d9{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-00efa6f8"><thead><tr style="overflow-wrap:break-word;"><th colspan="3" class="cl-00ecb5ba"><p class="cl-00ec98dc"><span class="cl-00ea67b0">Wilcoxon signed rank test on paired samples</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-00ecb5c4"><p class="cl-00ec98e6"><span class="cl-00ea67ba">classification</span></p></th><th class="cl-00ecb5c4"><p class="cl-00ec98e6"><span class="cl-00ea67ba">W_statistic</span></p></th><th class="cl-00ecb5c4"><p class="cl-00ec98e6"><span class="cl-00ea67ba">p_value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-00ecb5ce"><p class="cl-00ec98dc"><span class="cl-00ea67ba">Mild</span></p></td><td class="cl-00ecb5cf"><p class="cl-00ec98e6"><span class="cl-00ea67ba">96.00</span></p></td><td class="cl-00ecb5cf"><p class="cl-00ec98e6"><span class="cl-00ea67ba">0.67</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-00ecb5ce"><p class="cl-00ec98dc"><span class="cl-00ea67ba">Moderate</span></p></td><td class="cl-00ecb5cf"><p class="cl-00ec98e6"><span class="cl-00ea67ba">80.00</span></p></td><td class="cl-00ecb5cf"><p class="cl-00ec98e6"><span class="cl-00ea67ba">0.01</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-00ecb5d8"><p class="cl-00ec98dc"><span class="cl-00ea67ba">Advanced</span></p></td><td class="cl-00ecb5d9"><p class="cl-00ec98e6"><span class="cl-00ea67ba">61.00</span></p></td><td class="cl-00ecb5d9"><p class="cl-00ec98e6"><span class="cl-00ea67ba">0.01</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-9692ec00{table-layout:auto;}.cl-967d217c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-967d2186{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-967f5b0e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-967f5b18{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-967f7558{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-967f7559{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-967f7562{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-967f756c{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-967f756d{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-967f7576{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-9692ec00"><thead><tr style="overflow-wrap:break-word;"><th colspan="3" class="cl-967f7558"><p class="cl-967f5b0e"><span class="cl-967d217c">Wilcoxon signed rank test on paired samples</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-967f7559"><p class="cl-967f5b18"><span class="cl-967d2186">classification</span></p></th><th class="cl-967f7559"><p class="cl-967f5b18"><span class="cl-967d2186">W_statistic</span></p></th><th class="cl-967f7559"><p class="cl-967f5b18"><span class="cl-967d2186">p_value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-967f7562"><p class="cl-967f5b0e"><span class="cl-967d2186">Mild</span></p></td><td class="cl-967f756c"><p class="cl-967f5b18"><span class="cl-967d2186">96.00</span></p></td><td class="cl-967f756c"><p class="cl-967f5b18"><span class="cl-967d2186">0.67</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-967f7562"><p class="cl-967f5b0e"><span class="cl-967d2186">Moderate</span></p></td><td class="cl-967f756c"><p class="cl-967f5b18"><span class="cl-967d2186">80.00</span></p></td><td class="cl-967f756c"><p class="cl-967f5b18"><span class="cl-967d2186">0.01</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-967f756d"><p class="cl-967f5b0e"><span class="cl-967d2186">Advanced</span></p></td><td class="cl-967f7576"><p class="cl-967f5b18"><span class="cl-967d2186">61.00</span></p></td><td class="cl-967f7576"><p class="cl-967f5b18"><span class="cl-967d2186">0.01</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
 dBdat_filtered %&gt;%
   group_by(id, device) %&gt;%
@@ -2023,7 +2251,7 @@ dBdat_filtered %&gt;%
     iqr_hfa = IQR(hfa, na.rm = TRUE)
   ) %&gt;%
   nice_table()</code></pre>
-<div class="tabwid"><style>.cl-0106caae{table-layout:auto;}.cl-0100bab0{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-0100baba{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-0102e236{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-0102e240{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-0102fc1c{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0102fc1d{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0102fc26{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0102fc27{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0102fc30{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-0106caae"><thead><tr style="overflow-wrap:break-word;"><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">classification</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100baba">n</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">median_retinalogik</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">q1_retinalogik</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">q3_retinalogik</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">iqr_retinalogik</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">median_hfa</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">q1_hfa</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">q3_hfa</span></p></th><th class="cl-0102fc1c"><p class="cl-0102e236"><span class="cl-0100bab0">iqr_hfa</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-0102fc1d"><p class="cl-0102e240"><span class="cl-0100bab0">Mild</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">18</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">28.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">25.25</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">30.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">4.75</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">28.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">28.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">29.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">1.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-0102fc1d"><p class="cl-0102e240"><span class="cl-0100bab0">Moderate</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">13</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">24.50</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">24.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">26.50</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">2.50</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">25.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">22.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">26.00</span></p></td><td class="cl-0102fc26"><p class="cl-0102e236"><span class="cl-0100bab0">4.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-0102fc27"><p class="cl-0102e240"><span class="cl-0100bab0">Advanced</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">11</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">22.00</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">18.50</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">24.00</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">5.50</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">17.50</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">10.50</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">19.50</span></p></td><td class="cl-0102fc30"><p class="cl-0102e236"><span class="cl-0100bab0">9.00</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-96a98abe{table-layout:auto;}.cl-96a3732c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-96a37336{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-96a665a0{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-96a665aa{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-96a69296{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-96a69297{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-96a692a0{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-96a692a1{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-96a692aa{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-96a98abe"><thead><tr style="overflow-wrap:break-word;"><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">classification</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a37336">n</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">median_retinalogik</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">q1_retinalogik</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">q3_retinalogik</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">iqr_retinalogik</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">median_hfa</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">q1_hfa</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">q3_hfa</span></p></th><th class="cl-96a69296"><p class="cl-96a665a0"><span class="cl-96a3732c">iqr_hfa</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-96a69297"><p class="cl-96a665aa"><span class="cl-96a3732c">Mild</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">18</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">28.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">25.25</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">30.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">4.75</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">28.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">28.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">29.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">1.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-96a69297"><p class="cl-96a665aa"><span class="cl-96a3732c">Moderate</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">13</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">24.50</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">24.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">26.50</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">2.50</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">25.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">22.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">26.00</span></p></td><td class="cl-96a692a0"><p class="cl-96a665a0"><span class="cl-96a3732c">4.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-96a692a1"><p class="cl-96a665aa"><span class="cl-96a3732c">Advanced</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">11</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">22.00</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">18.50</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">24.00</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">5.50</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">17.50</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">10.50</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">19.50</span></p></td><td class="cl-96a692aa"><p class="cl-96a665a0"><span class="cl-96a3732c">9.00</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
 # mild_data &lt;- subset(dBdat_means, classification == &quot;Mild&quot;)
 # t.test(mild_data$retinalogik, mild_data$hfa, paired = TRUE) %&gt;%
@@ -2177,7 +2405,7 @@ of the patient-level mean differences between visits.</p>
   ) %&gt;%
   mutate(difference = mean_retinalogik-mean_hfa) %&gt;%
   nice_table()</code></pre>
-<div class="tabwid"><style>.cl-026c290c{table-layout:auto;}.cl-0266d2cc{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-0266d2e0{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-0268fd40{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-0268fd4a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-026917da{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-026917e4{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-026917e5{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-026917ee{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-026917ef{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-026c290c"><thead><tr style="overflow-wrap:break-word;"><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2cc">classification</span></p></th><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2e0">n</span></p></th><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2cc">mean_retinalogik</span></p></th><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2cc">sd_retinalogik</span></p></th><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2cc">mean_hfa</span></p></th><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2cc">sd_hfa</span></p></th><th class="cl-026917da"><p class="cl-0268fd40"><span class="cl-0266d2cc">difference</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-026917e4"><p class="cl-0268fd4a"><span class="cl-0266d2cc">Mild</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">18</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">-2.40</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">2.30</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">-2.09</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">1.30</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">-0.30</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-026917e4"><p class="cl-0268fd4a"><span class="cl-0266d2cc">Moderate</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">13</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">-6.60</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">1.92</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">-8.38</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">2.14</span></p></td><td class="cl-026917e5"><p class="cl-0268fd40"><span class="cl-0266d2cc">1.78</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-026917ee"><p class="cl-0268fd4a"><span class="cl-0266d2cc">Advanced</span></p></td><td class="cl-026917ef"><p class="cl-0268fd40"><span class="cl-0266d2cc">11</span></p></td><td class="cl-026917ef"><p class="cl-0268fd40"><span class="cl-0266d2cc">-12.81</span></p></td><td class="cl-026917ef"><p class="cl-0268fd40"><span class="cl-0266d2cc">6.29</span></p></td><td class="cl-026917ef"><p class="cl-0268fd40"><span class="cl-0266d2cc">-16.39</span></p></td><td class="cl-026917ef"><p class="cl-0268fd40"><span class="cl-0266d2cc">5.65</span></p></td><td class="cl-026917ef"><p class="cl-0268fd40"><span class="cl-0266d2cc">3.58</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-98198f98{table-layout:auto;}.cl-98144312{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-9814431c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-98168064{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-9816806e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-98169a22{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98169a2c{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98169a36{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98169a40{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98169a41{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-98198f98"><thead><tr style="overflow-wrap:break-word;"><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-98144312">classification</span></p></th><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-9814431c">n</span></p></th><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-98144312">mean_retinalogik</span></p></th><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-98144312">sd_retinalogik</span></p></th><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-98144312">mean_hfa</span></p></th><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-98144312">sd_hfa</span></p></th><th class="cl-98169a22"><p class="cl-98168064"><span class="cl-98144312">difference</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-98169a2c"><p class="cl-9816806e"><span class="cl-98144312">Mild</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">18</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">-2.40</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">2.30</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">-2.09</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">1.30</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">-0.30</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-98169a2c"><p class="cl-9816806e"><span class="cl-98144312">Moderate</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">13</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">-6.60</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">1.92</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">-8.38</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">2.14</span></p></td><td class="cl-98169a36"><p class="cl-98168064"><span class="cl-98144312">1.78</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-98169a40"><p class="cl-9816806e"><span class="cl-98144312">Advanced</span></p></td><td class="cl-98169a41"><p class="cl-98168064"><span class="cl-98144312">11</span></p></td><td class="cl-98169a41"><p class="cl-98168064"><span class="cl-98144312">-12.81</span></p></td><td class="cl-98169a41"><p class="cl-98168064"><span class="cl-98144312">6.29</span></p></td><td class="cl-98169a41"><p class="cl-98168064"><span class="cl-98144312">-16.39</span></p></td><td class="cl-98169a41"><p class="cl-98168064"><span class="cl-98144312">5.65</span></p></td><td class="cl-98169a41"><p class="cl-98168064"><span class="cl-98144312">3.58</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
 #########
 md_means &lt;- dBdat_filtered %&gt;%
@@ -2211,7 +2439,7 @@ wilcoxon_results %&gt;%
   mutate(classification = factor(classification, levels = c(&quot;Mild&quot;, &quot;Moderate&quot;, &quot;Advanced&quot;))) %&gt;%
   arrange(classification) %&gt;%
   nice_table(title = c(&quot;Wilcoxon signed rank test on paired samples&quot;))</code></pre>
-<div class="tabwid"><style>.cl-027eacc6{table-layout:auto;}.cl-027986f6{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-02798700{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-027bae0e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-027bae18{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-027bc70e{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-027bc70f{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-027bc718{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-027bc722{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-027bc72c{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-027bc72d{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-027eacc6"><thead><tr style="overflow-wrap:break-word;"><th colspan="3" class="cl-027bc70e"><p class="cl-027bae0e"><span class="cl-027986f6">Wilcoxon signed rank test on paired samples</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-027bc70f"><p class="cl-027bae18"><span class="cl-02798700">classification</span></p></th><th class="cl-027bc70f"><p class="cl-027bae18"><span class="cl-02798700">W_statistic</span></p></th><th class="cl-027bc70f"><p class="cl-027bae18"><span class="cl-02798700">p_value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-027bc718"><p class="cl-027bae0e"><span class="cl-02798700">Mild</span></p></td><td class="cl-027bc722"><p class="cl-027bae18"><span class="cl-02798700">80.00</span></p></td><td class="cl-027bc722"><p class="cl-027bae18"><span class="cl-02798700">0.83</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-027bc718"><p class="cl-027bae0e"><span class="cl-02798700">Moderate</span></p></td><td class="cl-027bc722"><p class="cl-027bae18"><span class="cl-02798700">77.00</span></p></td><td class="cl-027bc722"><p class="cl-027bae18"><span class="cl-02798700">0.03</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-027bc72c"><p class="cl-027bae0e"><span class="cl-02798700">Advanced</span></p></td><td class="cl-027bc72d"><p class="cl-027bae18"><span class="cl-02798700">63.00</span></p></td><td class="cl-027bc72d"><p class="cl-027bae18"><span class="cl-02798700">0.00</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-982b26c2{table-layout:auto;}.cl-9825de56{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-9825de60{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-98280a46{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-98280a50{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-982825f8{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98282602{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98282616{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98282620{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98282621{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-98282622{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-982b26c2"><thead><tr style="overflow-wrap:break-word;"><th colspan="3" class="cl-982825f8"><p class="cl-98280a46"><span class="cl-9825de56">Wilcoxon signed rank test on paired samples</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-98282602"><p class="cl-98280a50"><span class="cl-9825de60">classification</span></p></th><th class="cl-98282602"><p class="cl-98280a50"><span class="cl-9825de60">W_statistic</span></p></th><th class="cl-98282602"><p class="cl-98280a50"><span class="cl-9825de60">p_value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-98282616"><p class="cl-98280a46"><span class="cl-9825de60">Mild</span></p></td><td class="cl-98282620"><p class="cl-98280a50"><span class="cl-9825de60">80.00</span></p></td><td class="cl-98282620"><p class="cl-98280a50"><span class="cl-9825de60">0.83</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-98282616"><p class="cl-98280a46"><span class="cl-9825de60">Moderate</span></p></td><td class="cl-98282620"><p class="cl-98280a50"><span class="cl-9825de60">77.00</span></p></td><td class="cl-98282620"><p class="cl-98280a50"><span class="cl-9825de60">0.03</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-98282621"><p class="cl-98280a46"><span class="cl-9825de60">Advanced</span></p></td><td class="cl-98282622"><p class="cl-98280a50"><span class="cl-9825de60">63.00</span></p></td><td class="cl-98282622"><p class="cl-98280a50"><span class="cl-9825de60">0.00</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
 dBdat_filtered %&gt;%
   group_by(id, device) %&gt;%
@@ -2233,7 +2461,7 @@ dBdat_filtered %&gt;%
     iqr_hfa = IQR(hfa, na.rm = TRUE)
   ) %&gt;%
   nice_table()</code></pre>
-<div class="tabwid"><style>.cl-029cdeee{table-layout:auto;}.cl-0296b316{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-0296b320{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-029918c2{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-029918d6{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-02993410{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0299341a{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0299341b{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-02993424{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0299342e{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-029cdeee"><thead><tr style="overflow-wrap:break-word;"><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">classification</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b320">n</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">median_retinalogik</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">q1_retinalogik</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">q3_retinalogik</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">iqr_retinalogik</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">median_hfa</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">q1_hfa</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">q3_hfa</span></p></th><th class="cl-02993410"><p class="cl-029918c2"><span class="cl-0296b316">iqr_hfa</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-0299341a"><p class="cl-029918d6"><span class="cl-0296b316">Mild</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">18</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-1.39</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-4.36</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-0.97</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">3.38</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-1.73</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-2.90</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-1.21</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">1.69</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-0299341a"><p class="cl-029918d6"><span class="cl-0296b316">Moderate</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">13</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-7.08</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-8.31</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-5.30</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">3.01</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-8.52</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-9.10</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">-7.28</span></p></td><td class="cl-0299341b"><p class="cl-029918c2"><span class="cl-0296b316">1.82</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-02993424"><p class="cl-029918d6"><span class="cl-0296b316">Advanced</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">11</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">-13.46</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">-15.00</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">-7.50</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">7.50</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">-15.24</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">-19.14</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">-12.58</span></p></td><td class="cl-0299342e"><p class="cl-029918c2"><span class="cl-0296b316">6.56</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-984245dc{table-layout:auto;}.cl-983d0a7c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-983d0a86{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-983f2dac{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-983f2db6{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-983f472e{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-983f4738{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-983f4742{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-983f4743{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-983f474c{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-984245dc"><thead><tr style="overflow-wrap:break-word;"><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">classification</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a86">n</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">median_retinalogik</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">q1_retinalogik</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">q3_retinalogik</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">iqr_retinalogik</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">median_hfa</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">q1_hfa</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">q3_hfa</span></p></th><th class="cl-983f472e"><p class="cl-983f2dac"><span class="cl-983d0a7c">iqr_hfa</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-983f4738"><p class="cl-983f2db6"><span class="cl-983d0a7c">Mild</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">18</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-1.39</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-4.36</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-0.97</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">3.38</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-1.73</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-2.90</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-1.21</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">1.69</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-983f4738"><p class="cl-983f2db6"><span class="cl-983d0a7c">Moderate</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">13</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-7.08</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-8.31</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-5.30</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">3.01</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-8.52</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-9.10</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">-7.28</span></p></td><td class="cl-983f4742"><p class="cl-983f2dac"><span class="cl-983d0a7c">1.82</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-983f4743"><p class="cl-983f2db6"><span class="cl-983d0a7c">Advanced</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">11</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">-13.46</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">-15.00</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">-7.50</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">7.50</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">-15.24</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">-19.14</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">-12.58</span></p></td><td class="cl-983f474c"><p class="cl-983f2dac"><span class="cl-983d0a7c">6.56</span></p></td></tr></tbody></table></div>
 <pre class="r"><code># dBdat_filtered %&gt;%
 #   group_by(id, device, visit) %&gt;%
 #   summarize(md = mean(md)) %&gt;%
@@ -2346,6 +2574,280 @@ ggsave(&quot;plots/blandaltman-md-advanced.png&quot;, width = 7, height = 5)
 </div>
 <div id="pointwise-analysis" class="section level3">
 <h3>Pointwise analysis</h3>
+<pre class="r"><code># Calculate eccentricity for each test point
+dBdat_filtered$eccentricity &lt;- sqrt(dBdat_filtered$x^2 + dBdat_filtered$y^2)
+
+library(lme4)
+&gt; Loading required package: Matrix
+&gt; 
+&gt; Attaching package: &#39;Matrix&#39;
+&gt; The following objects are masked from &#39;package:tidyr&#39;:
+&gt; 
+&gt;     expand, pack, unpack
+library(lmerTest) # Adds p-values to lmer output
+&gt; 
+&gt; Attaching package: &#39;lmerTest&#39;
+&gt; The following object is masked from &#39;package:lme4&#39;:
+&gt; 
+&gt;     lmer
+&gt; The following object is masked from &#39;package:stats&#39;:
+&gt; 
+&gt;     step
+
+# The model
+lmm_model &lt;- lmer(dB ~ device * classification + eccentricity + visit + 
+                       (1 + visit | id), 
+                       data = dBdat_filtered)
+
+summary(lmm_model)
+&gt; Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
+&gt; lmerModLmerTest]
+&gt; Formula: dB ~ device * classification + eccentricity + visit + (1 + visit |  
+&gt;     id)
+&gt;    Data: dBdat_filtered
+&gt; 
+&gt; REML criterion at convergence: 83042.1
+&gt; 
+&gt; Scaled residuals: 
+&gt;     Min      1Q  Median      3Q     Max 
+&gt; -4.1067 -0.3512  0.1191  0.5609  3.9158 
+&gt; 
+&gt; Random effects:
+&gt;  Groups   Name        Variance Std.Dev. Corr 
+&gt;  id       (Intercept) 16.4807  4.060         
+&gt;           visit        0.2304  0.480    -0.46
+&gt;  Residual             51.3703  7.167         
+&gt; Number of obs: 12220, groups:  id, 49
+&gt; 
+&gt; Fixed effects:
+&gt;                                            Estimate Std. Error         df
+&gt; (Intercept)                               3.121e+01  9.626e-01  5.992e+01
+&gt; deviceretinalogik                         2.225e-01  2.054e-01  1.147e+04
+&gt; classificationModerate                   -6.458e+00  1.295e+00  4.683e+01
+&gt; classificationAdvanced                   -1.543e+01  1.248e+00  4.686e+01
+&gt; eccentricity                             -2.006e-01  1.078e-02  1.212e+04
+&gt; visit                                    -1.213e-01  1.075e-01  4.558e+01
+&gt; deviceretinalogik:classificationModerate  2.048e+00  3.207e-01  1.109e+04
+&gt; deviceretinalogik:classificationAdvanced  3.171e+00  3.621e-01  9.823e+03
+&gt;                                          t value Pr(&gt;|t|)    
+&gt; (Intercept)                               32.424  &lt; 2e-16 ***
+&gt; deviceretinalogik                          1.083    0.279    
+&gt; classificationModerate                    -4.986 8.89e-06 ***
+&gt; classificationAdvanced                   -12.359 2.36e-16 ***
+&gt; eccentricity                             -18.621  &lt; 2e-16 ***
+&gt; visit                                     -1.129    0.265    
+&gt; deviceretinalogik:classificationModerate   6.387 1.76e-10 ***
+&gt; deviceretinalogik:classificationAdvanced   8.757  &lt; 2e-16 ***
+&gt; ---
+&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+&gt; 
+&gt; Correlation of Fixed Effects:
+&gt;             (Intr) dvcrtn clssfM clssfA eccntr visit  dvcr:M
+&gt; devicrtnlgk -0.133                                          
+&gt; clssfctnMdr -0.575  0.092                                   
+&gt; clssfctnAdv -0.597  0.096  0.441                            
+&gt; eccentricty -0.187  0.000  0.000  0.000                     
+&gt; visit       -0.443  0.020  0.009  0.009  0.000              
+&gt; dvcrtnlgk:M  0.099 -0.641 -0.138 -0.062  0.000 -0.045       
+&gt; dvcrtnlgk:A  0.086 -0.568 -0.053 -0.112  0.000 -0.036  0.365
+
+library(emmeans)
+&gt; Welcome to emmeans.
+&gt; Caution: You lose important information if you filter this package&#39;s results.
+&gt; See &#39;? untidy&#39;
+
+# Compare devices within each glaucoma classification
+post_hoc &lt;- emmeans(lmm_model, pairwise ~ device | classification)
+&gt; Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
+&gt; To enable adjustments, add the argument &#39;pbkrtest.limit = 12220&#39; (or larger)
+&gt; [or, globally, &#39;set emm_options(pbkrtest.limit = 12220)&#39; or larger];
+&gt; but be warned that this may result in large computation time and memory use.
+&gt; Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
+&gt; To enable adjustments, add the argument &#39;lmerTest.limit = 12220&#39; (or larger)
+&gt; [or, globally, &#39;set emm_options(lmerTest.limit = 12220)&#39; or larger];
+&gt; but be warned that this may result in large computation time and memory use.
+print(post_hoc)
+&gt; $emmeans
+&gt; classification = Mild:
+&gt;  device      emmean    SE  df asymp.LCL asymp.UCL
+&gt;  hfa           27.4 0.844 Inf      25.7      29.0
+&gt;  retinalogik   27.6 0.840 Inf      26.0      29.3
+&gt; 
+&gt; classification = Moderate:
+&gt;  device      emmean    SE  df asymp.LCL asymp.UCL
+&gt;  hfa           20.9 0.983 Inf      19.0      22.8
+&gt;  retinalogik   23.2 0.980 Inf      21.3      25.1
+&gt; 
+&gt; classification = Advanced:
+&gt;  device      emmean    SE  df asymp.LCL asymp.UCL
+&gt;  hfa           12.0 0.920 Inf      10.2      13.8
+&gt;  retinalogik   15.3 0.939 Inf      13.5      17.2
+&gt; 
+&gt; Degrees-of-freedom method: asymptotic 
+&gt; Confidence level used: 0.95 
+&gt; 
+&gt; $contrasts
+&gt; classification = Mild:
+&gt;  contrast          estimate    SE  df z.ratio p.value
+&gt;  hfa - retinalogik   -0.222 0.205 Inf  -1.083  0.2788
+&gt; 
+&gt; classification = Moderate:
+&gt;  contrast          estimate    SE  df z.ratio p.value
+&gt;  hfa - retinalogik   -2.271 0.246 Inf  -9.228 &lt;0.0001
+&gt; 
+&gt; classification = Advanced:
+&gt;  contrast          estimate    SE  df z.ratio p.value
+&gt;  hfa - retinalogik   -3.393 0.298 Inf -11.386 &lt;0.0001
+&gt; 
+&gt; Degrees-of-freedom method: asymptotic
+
+# Extracting results from emmeans
+ph_df &lt;- as.data.frame(post_hoc$contrasts)
+
+# Helper function for p-value formatting
+format_p &lt;- function(p) {
+  if (p &lt; 0.001) {
+    return(&quot;p &lt; .001&quot;)
+  } else {
+    return(paste0(&quot;p = &quot;, round(p, 3)))
+  }
+}
+
+# Extracting specific estimates and p-values
+adv_diff  &lt;- round(abs(ph_df[ph_df$classification == &quot;Advanced&quot;, &quot;estimate&quot;]), 2)
+adv_p     &lt;- format_p(ph_df[ph_df$classification == &quot;Advanced&quot;, &quot;p.value&quot;])
+
+mod_diff  &lt;- round(abs(ph_df[ph_df$classification == &quot;Moderate&quot;, &quot;estimate&quot;]), 2)
+mod_p     &lt;- format_p(ph_df[ph_df$classification == &quot;Moderate&quot;, &quot;p.value&quot;])
+
+mild_diff &lt;- round(abs(ph_df[ph_df$classification == &quot;Mild&quot;, &quot;estimate&quot;]), 2)
+mild_p    &lt;- format_p(ph_df[ph_df$classification == &quot;Mild&quot;, &quot;p.value&quot;])
+
+# Extracting eccentricity slope from the main model summary
+res &lt;- as.data.frame(summary(lmm_model)$coefficients)
+ecc_slope &lt;- round(res[&quot;eccentricity&quot;, &quot;Estimate&quot;], 2)
+ecc_p     &lt;- format_p(res[&quot;eccentricity&quot;, &quot;Pr(&gt;|t|)&quot;])
+
+library(kableExtra)
+&gt; 
+&gt; Attaching package: &#39;kableExtra&#39;
+&gt; The following object is masked from &#39;package:dplyr&#39;:
+&gt; 
+&gt;     group_rows
+
+# 1. Tidy the Post-Hoc contrasts (The specific Device Differences)
+post_hoc_df &lt;- as.data.frame(post_hoc$contrasts) %&gt;%
+  select(classification, estimate, SE, p.value) %&gt;%
+  mutate(
+    # We take the absolute value for &#39;Overestimation&#39; and round
+    Estimate = round(abs(estimate), 2),
+    SE = round(SE, 2),
+    # Formatting p-values for the table
+    `P-value` = ifelse(p.value &lt; 0.001, &quot;&lt; .001&quot;, as.character(round(p.value, 3)))
+  ) %&gt;%
+  select(classification, Estimate, SE, `P-value`)
+
+# 2. Display the table
+kable(post_hoc_df, 
+      col.names = c(&quot;Glaucoma Severity&quot;, &quot;Mean Overestimation (dB)&quot;, &quot;SE&quot;, &quot;P-value&quot;),
+      caption = &quot;Table: Adjusted Mean Differences (VR-RL minus HFA) by Glaucoma Severity derived from Linear Mixed-Effects Model.&quot;) %&gt;%
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;), full_width = F)</code></pre>
+<table class="table table-striped table-hover table-condensed" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Table: Adjusted Mean Differences (VR-RL minus HFA) by Glaucoma Severity
+derived from Linear Mixed-Effects Model.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Glaucoma Severity
+</th>
+<th style="text-align:right;">
+Mean Overestimation (dB)
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:left;">
+P-value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Mild
+</td>
+<td style="text-align:right;">
+0.22
+</td>
+<td style="text-align:right;">
+0.21
+</td>
+<td style="text-align:left;">
+0.279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Moderate
+</td>
+<td style="text-align:right;">
+2.27
+</td>
+<td style="text-align:right;">
+0.25
+</td>
+<td style="text-align:left;">
+&lt; .001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Advanced
+</td>
+<td style="text-align:right;">
+3.39
+</td>
+<td style="text-align:right;">
+0.30
+</td>
+<td style="text-align:left;">
+&lt; .001
+</td>
+</tr>
+</tbody>
+</table>
+<p>Initial non-parametric comparisons using Wilcoxon signed-rank tests
+on patient-level averages showed significant differences in the Moderate
+and Advanced groups. To further validate these findings, we employed a
+Linear Mixed-Effects Model (LMM) to account for spatial eccentricity and
+inter-visit variability. The model included dB as the dependent
+variable, with device, glaucoma classification, and their interaction as
+fixed effects. Eccentricity and visit number were included as covariates
+to adjust for the “Hill of Vision” and potential learning effects,
+respectively. To account for the correlation within subjects across
+multiple visits and test points, a random intercept and random slope for
+visit were included for each patient id.</p>
+<p>The LMM revealed a significant interaction between device type and
+disease severity (p &lt; .001), indicating that the level of agreement
+between the VR-RL and HFA perimeters is dependent on the stage of
+glaucoma. In early-stage disease, the devices showed the highest level
+of agreement with a non-significant difference of only 0.22 dB (p =
+0.279). In moderate cases, the VR-RL recorded significantly higher
+sensitivities by 2.27 dB (p &lt; .001). In the advanced group, the VR-RL
+perimeter significantly overestimated retinal sensitivity by 3.39 dB
+compared to the HFA (p &lt; .001). Other than disease severity,
+differences between VR-RL and HFA is also modulated by eccentricity,
+where for every 1 degree away from the center, sensitivity drops by -0.2
+dB (p &lt; .001).</p>
+<p>The VR-RL device significantly overestimates retinal sensitivity in
+damaged fields compared to the HFA. In advanced stages, the VR-RL
+reports values 3.39 dB higher than the HFA. This suggests a potential
+lack of sensitivity to dense scotomas. Even after adjusting for the Hill
+of Vision, the VR-RL fails to match the HFA’s deeper characterization of
+peripheral loss, potentially masking the true extent of glaucomatous
+damage.</p>
 <pre class="r"><code>
 ## Early GON
 nRT &lt;- dBdat_filtered %&gt;%
@@ -2664,7 +3166,7 @@ duration %&gt;%
          device = factor(device, levels = c(&quot;retinalogik&quot;, &quot;hfa&quot;))) %&gt;%
   arrange(classification, device) %&gt;%
   nice_table()</code></pre>
-<div class="tabwid"><style>.cl-05af9d42{table-layout:auto;}.cl-05a9f810{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-05ac3e86{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-05ac3e9a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-05ac5902{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-05ac590c{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-05ac590d{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-05ac5916{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-05ac5917{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-05af9d42"><thead><tr style="overflow-wrap:break-word;"><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">classification</span></p></th><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">device</span></p></th><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">mean</span></p></th><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">sd</span></p></th><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">median</span></p></th><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">iqr_q1</span></p></th><th class="cl-05ac5902"><p class="cl-05ac3e86"><span class="cl-05a9f810">iqr_q3</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-05ac590c"><p class="cl-05ac3e9a"><span class="cl-05a9f810">Mild</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">retinalogik</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">3.63</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">0.33</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">3.55</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">3.40</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">3.74</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-05ac590c"><p class="cl-05ac3e9a"><span class="cl-05a9f810">Mild</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">hfa</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">5.38</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">0.78</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">5.07</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">4.80</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">5.98</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-05ac590c"><p class="cl-05ac3e9a"><span class="cl-05a9f810">Moderate</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">retinalogik</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">4.33</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">0.40</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">4.27</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">4.03</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">4.68</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-05ac590c"><p class="cl-05ac3e9a"><span class="cl-05a9f810">Moderate</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">hfa</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">7.00</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">0.79</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">6.81</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">6.38</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">7.60</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-05ac590c"><p class="cl-05ac3e9a"><span class="cl-05a9f810">Advanced</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">retinalogik</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">5.33</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">1.10</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">5.12</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">4.45</span></p></td><td class="cl-05ac590d"><p class="cl-05ac3e86"><span class="cl-05a9f810">5.98</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-05ac5916"><p class="cl-05ac3e9a"><span class="cl-05a9f810">Advanced</span></p></td><td class="cl-05ac5917"><p class="cl-05ac3e86"><span class="cl-05a9f810">hfa</span></p></td><td class="cl-05ac5917"><p class="cl-05ac3e86"><span class="cl-05a9f810">6.84</span></p></td><td class="cl-05ac5917"><p class="cl-05ac3e86"><span class="cl-05a9f810">0.75</span></p></td><td class="cl-05ac5917"><p class="cl-05ac3e86"><span class="cl-05a9f810">6.80</span></p></td><td class="cl-05ac5917"><p class="cl-05ac3e86"><span class="cl-05a9f810">6.33</span></p></td><td class="cl-05ac5917"><p class="cl-05ac3e86"><span class="cl-05a9f810">7.22</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-9be0f7ce{table-layout:auto;}.cl-9bdb4d92{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-9bdd8846{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-9bdd8850{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-9bdda0c4{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9bdda0ce{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9bdda0cf{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9bdda0d8{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9bdda0d9{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-9be0f7ce"><thead><tr style="overflow-wrap:break-word;"><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">classification</span></p></th><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">device</span></p></th><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">mean</span></p></th><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">sd</span></p></th><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">median</span></p></th><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">iqr_q1</span></p></th><th class="cl-9bdda0c4"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">iqr_q3</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-9bdda0ce"><p class="cl-9bdd8850"><span class="cl-9bdb4d92">Mild</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">retinalogik</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">3.63</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">0.33</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">3.55</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">3.40</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">3.74</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-9bdda0ce"><p class="cl-9bdd8850"><span class="cl-9bdb4d92">Mild</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">hfa</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">5.38</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">0.78</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">5.07</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">4.80</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">5.98</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-9bdda0ce"><p class="cl-9bdd8850"><span class="cl-9bdb4d92">Moderate</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">retinalogik</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">4.33</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">0.40</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">4.27</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">4.03</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">4.68</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-9bdda0ce"><p class="cl-9bdd8850"><span class="cl-9bdb4d92">Moderate</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">hfa</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">7.00</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">0.79</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">6.81</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">6.38</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">7.60</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-9bdda0ce"><p class="cl-9bdd8850"><span class="cl-9bdb4d92">Advanced</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">retinalogik</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">5.33</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">1.10</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">5.12</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">4.45</span></p></td><td class="cl-9bdda0cf"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">5.98</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-9bdda0d8"><p class="cl-9bdd8850"><span class="cl-9bdb4d92">Advanced</span></p></td><td class="cl-9bdda0d9"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">hfa</span></p></td><td class="cl-9bdda0d9"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">6.84</span></p></td><td class="cl-9bdda0d9"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">0.75</span></p></td><td class="cl-9bdda0d9"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">6.80</span></p></td><td class="cl-9bdda0d9"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">6.33</span></p></td><td class="cl-9bdda0d9"><p class="cl-9bdd8846"><span class="cl-9bdb4d92">7.22</span></p></td></tr></tbody></table></div>
 <pre class="r"><code>
 durationdat &lt;- dBdat_filtered %&gt;%
   group_by(id, device) %&gt;%
