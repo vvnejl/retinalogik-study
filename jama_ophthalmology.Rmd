@@ -179,16 +179,16 @@ dBdat_filtered %>%
   nice_table()
 
 #########
-dBdat_means <- dBdat_filtered %>%
+dBdat_medians <- dBdat_filtered %>%
   group_by(id, device) %>%
-  mutate(mean = mean(dB)) %>%
-  distinct(id, classification, device, mean) %>%
-  pivot_wider(names_from = device, values_from = mean) %>%
+  mutate(median = median(dB)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
   na.omit() %>%
   mutate(difference = retinalogik-hfa)
 
 # 1. Group the cleaned, wide data by classification
-wilcoxon_results <- dBdat_means %>%
+wilcoxon_results <- dBdat_medians %>%
   group_by(classification) %>%
   
   # 2. Nest the data for group-wise application
@@ -683,18 +683,18 @@ pplot_earlyGON <- meanSensitivity %>%
   mutate(box_color = case_when(
     pvalue < 0.001 ~ "red",      # Strongest significance
     pvalue < 0.01  ~ "orange",   # Moderate significance
-    pvalue < 0.05  ~ "yellow",   # Weak significance
+    pvalue < 0.05  ~ "gold",   # Weak significance
     TRUE           ~ "white"     # Not significant (>= 0.05)
   ),
     # High alpha = solid, Low alpha = faint
     box_alpha = case_when(
-      pvalue < 0.01  ~ 1.0,  # Solid for strong stats
-      pvalue < 0.05  ~ 0.3,  # 30% visible for weak stats (faint)
+      pvalue < 0.01  ~ 0.8,  # Solid for strong stats
+      pvalue < 0.05  ~ 0.5,  # 50% visible for weak stats (faint)
       TRUE           ~ 1.0   # White background is solid
     )) %>%
   ggplot(aes(x, y)) +
   # 2. Use the new color column for the fill
-  geom_tile(aes(fill = box_color), colour = "grey90") +
+  geom_tile(aes(fill = box_color, alpha = box_alpha), colour = "grey90") +
   
   # 3. Tell ggplot to use the actual color names in 'box_color'
   scale_fill_identity() + 
@@ -795,18 +795,18 @@ pplot_moderateGON <- meanSensitivity %>%
   mutate(box_color = case_when(
     pvalue < 0.001 ~ "red",      # Strongest significance
     pvalue < 0.01  ~ "orange",   # Moderate significance
-    pvalue < 0.05  ~ "yellow",   # Weak significance
+    pvalue < 0.05  ~ "gold",   # Weak significance
     TRUE           ~ "white"     # Not significant (>= 0.05)
   ),
     # High alpha = solid, Low alpha = faint
     box_alpha = case_when(
-      pvalue < 0.01  ~ 1.0,  # Solid for strong stats
-      pvalue < 0.05  ~ 0.3,  # 30% visible for weak stats (faint)
+      pvalue < 0.01  ~ 0.8,  # Solid for strong stats
+      pvalue < 0.05  ~ 0.5,  # 50% visible for weak stats (faint)
       TRUE           ~ 1.0   # White background is solid
     )) %>%
   ggplot(aes(x, y)) +
   # 2. Use the new color column for the fill
-  geom_tile(aes(fill = box_color), colour = "grey90") +
+  geom_tile(aes(fill = box_color, alpha = box_alpha), colour = "grey90") +
   
   # 3. Tell ggplot to use the actual color names in 'box_color'
   scale_fill_identity() + 
@@ -907,18 +907,18 @@ pplot_advancedGON <- meanSensitivity %>%
   mutate(box_color = case_when(
     pvalue < 0.001 ~ "red",      # Strongest significance
     pvalue < 0.01  ~ "orange",   # Moderate significance
-    pvalue < 0.05  ~ "yellow",   # Weak significance
+    pvalue < 0.05  ~ "gold",   # Weak significance
     TRUE           ~ "white"     # Not significant (>= 0.05)
   ),
     # High alpha = solid, Low alpha = faint
     box_alpha = case_when(
-      pvalue < 0.01  ~ 1.0,  # Solid for strong stats
-      pvalue < 0.05  ~ 0.3,  # 30% visible for weak stats (faint)
+      pvalue < 0.01  ~ 0.8,  # Solid for strong stats
+      pvalue < 0.05  ~ 0.5,  # 50% visible for weak stats (faint)
       TRUE           ~ 1.0   # White background is solid
     )) %>%
   ggplot(aes(x, y)) +
   # 2. Use the new color column for the fill
-  geom_tile(aes(fill = box_color), colour = "grey90") +
+  geom_tile(aes(fill = box_color, alpha = box_alpha), colour = "grey90") +
   
   # 3. Tell ggplot to use the actual color names in 'box_color'
   scale_fill_identity() + 
@@ -971,14 +971,14 @@ pplot_bonferroni_advancedGON <- meanSensitivity %>%
 # rtplot_advancedGON + hfaplot_advancedGON + diffplot_advancedGON
 # ggsave("plots/advancedgon_withdiff.png", width = 14, height = 6)
 
-rtplot_earlyGON + hfaplot_earlyGON + pplot_earlyGON
-ggsave("plots/earlygon_withpcolours.png", width = 14, height = 6)
-
-rtplot_moderateGON + hfaplot_moderateGON + pplot_moderateGON
-ggsave("plots/moderategon_withpcolours.png", width = 14, height = 6)
-
-rtplot_advancedGON + hfaplot_advancedGON + pplot_advancedGON
-ggsave("plots/advancedgon_withpcolours.png", width = 14, height = 6)
+# rtplot_earlyGON + hfaplot_earlyGON + pplot_earlyGON
+# ggsave("plots/earlygon_withpcolours.png", width = 14, height = 6)
+# 
+# rtplot_moderateGON + hfaplot_moderateGON + pplot_moderateGON
+# ggsave("plots/moderategon_withpcolours.png", width = 14, height = 6)
+# 
+# rtplot_advancedGON + hfaplot_advancedGON + pplot_advancedGON
+# ggsave("plots/advancedgon_withpcolours.png", width = 14, height = 6)
 
 rtplot_earlyGON + hfaplot_earlyGON
 diffplot_earlyGON+ pplot_earlyGON
