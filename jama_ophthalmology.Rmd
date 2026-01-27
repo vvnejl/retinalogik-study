@@ -150,8 +150,8 @@ All OS data are transposed to OD format before analyses. `r sum(vft$n)` VF tests
 ## Analysis
 Of the 5 visits, the first 2 visits were removed from analysis. VFTs where reliability indices (FL, FP, and FN) > 30% were removed from analysis as well.
 
-### Mean sensitivity
-In patients with moderate and advanced glaucoma, the mean sensitivity was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
+### Mean/median sensitivity
+In patients with advanced glaucoma, the median sensitivity was significantly higher when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
 
 ```{r meansens}
 dBdat_filtered <- dBdat_filtered %>%
