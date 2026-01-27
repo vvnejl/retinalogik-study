@@ -625,6 +625,7 @@ meanSensitivity <- dBdat_filtered %>%
             meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
             pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
   ungroup() %>%
+  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni")) %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
 
@@ -665,17 +666,68 @@ diffplot_earlyGON <- meanSensitivity %>%
   ggtitle("Difference (Retinalogik-HFA)") +
   theme(legend.position="none")
 
+# pplot_earlyGON <- meanSensitivity %>%
+#   ggplot(aes(x, y)) +
+#   geom_tile(fill = "white", colour = "grey90") +
+#   geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
+#                 x = x, y = y),  size = 3, colour="black") +
+#   coord_fixed(ratio = 1) +
+#   #scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
+#   theme_bw() +
+#   ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+#   theme(legend.position="none",
+#         panel.grid = element_blank())
+
 pplot_earlyGON <- meanSensitivity %>%
+  # 1. Create a column defining the colors based on your p-value thresholds
+  mutate(box_color = case_when(
+    pvalue < 0.001 ~ "red",      # Strongest significance
+    pvalue < 0.01  ~ "orange",   # Moderate significance
+    pvalue < 0.05  ~ "yellow",   # Weak significance
+    TRUE           ~ "white"     # Not significant (>= 0.05)
+  ),
+    # High alpha = solid, Low alpha = faint
+    box_alpha = case_when(
+      pvalue < 0.01  ~ 1.0,  # Solid for strong stats
+      pvalue < 0.05  ~ 0.3,  # 30% visible for weak stats (faint)
+      TRUE           ~ 1.0   # White background is solid
+    )) %>%
   ggplot(aes(x, y)) +
-  geom_tile(fill = "white", colour = "grey90") +
-  geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
-                x = x, y = y),  size = 3, colour="black") +
+  # 2. Use the new color column for the fill
+  geom_tile(aes(fill = box_color), colour = "grey90") +
+  
+  # 3. Tell ggplot to use the actual color names in 'box_color'
+  scale_fill_identity() + 
+  
+  # Update the text labels to match your new precision (optional but recommended)
+  geom_text(aes(label = ifelse(pvalue < 0.001, "<.001", 
+                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  
   coord_fixed(ratio = 1) +
-  #scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
   theme_bw() +
   ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
   theme(legend.position="none",
         panel.grid = element_blank())
+
+# Plot using the STRICT Bonferroni values
+pplot_bonferroni_earlyGON <- meanSensitivity %>%
+  mutate(box_color = case_when(
+    p_bonferroni < 0.001 ~ "red",
+    p_bonferroni < 0.01  ~ "orange",
+    p_bonferroni < 0.05  ~ "yellow",
+    TRUE                 ~ "white"
+  )) %>%
+  ggplot(aes(x, y)) +
+  geom_tile(aes(fill = box_color), colour = "grey90") +
+  scale_fill_identity() +
+  geom_text(aes(label = ifelse(p_bonferroni < 0.001, "<.001", 
+                        ifelse(p_bonferroni < 0.01, "<.01", round(p_bonferroni, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  ggtitle("Bonferroni Corrected") +
+  theme(legend.position="none", panel.grid = element_blank())
 
 ## Moderate GON
 nRT <- dBdat_filtered %>%
@@ -697,6 +749,7 @@ meanSensitivity <- dBdat_filtered %>%
             meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
             pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
   ungroup() %>%
+  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni")) %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
 
@@ -738,16 +791,55 @@ diffplot_moderateGON <- meanSensitivity %>%
   theme(legend.position="none")
 
 pplot_moderateGON <- meanSensitivity %>%
+  # 1. Create a column defining the colors based on your p-value thresholds
+  mutate(box_color = case_when(
+    pvalue < 0.001 ~ "red",      # Strongest significance
+    pvalue < 0.01  ~ "orange",   # Moderate significance
+    pvalue < 0.05  ~ "yellow",   # Weak significance
+    TRUE           ~ "white"     # Not significant (>= 0.05)
+  ),
+    # High alpha = solid, Low alpha = faint
+    box_alpha = case_when(
+      pvalue < 0.01  ~ 1.0,  # Solid for strong stats
+      pvalue < 0.05  ~ 0.3,  # 30% visible for weak stats (faint)
+      TRUE           ~ 1.0   # White background is solid
+    )) %>%
   ggplot(aes(x, y)) +
-  geom_tile(fill = "white", colour = "grey90") +
-  geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
-                x = x, y = y),  size = 3, colour="black") +
+  # 2. Use the new color column for the fill
+  geom_tile(aes(fill = box_color), colour = "grey90") +
+  
+  # 3. Tell ggplot to use the actual color names in 'box_color'
+  scale_fill_identity() + 
+  
+  # Update the text labels to match your new precision (optional but recommended)
+  geom_text(aes(label = ifelse(pvalue < 0.001, "<.001", 
+                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  
   coord_fixed(ratio = 1) +
-  #scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
   theme_bw() +
   ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
   theme(legend.position="none",
         panel.grid = element_blank())
+
+# Plot using the STRICT Bonferroni values
+pplot_bonferroni_moderateGON <- meanSensitivity %>%
+  mutate(box_color = case_when(
+    p_bonferroni < 0.001 ~ "red",
+    p_bonferroni < 0.01  ~ "orange",
+    p_bonferroni < 0.05  ~ "yellow",
+    TRUE                 ~ "white"
+  )) %>%
+  ggplot(aes(x, y)) +
+  geom_tile(aes(fill = box_color), colour = "grey90") +
+  scale_fill_identity() +
+  geom_text(aes(label = ifelse(p_bonferroni < 0.001, "<.001", 
+                        ifelse(p_bonferroni < 0.01, "<.01", round(p_bonferroni, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  ggtitle("Bonferroni Corrected") +
+  theme(legend.position="none", panel.grid = element_blank())
 
 ## Advanced GON
 nRT <- dBdat_filtered %>%
@@ -769,6 +861,7 @@ meanSensitivity <- dBdat_filtered %>%
             meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
             pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
   ungroup() %>%
+  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni")) %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
 
@@ -810,16 +903,55 @@ diffplot_advancedGON <- meanSensitivity %>%
   theme(legend.position="none")
 
 pplot_advancedGON <- meanSensitivity %>%
+  # 1. Create a column defining the colors based on your p-value thresholds
+  mutate(box_color = case_when(
+    pvalue < 0.001 ~ "red",      # Strongest significance
+    pvalue < 0.01  ~ "orange",   # Moderate significance
+    pvalue < 0.05  ~ "yellow",   # Weak significance
+    TRUE           ~ "white"     # Not significant (>= 0.05)
+  ),
+    # High alpha = solid, Low alpha = faint
+    box_alpha = case_when(
+      pvalue < 0.01  ~ 1.0,  # Solid for strong stats
+      pvalue < 0.05  ~ 0.3,  # 30% visible for weak stats (faint)
+      TRUE           ~ 1.0   # White background is solid
+    )) %>%
   ggplot(aes(x, y)) +
-  geom_tile(fill = "white", colour = "grey90") +
-  geom_text(aes(label = ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)),
-                x = x, y = y),  size = 3, colour="black") +
+  # 2. Use the new color column for the fill
+  geom_tile(aes(fill = box_color), colour = "grey90") +
+  
+  # 3. Tell ggplot to use the actual color names in 'box_color'
+  scale_fill_identity() + 
+  
+  # Update the text labels to match your new precision (optional but recommended)
+  geom_text(aes(label = ifelse(pvalue < 0.001, "<.001", 
+                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  
   coord_fixed(ratio = 1) +
-  scale_fill_gradient(low = "gray", high = "white", na.value="darkred") +
   theme_bw() +
   ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
   theme(legend.position="none",
         panel.grid = element_blank())
+
+# Plot using the STRICT Bonferroni values
+pplot_bonferroni_advancedGON <- meanSensitivity %>%
+  mutate(box_color = case_when(
+    p_bonferroni < 0.001 ~ "red",
+    p_bonferroni < 0.01  ~ "orange",
+    p_bonferroni < 0.05  ~ "yellow",
+    TRUE                 ~ "white"
+  )) %>%
+  ggplot(aes(x, y)) +
+  geom_tile(aes(fill = box_color), colour = "grey90") +
+  scale_fill_identity() +
+  geom_text(aes(label = ifelse(p_bonferroni < 0.001, "<.001", 
+                        ifelse(p_bonferroni < 0.01, "<.01", round(p_bonferroni, 2))),
+                x = x, y = y), size = 3, colour="black") +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  ggtitle("Bonferroni Corrected") +
+  theme(legend.position="none", panel.grid = element_blank())
 
 # rtplot_earlyGON + hfaplot_earlyGON
 # ggsave("plots/earlygon.png", width = 10, height = 6)
@@ -839,14 +971,14 @@ pplot_advancedGON <- meanSensitivity %>%
 # rtplot_advancedGON + hfaplot_advancedGON + diffplot_advancedGON
 # ggsave("plots/advancedgon_withdiff.png", width = 14, height = 6)
 
-# rtplot_earlyGON + hfaplot_earlyGON + pplot_earlyGON
-# ggsave("plots/earlygon_withp.png", width = 14, height = 6)
-# 
-# rtplot_moderateGON + hfaplot_moderateGON + pplot_moderateGON
-# ggsave("plots/moderategon_withp.png", width = 14, height = 6)
-# 
-# rtplot_advancedGON + hfaplot_advancedGON + pplot_advancedGON
-# ggsave("plots/advancedgon_withp.png", width = 14, height = 6)
+rtplot_earlyGON + hfaplot_earlyGON + pplot_earlyGON
+ggsave("plots/earlygon_withpcolours.png", width = 14, height = 6)
+
+rtplot_moderateGON + hfaplot_moderateGON + pplot_moderateGON
+ggsave("plots/moderategon_withpcolours.png", width = 14, height = 6)
+
+rtplot_advancedGON + hfaplot_advancedGON + pplot_advancedGON
+ggsave("plots/advancedgon_withpcolours.png", width = 14, height = 6)
 
 rtplot_earlyGON + hfaplot_earlyGON
 diffplot_earlyGON+ pplot_earlyGON
