@@ -377,8 +377,16 @@ md_means <- dBdat_filtered %>%
   na.omit() %>%
   mutate(difference = retinalogik-hfa)
 
+md_medians <- dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(median = median(md)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
+  na.omit() %>%
+  mutate(difference = retinalogik-hfa)
+
 # 1. Group the cleaned, wide data by classification
-wilcoxon_results <- md_means %>%
+wilcoxon_results <- md_medians %>%
   group_by(classification) %>%
   
   # 2. Nest the data for group-wise application
