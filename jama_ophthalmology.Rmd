@@ -47,6 +47,7 @@ library(report)
 library(effectsize)
 library(rempsyc)
 library(psych)
+library(BlandAltmanLeh)
 
 sessionInfo()
 
@@ -283,40 +284,40 @@ dBdat_filtered %>%
   labs(title="Hexbin plot of threshold sensitivities for all locations",
        subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 30)") +
   xlab("HFA (dB)") +
-  ylab("Retinalogik (dB)") +
+  ylab("VR device (dB)") +
   xlim(-2, 40) +
   ylim(-2, 40) +
   theme_bw()
 
 ggsave("plots/hexbin30.png", width = 5, height = 4)
 ```
-```{r mshexbin}
-# dBdat_filtered %>%
-#   group_by(id, device, visit) %>%
-#   summarize(ms = mean(dB)) %>%
-#   group_by(id, device) %>%
-#   summarize(meanms = mean(ms)) %>%
-#   pivot_wider(names_from = device, values_from = meanms) %>% 
-#   mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa)) %>%
-#   ggplot(aes(x = hfa, y = retinalogik)) +
-#   geom_hex(bins = 5) +
-#   scale_fill_viridis_c() +
-#   geom_smooth(method = "loess", se = TRUE, colour = "red") +
-#   geom_abline(intercept = 0, slope = 1) +
-#   labs(title="Hexbin plot of mean sensitivities",
-#        subtitle="Averaged across reliable datasets between visits 3 to 5\n(Size of bin = 5)") +
-#   xlab("HFA (dB)") +
-#   ylab("Retinalogik (dB)") +
-#   xlim(0, 35) +
-#   ylim(0, 35) +
-#   theme_bw()
+```{r dbblandaltman}
+df <- dBdat_filtered %>%
+  group_by(id, device, x, y) %>%
+  mutate(dB = mean(dB)) %>%
+  distinct(id, device, x, y, dB) %>%
+  pivot_wider(names_from = device, values_from = dB) %>%
+  mutate(retinalogik = as.numeric(retinalogik), hfa = as.numeric(hfa))
 
-#ggsave("plots/mshexbin.png", width = 5, height = 4)
+blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
+bias <- mean(df$retinalogik, na.rm=T) - mean(df$hfa, na.rm=T)
+
+print(blandplot +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
+        #ylim(c(-10, 10)) +
+        xlab("Threshold sensitivity (dB)") +
+        ylab("Difference in dB (VR device-HFA)") +
+        labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing threshold sensitivity across all stages of glaucoma"))
+
+#ggsave("plots/blandaltman-dB-allgon.png", width = 7, height = 5)
+
 ```
 
 ```{r msblandaltman}
-library(BlandAltmanLeh)
-
 ms_means <- dBdat_filtered %>%
   group_by(id, device, visit) %>%
   summarize(ms = mean(dB)) %>%
@@ -338,11 +339,11 @@ print(blandplot +
         geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
         ylim(c(-10, 10)) +
         xlab("Mean Sensitivity (MS)") +
-        ylab("Difference in MS (Retinalogik-HFA)") +
+        ylab("Difference in MS (VR device-HFA)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MS across all stages of glaucoma"))
 
-ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
 
 ```
 
@@ -470,12 +471,12 @@ print(blandplot +
         geom_hline(yintercept = 0, color = "black") +
         geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
         ylim(c(-15, 15)) +
-        xlab("MD") +
-        ylab("Difference in MD (Retinalogik-HFA)") +
+        xlab("Mean deviation (MD)") +
+        ylab("Difference in MD (VR device-HFA)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MD across all stages of glaucoma"))
 
-ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
 
 milddf <- df %>%
   filter(classification == "Mild")
@@ -646,7 +647,7 @@ rtplot_earlyGON <- meanSensitivity %>%
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " early GON eyes)")) +
+  ggtitle("VR device", subtitle = paste0("(n = ", nRT, " early GON eyes)")) +
   theme(legend.position="none")
 
 hfaplot_earlyGON <- meanSensitivity %>%
@@ -671,7 +672,7 @@ diffplot_earlyGON <- meanSensitivity %>%
   scale_fill_gradientn(colours = colorRampPalette(c("red", "white", "red"))(27), limits = c(-13, 13), 
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Difference (Retinalogik-HFA)") +
+  ggtitle("Difference (VR device-HFA)") +
   theme(legend.position="none")
 
 # pplot_earlyGON <- meanSensitivity %>%
@@ -687,34 +688,45 @@ diffplot_earlyGON <- meanSensitivity %>%
 #         panel.grid = element_blank())
 
 pplot_earlyGON <- meanSensitivity %>%
-  # 1. Create a column defining the colors based on your p-value thresholds
-  mutate(box_color = case_when(
-    pvalue < 0.001 ~ "red",      # Strongest significance
-    pvalue < 0.01  ~ "orange",   # Moderate significance
-    pvalue < 0.05  ~ "gold",   # Weak significance
-    TRUE           ~ "white"     # Not significant (>= 0.05)
-  ),
-    # High alpha = solid, Low alpha = faint
-    box_alpha = case_when(
-      pvalue < 0.01  ~ 0.8,  # Solid for strong stats
-      pvalue < 0.05  ~ 0.5,  # 50% visible for weak stats (faint)
-      TRUE           ~ 1.0   # White background is solid
-    )) %>%
+  mutate(
+    # 1. Calculate the difference to determine "Warm" vs "Cool" direction
+    diff = meanRT - meanHFA,
+    
+    # 2. Assign Saturated Colors based on Direction AND Significance
+    box_color = case_when(
+      # --- HANDLE BLIND SPOTS / NAs ---
+      is.na(pvalue) ~ "white",
+      
+      # --- RETINALOGIK > HFA (Positive Diff) -> COOL COLORS ---
+      diff > 0 & pvalue < 0.001 ~ "darkviolet",
+      diff > 0 & pvalue < 0.01  ~ "darkslateblue", # substitute for indigo
+      diff > 0 & pvalue < 0.05  ~ "dodgerblue", 
+
+      # --- RETINALOGIK < HFA (Negative Diff) -> WARM COLORS ---
+      diff <= 0 & pvalue < 0.001 ~ "red",
+      diff <= 0 & pvalue < 0.01  ~ "darkorange", 
+      diff <= 0 & pvalue < 0.05  ~ "yellow",     
+
+      # --- NOT SIGNIFICANT ---
+      TRUE ~ "white"
+    )
+  ) %>%
   ggplot(aes(x, y)) +
-  # 2. Use the new color column for the fill
-  geom_tile(aes(fill = box_color, alpha = box_alpha), colour = "grey90") +
-  
-  # 3. Tell ggplot to use the actual color names in 'box_color'
+  # Map the computed color name to the fill
+  geom_tile(aes(fill = box_color), colour = "grey90") +
   scale_fill_identity() + 
   
-  # Update the text labels to match your new precision (optional but recommended)
-  geom_text(aes(label = ifelse(pvalue < 0.001, "<.001", 
-                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2))),
+  # Add text labels (Cleaning up NAs for the blind spots)
+  geom_text(aes(label = ifelse(is.na(pvalue), "", 
+                        ifelse(pvalue < 0.001, "<.001", 
+                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)))),
                 x = x, y = y), size = 3, colour="black") +
   
   coord_fixed(ratio = 1) +
   theme_bw() +
-  ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+  # Update title to reflect the directionality
+  ggtitle("Wilcoxon p-values (VR device - HFA)", 
+          subtitle = "Warm = RT < HFA | Cool = RT > HFA") +
   theme(legend.position="none",
         panel.grid = element_blank())
 
