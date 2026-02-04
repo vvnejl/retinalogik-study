@@ -689,44 +689,52 @@ diffplot_earlyGON <- meanSensitivity %>%
 
 pplot_earlyGON <- meanSensitivity %>%
   mutate(
-    # 1. Calculate the difference to determine "Warm" vs "Cool" direction
     diff = meanRT - meanHFA,
     
-    # 2. Assign Saturated Colors based on Direction AND Significance
+    # 1. BACKGROUND COLORS (Red-Blue Palette)
     box_color = case_when(
-      # --- HANDLE BLIND SPOTS / NAs ---
       is.na(pvalue) ~ "white",
       
-      # --- RETINALOGIK > HFA (Positive Diff) -> COOL COLORS ---
-      diff > 0 & pvalue < 0.001 ~ "darkviolet",
-      diff > 0 & pvalue < 0.01  ~ "darkslateblue", # substitute for indigo
-      diff > 0 & pvalue < 0.05  ~ "dodgerblue", 
+      # --- COOL COLORS (Blue) ---
+      diff > 0 & pvalue < 0.001 ~ "#0571b0",  # Dark Blue
+      diff > 0 & pvalue < 0.01  ~ "#92c5de",  # Medium Blue 
+      diff > 0 & pvalue < 0.05  ~ "#d1e5f0",  # Pale Blue
 
-      # --- RETINALOGIK < HFA (Negative Diff) -> WARM COLORS ---
-      diff <= 0 & pvalue < 0.001 ~ "red",
-      diff <= 0 & pvalue < 0.01  ~ "darkorange", 
-      diff <= 0 & pvalue < 0.05  ~ "yellow",     
+      # --- WARM COLORS (Red) ---
+      diff <= 0 & pvalue < 0.001 ~ "#ca0020", # Dark Red
+      diff <= 0 & pvalue < 0.01  ~ "#f4a582", # Medium Red
+      diff <= 0 & pvalue < 0.05  ~ "#fddbc7", # Pale Red
 
-      # --- NOT SIGNIFICANT ---
       TRUE ~ "white"
+    ),
+    
+    # 2. TEXT COLOR LOGIC
+    # ONLY turn white if p < 0.001 (Darkest boxes)
+    text_color = case_when(
+      pvalue < 0.001 ~ "white", 
+      TRUE           ~ "black"
     )
   ) %>%
   ggplot(aes(x, y)) +
-  # Map the computed color name to the fill
   geom_tile(aes(fill = box_color), colour = "grey90") +
   scale_fill_identity() + 
   
-  # Add text labels (Cleaning up NAs for the blind spots)
+  # 3. THE FIX: Note that 'colour = text_color' is INSIDE aes()
+  # and there is NO colour="black" outside aes()
   geom_text(aes(label = ifelse(is.na(pvalue), "", 
                         ifelse(pvalue < 0.001, "<.001", 
                         ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)))),
-                x = x, y = y), size = 3, colour="black") +
+                x = x, y = y, 
+                colour = text_color), 
+            size = 3) +
+  
+  # 4. Tell ggplot to use the "white"/"black" strings as real colors
+  scale_colour_identity() +
   
   coord_fixed(ratio = 1) +
   theme_bw() +
-  # Update title to reflect the directionality
   ggtitle("Wilcoxon p-values (VR device - HFA)", 
-          subtitle = "Warm = RT < HFA | Cool = RT > HFA") +
+          subtitle = "Warm = VR < HFA | Cool = VR > HFA") +
   theme(legend.position="none",
         panel.grid = element_blank())
 
@@ -782,7 +790,7 @@ rtplot_moderateGON <- meanSensitivity %>%
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " moderate GON eyes)")) +
+  ggtitle("VR device", subtitle = paste0("(n = ", nRT, " moderate GON eyes)")) +
   theme(legend.position="none")
 
 hfaplot_moderateGON <- meanSensitivity %>%
@@ -807,38 +815,57 @@ diffplot_moderateGON <- meanSensitivity %>%
   scale_fill_gradientn(colours = colorRampPalette(c("red", "white", "red"))(27), limits = c(-13, 13), 
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Difference (Retinalogik-HFA)") +
+  ggtitle("Difference (VR device-HFA)") +
   theme(legend.position="none")
 
 pplot_moderateGON <- meanSensitivity %>%
-  # 1. Create a column defining the colors based on your p-value thresholds
-  mutate(box_color = case_when(
-    pvalue < 0.001 ~ "red",      # Strongest significance
-    pvalue < 0.01  ~ "orange",   # Moderate significance
-    pvalue < 0.05  ~ "gold",   # Weak significance
-    TRUE           ~ "white"     # Not significant (>= 0.05)
-  ),
-    # High alpha = solid, Low alpha = faint
-    box_alpha = case_when(
-      pvalue < 0.01  ~ 0.8,  # Solid for strong stats
-      pvalue < 0.05  ~ 0.5,  # 50% visible for weak stats (faint)
-      TRUE           ~ 1.0   # White background is solid
-    )) %>%
+  mutate(
+    diff = meanRT - meanHFA,
+    
+    # 1. BACKGROUND COLORS (Red-Blue Palette)
+    box_color = case_when(
+      is.na(pvalue) ~ "white",
+      
+      # --- COOL COLORS (Blue) ---
+      diff > 0 & pvalue < 0.001 ~ "#0571b0",  # Dark Blue
+      diff > 0 & pvalue < 0.01  ~ "#92c5de",  # Medium Blue 
+      diff > 0 & pvalue < 0.05  ~ "#d1e5f0",  # Pale Blue
+
+      # --- WARM COLORS (Red) ---
+      diff <= 0 & pvalue < 0.001 ~ "#ca0020", # Dark Red
+      diff <= 0 & pvalue < 0.01  ~ "#f4a582", # Medium Red
+      diff <= 0 & pvalue < 0.05  ~ "#fddbc7", # Pale Red
+
+      TRUE ~ "white"
+    ),
+    
+    # 2. TEXT COLOR LOGIC
+    # ONLY turn white if p < 0.001 (Darkest boxes)
+    text_color = case_when(
+      pvalue < 0.001 ~ "white", 
+      TRUE           ~ "black"
+    )
+  ) %>%
   ggplot(aes(x, y)) +
-  # 2. Use the new color column for the fill
-  geom_tile(aes(fill = box_color, alpha = box_alpha), colour = "grey90") +
-  
-  # 3. Tell ggplot to use the actual color names in 'box_color'
+  geom_tile(aes(fill = box_color), colour = "grey90") +
   scale_fill_identity() + 
   
-  # Update the text labels to match your new precision (optional but recommended)
-  geom_text(aes(label = ifelse(pvalue < 0.001, "<.001", 
-                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2))),
-                x = x, y = y), size = 3, colour="black") +
+  # 3. THE FIX: Note that 'colour = text_color' is INSIDE aes()
+  # and there is NO colour="black" outside aes()
+  geom_text(aes(label = ifelse(is.na(pvalue), "", 
+                        ifelse(pvalue < 0.001, "<.001", 
+                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)))),
+                x = x, y = y, 
+                colour = text_color), 
+            size = 3) +
+  
+  # 4. Tell ggplot to use the "white"/"black" strings as real colors
+  scale_colour_identity() +
   
   coord_fixed(ratio = 1) +
   theme_bw() +
-  ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+  ggtitle("Wilcoxon p-values (VR device - HFA)", 
+          subtitle = "Warm = VR < HFA | Cool = VR > HFA") +
   theme(legend.position="none",
         panel.grid = element_blank())
 
@@ -894,7 +921,7 @@ rtplot_advancedGON <- meanSensitivity %>%
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Retinalogik", subtitle = paste0("(n = ", nRT, " advanced GON eyes)")) +
+  ggtitle("VR device", subtitle = paste0("(n = ", nRT, " advanced GON eyes)")) +
   theme(legend.position="none")
 
 hfaplot_advancedGON <- meanSensitivity %>%
@@ -919,38 +946,57 @@ diffplot_advancedGON <- meanSensitivity %>%
   scale_fill_gradientn(colours = colorRampPalette(c("red", "white", "red"))(27), limits = c(-13, 13), 
                        na.value="darkred") +
   theme_bw() +
-  ggtitle("Difference (Retinalogik-HFA)") +
+  ggtitle("Difference (VR device-HFA)") +
   theme(legend.position="none")
 
 pplot_advancedGON <- meanSensitivity %>%
-  # 1. Create a column defining the colors based on your p-value thresholds
-  mutate(box_color = case_when(
-    pvalue < 0.001 ~ "red",      # Strongest significance
-    pvalue < 0.01  ~ "orange",   # Moderate significance
-    pvalue < 0.05  ~ "gold",   # Weak significance
-    TRUE           ~ "white"     # Not significant (>= 0.05)
-  ),
-    # High alpha = solid, Low alpha = faint
-    box_alpha = case_when(
-      pvalue < 0.01  ~ 0.8,  # Solid for strong stats
-      pvalue < 0.05  ~ 0.5,  # 50% visible for weak stats (faint)
-      TRUE           ~ 1.0   # White background is solid
-    )) %>%
+  mutate(
+    diff = meanRT - meanHFA,
+    
+    # 1. BACKGROUND COLORS (Red-Blue Palette)
+    box_color = case_when(
+      is.na(pvalue) ~ "white",
+      
+      # --- COOL COLORS (Blue) ---
+      diff > 0 & pvalue < 0.001 ~ "#0571b0",  # Dark Blue
+      diff > 0 & pvalue < 0.01  ~ "#92c5de",  # Medium Blue 
+      diff > 0 & pvalue < 0.05  ~ "#d1e5f0",  # Pale Blue
+
+      # --- WARM COLORS (Red) ---
+      diff <= 0 & pvalue < 0.001 ~ "#ca0020", # Dark Red
+      diff <= 0 & pvalue < 0.01  ~ "#f4a582", # Medium Red
+      diff <= 0 & pvalue < 0.05  ~ "#fddbc7", # Pale Red
+
+      TRUE ~ "white"
+    ),
+    
+    # 2. TEXT COLOR LOGIC
+    # ONLY turn white if p < 0.001 (Darkest boxes)
+    text_color = case_when(
+      pvalue < 0.001 ~ "white", 
+      TRUE           ~ "black"
+    )
+  ) %>%
   ggplot(aes(x, y)) +
-  # 2. Use the new color column for the fill
-  geom_tile(aes(fill = box_color, alpha = box_alpha), colour = "grey90") +
-  
-  # 3. Tell ggplot to use the actual color names in 'box_color'
+  geom_tile(aes(fill = box_color), colour = "grey90") +
   scale_fill_identity() + 
   
-  # Update the text labels to match your new precision (optional but recommended)
-  geom_text(aes(label = ifelse(pvalue < 0.001, "<.001", 
-                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2))),
-                x = x, y = y), size = 3, colour="black") +
+  # 3. THE FIX: Note that 'colour = text_color' is INSIDE aes()
+  # and there is NO colour="black" outside aes()
+  geom_text(aes(label = ifelse(is.na(pvalue), "", 
+                        ifelse(pvalue < 0.001, "<.001", 
+                        ifelse(pvalue < 0.01, "<.01", round(pvalue, 2)))),
+                x = x, y = y, 
+                colour = text_color), 
+            size = 3) +
+  
+  # 4. Tell ggplot to use the "white"/"black" strings as real colors
+  scale_colour_identity() +
   
   coord_fixed(ratio = 1) +
   theme_bw() +
-  ggtitle("Wilcoxon p-values (Retinalogik-HFA)") +
+  ggtitle("Wilcoxon p-values (VR device - HFA)", 
+          subtitle = "Warm = VR < HFA | Cool = VR > HFA") +
   theme(legend.position="none",
         panel.grid = element_blank())
 
