@@ -500,19 +500,36 @@ ggsave("plots/scotoma_mediansplot.png")
 ::: {.tabset .tabset-fade}
 
 ```{r plotsforverification, results='asis', warning=FALSE, message=FALSE}
+facet_labels <- c(
+  "psd_p" = "HFA PSD p-values",
+  "hfa" = "HFA",
+  "retinalogik" = "VR device"
+)
 
 for (current_id in unique(long_data$id)) {
-  cat(paste0("#### Patient ", current_id, "\n\n")) # Create a new sub-heading for each tab
+  cat(paste0("#### Patient ", current_id, "\n\n"))
 
   current_id_data <- long_data %>% filter(id == current_id)
 
   p <- create_vf_plot(current_id_data) +
-    facet_grid(visit ~ measure, scales = "fixed", drop=FALSE) 
-    #labs(title = paste0("Patient #", current_id))
+    # Dynamic text color logic based on value threshold
+    geom_text(aes(label = value, 
+                  color = ifelse(value < 7, "white", "black")), 
+              size = 3) +
+    scale_color_identity() + 
+    # Facet configuration
+    facet_grid(
+      visit ~ measure, 
+      scales = "fixed", 
+      drop = FALSE,
+      labeller = labeller(
+        measure = as_labeller(facet_labels),
+        visit   = as_labeller(function(x) paste("Visit", x))
+      )
+    )
 
-  print(p) # Print the ggplot object
-
-  cat("\n\n") # Add some space for markdown rendering
+  print(p)
+  cat("\n\n") 
 }
 ```
 
