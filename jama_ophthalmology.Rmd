@@ -24,7 +24,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Jun-26: Extract data based on classification during screening.
 * 2025-Aug-25: Extract, clean, and run stats on questionnaire data.
 * 2026-Jan-16: Added difference plots, p-value difference plots, LMM etc.
-* 2026-Apr-17: Fixed discrepancies and added PSD.
+* 2026-Apr-21: Fixed left/eye swap discrepancies and added PSD.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -101,13 +101,9 @@ dBdat_filtered <- merge(dBdat_filtered, classification) %>%
   filter(classification != "Control") %>%
   mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced")))
 
-# dBdat_filtered <- merge(dBdat_unified, classification) %>%
-#   filter(classification != "Control") %>%
-#   mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced")))
-
 ```
 ### Download plots
-[click me to find all generated plots](https://github.com/vvnejl/retinalogik-study/tree/53fa7ab3b9018493a098f8273695311d846ef265/plots)
+[click me to find all generated plots](https://github.com/vvnejl/retinalogik-study/tree/cc84aa781bde9225ff235dc1ab89a7aad0ded830/plots)
 
 # Study summary
 We compared 24-2 visual field (VF) test results between Retinalogik and the Humphrey Field Analyzer (HFA) using SITA Standard test strategy in patients with early glaucoma and moderate to advanced glaucoma [here](https://vvnejl.github.io/retinalogik-study/). A scotoma analysis was performed following glaucomatous VF definitions found in [Park et al. (2011)](https://www.aaojournal.org/article/S0161-6420(11)00172-2/abstract). Scotoma analysis results may be found [here](https://vvnejl.github.io/retinalogik-study/scotoma_analysis.html).
