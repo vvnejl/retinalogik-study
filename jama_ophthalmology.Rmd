@@ -24,6 +24,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Jun-26: Extract data based on classification during screening.
 * 2025-Aug-25: Extract, clean, and run stats on questionnaire data.
 * 2026-Jan-16: Added difference plots, p-value difference plots, LMM etc.
+* 2026-Apr-17: Fixed discrepancies and added PSD.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -80,10 +81,11 @@ classification <- readxl::read_excel("RetinaLogik Data Classification.xlsx") %>%
                          eye == "OU" ~ "R"))
 
 dBdat_filtered <- dBdat %>%
-  mutate(x = as.numeric(x), y = as.numeric(y)) %>%
+  ungroup() %>%
+  mutate(x = as.integer(x), y = as.integer(y)) %>%
   mutate(x = case_when(
-    eye == "L" & device == "retinalogik" ~ x*-1,
-    TRUE ~ as.numeric(x)
+    device == "retinalogik" & eye == "L" ~ x*-1,
+    TRUE ~ as.integer(x)
   )) %>%
   # remove blind spots
   filter(!(x == 15 & y == -3)) %>%
@@ -99,8 +101,11 @@ dBdat_filtered <- merge(dBdat_filtered, classification) %>%
   filter(classification != "Control") %>%
   mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced")))
 
-```
+# dBdat_filtered <- merge(dBdat_unified, classification) %>%
+#   filter(classification != "Control") %>%
+#   mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced")))
 
+```
 ### Download plots
 [click me to find all generated plots](https://github.com/vvnejl/retinalogik-study/tree/53fa7ab3b9018493a098f8273695311d846ef265/plots)
 
@@ -313,7 +318,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing threshold sensitivity across all stages of glaucoma"))
 
-#ggsave("plots/blandaltman-dB-allgon.png", width = 7, height = 5)
+ggsave("plots/blandaltman-dB-allgon.png", width = 7, height = 5)
 
 ```
 
@@ -343,7 +348,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MS across all stages of glaucoma"))
 
-#ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
+ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
 
 ```
 
@@ -476,7 +481,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MD across all stages of glaucoma"))
 
-#ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
+ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
 
 milddf <- df %>%
   filter(classification == "Mild")
@@ -495,7 +500,7 @@ biasmild <- mean(milddf$retinalogik, na.rm=T) - mean(milddf$hfa, na.rm=T)
         labs(subtitle=paste("Bias =", round(biasmild, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MD in patients with mild glaucoma"))
 
-ggsave("plots/blandaltman-md-mild.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-md-mild.png", width = 7, height = 5)
 
 moderatedf <- df %>%
   filter(classification == "Moderate")
@@ -514,7 +519,7 @@ print(blandplotmoderate +
         labs(subtitle=paste("Bias =", round(biasmoderate, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MD in patients with moderate glaucoma"))
 
-ggsave("plots/blandaltman-md-moderate.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-md-moderate.png", width = 7, height = 5)
 
 advanceddf <- df %>%
   filter(classification == "Advanced")
@@ -533,8 +538,114 @@ print(blandplotadvanced +
         labs(subtitle=paste("Bias =", round(biasadvanced, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MD in patients with advanced glaucoma"))
 
-ggsave("plots/blandaltman-md-advanced.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-md-advanced.png", width = 7, height = 5)
 
+```
+
+### Pattern standard deviation
+In patients with moderate and advanced glaucoma, the pattern standard deviation was significantly lower when using the VR-RL perimeter. Wilcoxon signed-rank tests confirmed this difference when looking at the median of the patient-level mean differences between visits.
+
+```{r psdtable}
+dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(mean = mean(psd)) %>%
+  distinct(id, classification, device, mean) %>%
+  pivot_wider(names_from = device, values_from = mean) %>%
+  na.omit() %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    mean_retinalogik = mean(retinalogik, na.rm = TRUE),
+    sd_retinalogik = sd(retinalogik, na.rm = TRUE),
+    mean_hfa = mean(hfa, na.rm = TRUE),
+    sd_hfa = sd(hfa, na.rm = TRUE)
+  ) %>%
+  mutate(difference = mean_retinalogik-mean_hfa) %>%
+  nice_table()
+
+#########
+psd_means <- dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(mean = mean(psd)) %>%
+  distinct(id, classification, device, mean) %>%
+  pivot_wider(names_from = device, values_from = mean) %>%
+  na.omit() %>%
+  mutate(difference = retinalogik-hfa)
+
+psd_medians <- dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(median = median(psd)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
+  na.omit() %>%
+  mutate(difference = retinalogik-hfa)
+
+# 1. Group the cleaned, wide data by classification
+wilcoxon_results <- psd_medians %>%
+  group_by(classification) %>%
+  
+  # 2. Nest the data for group-wise application
+  nest() %>%
+  
+  # 3. Apply the Wilcoxon test to the paired columns in each nested group
+  mutate(
+    wilcox_test = map(data, ~ wilcox.test(.x$retinalogik, .x$hfa, paired = TRUE)),
+    
+    # 4. Extract the key results cleanly
+    W_statistic = map_dbl(wilcox_test, "statistic"),
+    p_value = map_dbl(wilcox_test, "p.value")
+  ) %>%
+  
+  # 5. Select the final output columns
+  select(classification, W_statistic, p_value)
+
+wilcoxon_results %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  arrange(classification) %>%
+  nice_table(title = c("Wilcoxon signed rank test on paired samples"))
+
+dBdat_filtered %>%
+  group_by(id, device) %>%
+  mutate(median = median(psd)) %>%
+  distinct(id, classification, device, median) %>%
+  pivot_wider(names_from = device, values_from = median) %>%
+  na.omit() %>%
+  mutate(classification = factor(classification, levels = c("Mild", "Moderate", "Advanced"))) %>%
+  group_by(classification) %>%
+  summarise(
+    n = n(),
+    median_retinalogik = median(retinalogik, na.rm = TRUE),
+    q1_retinalogik = quantile(retinalogik, .25, na.rm = TRUE),
+    q3_retinalogik = quantile(retinalogik, .75, na.rm = TRUE),
+    iqr_retinalogik = IQR(retinalogik, na.rm = TRUE),
+    median_hfa = median(hfa, na.rm = TRUE),
+    q1_hfa = quantile(hfa, .25, na.rm = TRUE),
+    q3_hfa = quantile(hfa, .75, na.rm = TRUE),
+    iqr_hfa = IQR(hfa, na.rm = TRUE)
+  ) %>%
+  nice_table()
+
+```
+
+```{r psdblandaltman}
+df <- psd_means
+
+blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
+bias <- mean(df$retinalogik, na.rm=T) - mean(df$hfa, na.rm=T)
+
+print(blandplot +
+        geom_smooth(method = "lm", se = FALSE) +
+        # geom_point(position = "jitter") +
+        geom_hline(yintercept = 0, color = "black") +
+        geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
+        ylim(c(-15, 15)) +
+        xlab("Pattern standard deviation (PSD)") +
+        ylab("Difference in PSD (VR device-HFA)") +
+        labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
+        ggtitle("Bland-Altman plot comparing PSD across all stages of glaucoma"))
+
+ggsave("plots/blandaltman-psd-allgon.png", width = 7, height = 5)
 ```
 
 ### Pointwise analysis
@@ -632,9 +743,15 @@ meanSensitivity <- dBdat_filtered %>%
   group_by(x, y) %>%
   summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
             meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
-            pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
+            # Add a check for complete pairs
+            pvalue  = if(sum(!is.na(retinalogik) & !is.na(hfa)) > 1) {
+                wilcox.test(Pair(retinalogik, hfa) ~ 1)$p.value
+              } else {
+                NA_real_
+              },
+    .groups = "drop") %>%
   ungroup() %>%
-  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni")) %>%
+  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni", n=52)) %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
 
@@ -775,9 +892,15 @@ meanSensitivity <- dBdat_filtered %>%
   group_by(x, y) %>%
   summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
             meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
-            pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
+            # Add a check for complete pairs
+            pvalue  = if(sum(!is.na(retinalogik) & !is.na(hfa)) > 1) {
+                wilcox.test(Pair(retinalogik, hfa) ~ 1)$p.value
+              } else {
+                NA_real_
+              },
+    .groups = "drop") %>%
   ungroup() %>%
-  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni")) %>%
+  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni", n = 52)) %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
 
@@ -906,9 +1029,15 @@ meanSensitivity <- dBdat_filtered %>%
   group_by(x, y) %>%
   summarize(meanRT = mean(retinalogik, na.rm=T), sdRT = sd(retinalogik, na.rm=T),
             meanHFA = mean(hfa, na.rm=T), sdHFA = sd(hfa, na.rm=T),
-            pvalue = wilcox.test(Pair(retinalogik, hfa) ~1)$p.value) %>%
+            # Add a check for complete pairs
+            pvalue  = if(sum(!is.na(retinalogik) & !is.na(hfa)) > 1) {
+                wilcox.test(Pair(retinalogik, hfa) ~ 1)$p.value
+              } else {
+                NA_real_
+              },
+    .groups = "drop") %>%
   ungroup() %>%
-  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni")) %>%
+  mutate(p_bonferroni = p.adjust(pvalue, method = "bonferroni", n = 52)) %>%
   add_row(tibble_row(x = 15, y = -3, meanRT = NA, sdRT = NA)) %>%
   add_row(tibble_row(x = 15, y = +3, meanRT = NA, sdRT = NA)) 
 
