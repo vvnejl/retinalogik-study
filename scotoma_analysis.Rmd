@@ -517,6 +517,7 @@ scotoma_mediansplot <- all_scotoma_points %>%
   annotate("text", x = "Mild", y = 30, label = "***", size = 8) +
   annotate("text", x = "Moderate", y = 28, label = "***", size = 8) +
   annotate("text", x = "Advanced", y = 22, label = "***", size = 8) +
+  scale_x_discrete(labels = c("Mild" = "Early")) +
   labs(x = "Classification",
        y = "Medians",
        caption = "(Note: Error bars are IQR)") +
