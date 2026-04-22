@@ -653,7 +653,7 @@ print(blandplot +
         # geom_point(position = "jitter") +
         geom_hline(yintercept = 0, color = "black") +
         geom_hline(yintercept = bias, color = "red", linetype = "solid", linewidth = 1) +
-        ylim(c(-15, 15)) +
+        ylim(c(-8, 8)) +
         xlab("Pattern standard deviation (PSD)") +
         ylab("Difference in PSD (VR device-HFA)") +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
