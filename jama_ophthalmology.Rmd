@@ -772,7 +772,7 @@ meanSensitivity <- dBdat_filtered %>%
 rtplot_earlyGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
-  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 1), "\n(", round(sdRT, 1), ")")),
                 x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
@@ -784,7 +784,7 @@ rtplot_earlyGON <- meanSensitivity %>%
 hfaplot_earlyGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
-  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 1), "\n(", round(sdHFA, 1), ")")),
                 x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
@@ -921,7 +921,7 @@ meanSensitivity <- dBdat_filtered %>%
 rtplot_moderateGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
-  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 1), "\n(", round(sdRT, 1), ")")),
                 x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
@@ -933,7 +933,7 @@ rtplot_moderateGON <- meanSensitivity %>%
 hfaplot_moderateGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
-  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 1), "\n(", round(sdHFA, 1), ")")),
                 x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
@@ -1058,7 +1058,7 @@ meanSensitivity <- dBdat_filtered %>%
 rtplot_advancedGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanRT)) +
   geom_raster(aes(x = x, y = y, fill = meanRT)) +
-  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 2), "\n(", round(sdRT, 2), ")")),
+  geom_text(aes(label = ifelse(is.na(meanRT), "", paste0(round(meanRT, 1), "\n(", round(sdRT, 1), ")")),
                 x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
@@ -1070,7 +1070,7 @@ rtplot_advancedGON <- meanSensitivity %>%
 hfaplot_advancedGON <- meanSensitivity %>%
   ggplot(aes(x, y, meanHFA)) +
   geom_raster(aes(x = x, y = y, fill = meanHFA)) +
-  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 2), "\n(", round(sdHFA, 2), ")")),
+  geom_text(aes(label = ifelse(is.na(meanHFA), "", paste0(round(meanHFA, 1), "\n(", round(sdHFA, 1), ")")),
                 x = x, y = y), size = 3, colour="white") +
   coord_fixed(ratio = 1) +
   scale_fill_gradientn(colours = viridis(51), limits = c(-1, 49),
