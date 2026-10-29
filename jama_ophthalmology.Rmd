@@ -25,6 +25,7 @@ Last updated on `r format(Sys.time(), '%Y-%b-%d')` at `r format(Sys.time(), '%I:
 * 2025-Aug-25: Extract, clean, and run stats on questionnaire data.
 * 2026-Jan-16: Added difference plots, p-value difference plots, LMM etc.
 * 2026-Apr-21: Fixed left/eye swap discrepancies and added PSD plots.
+* 2026-Oct-28: Added significance testing for Bland-Altman MDs.
 
 ### Acknowledgements
 Data collected by Research Assistants Luc St-Pierre, Reann Post, and Research Coordinator Lynn Murphy.
@@ -290,7 +291,7 @@ dBdat_filtered %>%
   ylim(-2, 40) +
   theme_bw()
 
-ggsave("plots/hexbin30.png", width = 5, height = 4)
+#ggsave("plots/hexbin30.png", width = 5, height = 4)
 ```
 ```{r dbblandaltman}
 df <- dBdat_filtered %>%
@@ -314,7 +315,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing threshold sensitivity across all stages of glaucoma"))
 
-ggsave("plots/blandaltman-dB-allgon.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-dB-allgon.png", width = 7, height = 5)
 
 ```
 
@@ -344,7 +345,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MS across all stages of glaucoma"))
 
-ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-ms-allgon.png", width = 7, height = 5)
 
 ```
 
@@ -463,6 +464,18 @@ df <- md_means
 blandplot <- bland.altman.plot(df$retinalogik, df$hfa, graph.sys = "ggplot2", geom_count=T)
 bias <- mean(df$retinalogik, na.rm=T) - mean(df$hfa, na.rm=T)
 
+# Calculate differences and averages
+differences <- df$retinalogik - df$hfa
+averages <- (df$retinalogik + df$hfa) / 2
+
+# 1. Test for Fixed/Systematic Bias (One-sample t-test against mu = 0)
+bias_test <- t.test(differences, mu = 0)
+print(bias_test)
+
+# 2. Test for Proportional Bias (Linear regression of differences on averages)
+prop_bias_test <- lm(differences ~ averages)
+summary(prop_bias_test)
+
 print(blandplot +
         geom_smooth(method = "lm", se = FALSE) +
         # geom_point(position = "jitter") +
@@ -474,7 +487,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing MD across all stages of glaucoma"))
 
-ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-md-allgon.png", width = 7, height = 5)
 
 milddf <- df %>%
   filter(classification == "Mild")
@@ -659,7 +672,7 @@ print(blandplot +
         labs(subtitle=paste("Bias =", round(bias, 2), "dB")) +
         ggtitle("Bland-Altman plot comparing PSD across all stages of glaucoma"))
 
-ggsave("plots/blandaltman-psd-allgon.png", width = 7, height = 5)
+#ggsave("plots/blandaltman-psd-allgon.png", width = 7, height = 5)
 ```
 
 ### Pointwise analysis
